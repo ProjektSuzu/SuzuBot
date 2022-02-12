@@ -70,7 +70,7 @@ namespace ProjektRin.Commands.Models
         public void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            var regex = new Regex(@"(?<=/help).*");
+            var regex = new Regex(@"(?<=/echo).*");
             var echo = regex.Match(textChain.Content).Value.Trim();
 
             var message = new MessageBuilder(echo);

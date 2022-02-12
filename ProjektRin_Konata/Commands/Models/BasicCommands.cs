@@ -16,7 +16,7 @@ namespace ProjektRin.Commands.Models
         }
 
         [GroupMessageCommand("help", "查看某条命令的帮助", @"/help")]
-        public static void OnHelpCmd(Bot bot, GroupMessageEvent messageEvent)
+        public void OnHelpCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
             var targetCmd = textChain.Content.Remove(0, 5).Trim();
@@ -66,7 +66,7 @@ namespace ProjektRin.Commands.Models
         }
 
         [GroupMessageCommand("echo", "输出一段指定的消息", @"/echo\s([\s\S]+)")]
-        public static void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
+        public void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
 
@@ -75,7 +75,7 @@ namespace ProjektRin.Commands.Models
         }
 
         [GroupMessageCommand("status", "查看Bot当前的运行状态", @"/status")]
-        public static void OnStatusCmd(Bot bot, GroupMessageEvent messageEvent)
+        public void OnStatusCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var cmdmgr = CommandManager.Instance;
 
@@ -109,7 +109,7 @@ namespace ProjektRin.Commands.Models
         }
 
         [GroupMessageCommand("ping", "检查Bot网络连通情况", @"/ping")]
-        public static void OnPing(Bot bot, GroupMessageEvent messageEvent)
+        public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
             var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
             long ticksSend = (long)messageEvent.MessageTime * 1000;
@@ -122,7 +122,7 @@ namespace ProjektRin.Commands.Models
         }
 
         [GroupMessageCommand("reload", "重新加载所有命令", @"/reload")]
-        public static void OnReload(Bot bot, GroupMessageEvent messageEvent)
+        public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             string reply;
             MessageBuilder message;

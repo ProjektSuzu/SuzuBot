@@ -30,6 +30,7 @@ namespace ProjektRin
                     _cli.Info(TAG, $"Loading Command Set: {attr.Name}.");
                     var table = new List<(MessageEventHandler h, MethodInfo m)>();
 
+                    var instance = (BaseCommand)Activator.CreateInstance(type)!;
                     foreach (var method in type.GetMethods())
                     {
                         foreach (var command in method.GetCustomAttributes())
@@ -41,7 +42,7 @@ namespace ProjektRin
                             }
                         }
                     }
-                    var instance = (BaseCommand)Activator.CreateInstance(type)!;
+                    
                     instance.OnInit();
                     _cmdSets.Add((attr, instance), table);
                 }
@@ -107,7 +108,7 @@ namespace ProjektRin
                     if ((regex.Match(textChain.Content).Success))
                     {
                         if (messageEvent.MemberUin == bot.Uin) return;
-                        _ = method.Invoke(this, new object[] { bot, messageEvent });
+                        _ = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent });
                         _cli.Info(TAG, $"{method.Name} Invoked.");
                         return;
                     }

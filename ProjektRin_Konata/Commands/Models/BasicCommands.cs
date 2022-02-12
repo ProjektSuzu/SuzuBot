@@ -69,11 +69,11 @@ namespace ProjektRin.Commands.Models
         [GroupMessageCommand("echo", "输出一段指定的消息", @"/echo\s([\s\S]+)")]
         public void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
         {
-            var textChain = messageEvent.Message.GetChain<PlainTextChain>();
             var regex = new Regex(@"(?<=/echo).*");
-            var echo = regex.Match(textChain.Content).Value.Trim();
+            var echo = regex.Match(messageEvent.Message.ToString()).Value.Trim();
 
-            var message = new MessageBuilder(echo);
+            var message = MessageBuilder.Eval(echo);
+
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 

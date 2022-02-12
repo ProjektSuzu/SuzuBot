@@ -97,15 +97,15 @@ namespace ProjektRin
         {
             var bot = (Bot)sender!;
             if (messageEvent.MemberUin == bot.Uin) return;
-            var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            if (textChain == null) return;
+            var message = messageEvent.Message.ToString();
+            if (message == null) return;
 
             foreach (var set in _cmdSets)
             {
                 foreach (var (attr, method) in set.Value)
                 {
                     var regex = attr.Pattern;
-                    if ((regex.Match(textChain.Content).Success))
+                    if ((regex.Match(message).Success))
                     {
                         if (messageEvent.MemberUin == bot.Uin) return;
                         _ = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent });

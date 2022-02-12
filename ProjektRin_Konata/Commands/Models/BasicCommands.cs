@@ -19,7 +19,8 @@ namespace ProjektRin.Commands.Models
         public void OnHelpCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            var targetCmd = textChain.Content.Remove(0, 5).Trim();
+            var regex = new Regex(@"(?<=/help).*");
+            var targetCmd = regex.Match(textChain.Content).Value.Trim();
             var message = new MessageBuilder();
 
             if (targetCmd == "")
@@ -69,8 +70,10 @@ namespace ProjektRin.Commands.Models
         public void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
+            var regex = new Regex(@"(?<=/help).*");
+            var echo = regex.Match(textChain.Content).Value.Trim();
 
-            var message = new MessageBuilder(messageEvent.Message.ToString().Remove(0, 5).Trim());
+            var message = new MessageBuilder(echo);
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 
@@ -92,7 +95,7 @@ namespace ProjektRin.Commands.Models
             var reply = $"[ProjektRin] 运行状态汇报\n" +
                 $"UTC {currentDateTime.ToUniversalTime()}\n\n" +
 
-                $"当前系统平台: {osVersion}\n" +
+                $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
                 $"CLR版本: {clrVersion}\n" +
                 $"内存占用: {usedMemoryMB} MB\n" +
                 $"运行时间: {tickCount:dd\\.hh\\:mm\\:ss}\n\n" +

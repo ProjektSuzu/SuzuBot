@@ -87,18 +87,20 @@ namespace ProjektRin.Commands.Models
             var processorCount = Environment.ProcessorCount;
             var currentDateTime = DateTime.Now;
             var tickCount = DateTime.Now - Process.GetCurrentProcess().StartTime;
-            var usedMemoryMB = Process.GetCurrentProcess().PagedMemorySize64 / 1024 / 1024;
+
+            var usedMemoryMB = Environment.WorkingSet / 1024 / 1024;
 
             var groupCount = bot.GetGroupList().Result.Count;
             var friendCount = bot.GetFriendList().Result.Count;
 
-            var reply = $"[ProjektRin] 运行状态汇报\n" +
-                $"UTC {currentDateTime.ToUniversalTime()}\n\n" +
+            var reply = 
+                $"[ProjektRin] 运行状态汇报\n" +
+                $"UTC {currentDateTime.ToUniversalTime():s}\n\n" +
 
                 $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
-                $"CLR版本: {clrVersion}\n" +
+                $"DotNET CLR版本: {clrVersion}\n" +
                 $"内存占用: {usedMemoryMB} MB\n" +
-                $"运行时间: {tickCount:dd\\.hh\\:mm\\:ss}\n\n" +
+                $"运行时间: {tickCount:dd\\d\\ hh\\h\\ mm\\m\\ ss\\s}\n\n" +
 
                 $"[CMDMGR]\n" +
                 $"载入了 {cmdmgr.GetCommandSetCount()} 个命令集, {cmdmgr.GetCommandCount()} 条命令.\n\n" +

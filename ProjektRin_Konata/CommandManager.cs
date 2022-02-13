@@ -3,6 +3,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Message.Model;
 using ProjektRin.Attributes;
 using ProjektRin.Commands;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 

@@ -15,8 +15,8 @@ namespace ProjektRin
         private CommandManager() { }
         public static CommandManager Instance => _instance;
 
-        private Dictionary<(CommandSet, BaseCommand), List<(MessageEventHandler handler, MethodInfo method)>> _cmdSets = new();
-        public Dictionary<(CommandSet, BaseCommand), List<(MessageEventHandler handler, MethodInfo method)>> CmdSets => _cmdSets;
+        private Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> _cmdSets = new();
+        public Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> CmdSets => _cmdSets;
         private static CommandLineInterface _cli = CommandLineInterface.Instance;
         private static string TAG = "CMDMGR";
 
@@ -29,7 +29,7 @@ namespace ProjektRin
                 if (attr != null)
                 {
                     _cli.Info(TAG, $"Loading Command Set: {attr.Name}.");
-                    var table = new List<(MessageEventHandler h, MethodInfo m)>();
+                    var table = new List<(Command h, MethodInfo m)>();
 
                     var instance = (BaseCommand)Activator.CreateInstance(type)!;
                     foreach (var method in type.GetMethods())
@@ -56,7 +56,7 @@ namespace ProjektRin
             _cli.Info(TAG, $"{_cmdSets.Count} command set(s) found, {count} command(s) loaded.");
         }
 
-        public ((CommandSet, BaseCommand), (MessageEventHandler handler, MethodInfo method))? TryGetCommand(string cmdName)
+        public ((CommandSet, BaseCommand), (Command handler, MethodInfo method))? TryGetCommand(string cmdName)
         {
             foreach (var set in _cmdSets)
             {
@@ -101,17 +101,27 @@ namespace ProjektRin
             var message = messageEvent.Message.ToString();
             if (message == null) return;
 
+
             foreach (var set in _cmdSets)
             {
                 foreach (var (attr, method) in set.Value)
                 {
-                    var regex = attr.Pattern;
-                    if ((regex.Match(message).Success))
+                    var regexs = attr.Patterns;
+                    if (regexs == null)
                     {
-                        if (messageEvent.MemberUin == bot.Uin) return;
-                        _ = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent });
-                        _cli.Info(TAG, $"{method.Name} Invoked.");
-                        return;
+                        _ = method.Invoke(bot, new object[] { message });
+                        continue;
+                    }
+                    foreach (var regex in regexs)
+                    {
+                        if ((regex.Match(message).Success))
+                        {
+                            if (messageEvent.MemberUin == bot.Uin) return;
+                            _ = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent });
+                            if (method.ReturnType != typeof(void)) return;
+
+                            _cli.Info(TAG, $"{method.Name} Invoked.");
+                        }
                     }
                 }
             }

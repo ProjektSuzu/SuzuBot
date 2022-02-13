@@ -17,10 +17,9 @@
 
         public void Print(string content, ConsoleColor color = ConsoleColor.White)
         {
-            var originColor = ConsoleColor.White;
             Console.ForegroundColor = color;
             Console.WriteLine(content);
-            Console.ForegroundColor = originColor;
+            Console.ForegroundColor = ConsoleColor.White;
         }
         public void Print(LogLevel level, string tag, string content, ConsoleColor color = ConsoleColor.White)
             => Print($"[{DateTime.Now:s}] [{level,-5}] [{tag}] {content}", color);

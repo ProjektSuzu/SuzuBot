@@ -15,7 +15,10 @@ namespace ProjektRin.Commands.Models
         {
         }
 
-        [GroupMessageCommand("help", "查看某条命令的帮助", @"/help")]
+        [GroupMessageCommand("help",
+            "查看某条命令的帮助",
+            "/help [<命令>]",
+            @"/help")]
         public void OnHelpCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
@@ -33,7 +36,7 @@ namespace ProjektRin.Commands.Models
                     allCommands += $"[{cmdSet.Item1.Name}]\n";
                     foreach (var j in cmds.OrderBy(cmd => cmd.handler.Name))
                     {
-                        allCommands += $"{j.handler.Name}\n    {j.handler.Description}\n";
+                        allCommands += $"{j.handler.Name}\n用法: {j.handler.Usage}\n    {j.handler.Description}\n";
                     }
                     allCommands += "\n";
                 }
@@ -57,8 +60,7 @@ namespace ProjektRin.Commands.Models
 
             var reply = $"[Help]\n" +
                 $"{handler.Name}\n" +
-                $"{handler.Description}\n" +
-                $"用法: \n{handler.Pattern}\n\n" +
+                $"{handler.Description}\n\n" +
                 
                 $"所属命令集: {set.Name}";
 
@@ -66,18 +68,28 @@ namespace ProjektRin.Commands.Models
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 
-        [GroupMessageCommand("echo", "输出一段指定的消息", @"/echo\s([\s\S]+)")]
+        [GroupMessageCommand("echo",
+            "输出一段指定的消息",
+            "/echo [<消息内容>]",
+            @"/echo")]
         public void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var regex = new Regex(@"(?<=/echo).*");
             var echo = regex.Match(messageEvent.Message.ToString()).Value.Trim();
+            if (echo == "")
+            {
+                return;
+            }
 
             var message = MessageBuilder.Eval(echo);
 
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 
-        [GroupMessageCommand("status", "查看Bot当前的运行状态", @"/status")]
+        [GroupMessageCommand("status",
+            "查看Bot当前的运行状态",
+            "/status",
+            @"/status")]
         public void OnStatusCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var cmdmgr = CommandManager.Instance;
@@ -113,7 +125,10 @@ namespace ProjektRin.Commands.Models
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 
-        [GroupMessageCommand("ping", "检查Bot网络连通情况", @"/ping")]
+        [GroupMessageCommand("ping",
+            "检查Bot网络连通情况",
+            "/ping",
+            @"/ping")]
         public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
             var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
@@ -126,7 +141,10 @@ namespace ProjektRin.Commands.Models
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 
-        [GroupMessageCommand("reload", "重新加载所有命令", @"/reload")]
+        [GroupMessageCommand("reload",
+            "重新加载所有命令",
+            "/reload",
+            @"/reload")]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             string reply;

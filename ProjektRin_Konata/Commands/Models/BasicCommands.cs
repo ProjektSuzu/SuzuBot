@@ -107,7 +107,7 @@ namespace ProjektRin.Commands.Models
 
             var reply = 
                 $"[ProjektRin] 运行状态汇报\n" +
-                $"UTC {currentDateTime.ToUniversalTime():s}\n\n" +
+                $"UTC {currentDateTime.ToUniversalTime():s}\n" +
 
                 $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
                 $"DotNET CLR版本: {clrVersion}\n" +

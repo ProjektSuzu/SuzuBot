@@ -1,4 +1,6 @@
-﻿namespace ProjektRin;
+﻿using System.Reflection;
+
+namespace ProjektRin;
 
 public static class Program
 {
@@ -21,7 +23,7 @@ public static class Program
     @" | | \ \ _| |_| |\  |                             " + "\n" +
     @" |_|  \_\_____|_| \_|                             " + "\n" +
     @"==================================================" + "\n" +
-    @"ProjektRin" + "\n" +
+    $"ProjektRin" + "\n" +
     @"Powered by Konata (C)" + "\n" +
     "\n"
     );

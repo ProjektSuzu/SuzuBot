@@ -5,6 +5,7 @@ using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using ProjektRin.Attributes;
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ProjektRin.Commands.Models
@@ -14,9 +15,15 @@ namespace ProjektRin.Commands.Models
     {
         private string rootPath;
         private string resourcePath;
+        private string pythonPath;
         private Process python;
 
         private static HttpClient _httpClient;
+
+        private bool localStatus;
+        private bool remoteStatus;
+
+        private Dictionary<uint, string> _playerInfo;
 
 
         private static CommandLineInterface _cli = CommandLineInterface.Instance;
@@ -27,75 +34,213 @@ namespace ProjektRin.Commands.Models
             _httpClient = new HttpClient();
 
             rootPath = Directory.GetCurrentDirectory();
-            resourcePath = rootPath + "/resources/ArcaeaProbe_Rework";
+            resourcePath = rootPath + "/resources";
+            pythonPath = resourcePath + "/ArcaeaProbe_Rework";
             python = new Process();
+
+            try
+            {
+                LoadPlayerInfo();
+            } catch { }
+            finally { SavePlayerInfo(); }
 
             python.StartInfo.UseShellExecute = false;
             python.StartInfo.CreateNoWindow = true;
             python.StartInfo.FileName = "python3";
-            python.StartInfo.Arguments = $"{resourcePath}/main.py";
+            python.StartInfo.Arguments = $"{pythonPath}/main.py";
             //python.StartInfo.RedirectStandardOutput = true;
 
             python.OutputDataReceived += (s, e) => _cli.Info(TAG, e.Data);
-
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
-
             python.Start();
             _cli.Info(TAG, "Python daemon started.");
+
+            CheckServer();
+        }
+
+        private void CheckServer()
+        {
+            HttpResponseMessage response = new();
+            localStatus = false;
+            try
+            {
+                response = _httpClient.GetAsync("http://127.0.0.1:6002").Result;
+                localStatus = response.IsSuccessStatusCode;
+            }
+            catch { remoteStatus = localStatus = false; return; }
+
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
+            remoteStatus = (bool)(dict["status"] ?? false);
+        }
+
+        private void LoadPlayerInfo()
+        {
+            var json = File.ReadAllText(resourcePath + "/arcaea.json");
+            _playerInfo = JsonConvert.DeserializeObject<Dictionary<uint, string>>(json) ?? new Dictionary<uint, string>();
+        }
+
+        private void SavePlayerInfo()
+        {
+            var json = JsonConvert.SerializeObject(_playerInfo);
+            File.WriteAllText(resourcePath + "/arcaea.json", json);
+        }
+
+        private (string, byte[]?) GetB30Graph(string userCode)
+        {
+            HttpResponseMessage response;
+            try
+            {
+                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}").Result;
+            }
+            catch(Exception e) { return (e.Message, null); }
+            var result = JsonConvert.DeserializeObject<BAAResult>(response.Content.ReadAsStringAsync().Result);
+            if (result == null || result.code != 0)
+            {
+                return (result.message ?? "convert error.", null);
+            }
+
+            byte[] bytes = Convert.FromBase64String(result.data.img);
+            return ("", bytes);
 
         }
 
         [GroupMessageCommand("arcaea",
             "调用Arcaea相关的功能",
-            "/arcaea <功能名> [<参数>]",
-            @"/arcaea")]
+            "/arc <功能名> [<参数>]",
+            @"/arc")]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent)
         {
+            CheckServer();
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            //var regex = new Regex(@"(?<=/arcaea).*");
-            var reply = "";
-
-            HttpResponseMessage result = new();
-            bool localStatus = false;
-            try
+            var regex = new Regex(@"(?<=/arc).*");
+            var funcName = regex.Match(textChain.Content.ToString()).Value.Trim().Split(' ').FirstOrDefault();
+            if (funcName == "b30")
             {
-                result = _httpClient.GetAsync("http://127.0.0.1:6002").Result;
-                localStatus = result.IsSuccessStatusCode;
+                OnArcaeaB30(bot, messageEvent);
+                return;
             }
-            catch { }
-            
-
-            if (localStatus)
+            else if (funcName == "bind")
             {
-                var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Content.ReadAsStringAsync().Result);
-                var remoteStatus = (bool)(dict["status"] ?? false);
-
-                reply = $"[Arcaea]\n" +
-                    $"本地服务器连通性: {(localStatus ? "OK" : "FAIL")}\n" +
-                    $"远端服务器连通性: {(remoteStatus ? "OK" : "FAIL")}";
+                OnArcaeaBind(bot, messageEvent);
+                return;
             }
-            else
+            else if (funcName == "unbind")
             {
-                reply = "[Arcaea]\n" +
-                    "本地服务器连通性: FAIL\n" +
-                    "远端服务器连通性: FAIL";
+                OnArcaeaUnbind(bot, messageEvent);
+                return;
             }
+
+            var reply = $"[Arcaea]\n" +
+                $"b30\n用法: /arc b30 [<好友代码>]\n    查看B30成绩图\n" +
+                $"bind\n用法: /arc bind <好友代码>\n    为当前QQ号绑定一个好友代码\n" +
+                $"unbind\n用法: /arc unbind\n    为当前QQ号解除绑定好友代码\n" +
+                $"\n" +
+                $"本地服务器连通性: {(localStatus ? "OK" : "FAIL")}\n" +
+                $"远端服务器连通性: {(remoteStatus ? "OK" : "FAIL")}";
 
             var message = new MessageBuilder(reply);
-
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
         }
 
-        //[GroupMessageCommand("arcaea b30", "获取指定用户的B30成绩图", @"/arcaea b30")]
+        public void OnArcaeaUnbind(Bot bot, GroupMessageEvent messageEvent)
+        {
+            if (_playerInfo.ContainsKey(messageEvent.MemberUin))
+            {
+                _playerInfo.Remove(messageEvent.MemberUin);
+                SavePlayerInfo();   
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("绑定记录已清除"));
+            }
+            else
+            {
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("你当前没有任何绑定记录"));
+            }
+        }
+
+        public void OnArcaeaBind(Bot bot, GroupMessageEvent messageEvent)
+        {
+            var userCode = "";
+
+            if (_playerInfo.TryGetValue(messageEvent.MemberUin, out userCode))
+            {
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("当前用户已存在绑定记录\n" +
+                    $"{userCode} => U{messageEvent.MemberUin}"));
+                return;
+            }
+
+            var regex = new Regex(@"(?<=/arc bind )[0-9]{9}");
+            var match = regex.Match(messageEvent.Message.ToString());
+
+            if (match.Success)
+            {
+                _playerInfo.Add(messageEvent.MemberUin, match.Value);
+                SavePlayerInfo();
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("绑定成功\n" +
+                    $"{match.Value} => U{messageEvent.MemberUin}"));
+            }
+            else
+            {
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("无法识别的好友代码\n" +
+                    "请检查输入格式"));
+            }
+        }
+
         public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent)
         {
-            var regex = new Regex(@"(?<=/arcaea b30)[0-9]*");
+            if (!localStatus || !remoteStatus)
+            {
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("本地服务器或远端服务器无法连接"));
+                return;
+            }
+            var userCode = "";
+            var regex = new Regex(@"(?<=/arc b30 )[0-9]*");
             var match = regex.Match(messageEvent.Message.ToString());
-            if (!match.Success)
+
+            if (match.Success)
+            {
+                userCode = match.Value.Trim();
+            }
+            else
+            {
+                userCode = _playerInfo.GetValueOrDefault(messageEvent.MemberUin, "");
+            }
+
+            if (userCode == "")
             {
                 _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("没有找到你的记录\n" +
                     "请确认已经绑定好友码或使用参数调用"));
+                return;
             }
+
+            _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(AtChain.Create(messageEvent.MemberUin))
+                .Add(PlainTextChain.Create("收到, 正在处理成绩图..."))
+                );
+
+            var (message, bytes) = GetB30Graph(userCode);
+            if (message != "")
+            {
+                _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("发生错误: \n" +
+                    message));
+                return;
+            }
+
+            var reply = new MessageBuilder()
+                .Add(AtChain.Create(messageEvent.MemberUin))
+                .Add(ImageChain.Create(bytes));
+
+
+            _ = bot.SendGroupMessage(messageEvent.GroupUin, reply);
+        }
+    }
+
+    class BAAResult
+    {
+        public int code;
+        public string message;
+        public Data data;
+        public class Data
+        {
+            public string img;
         }
     }
 }

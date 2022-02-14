@@ -100,7 +100,7 @@ namespace ProjektRin
         {
             var bot = (Bot)sender!;
             if (messageEvent.MemberUin == bot.Uin) return;
-            var textChain = messageEvent.Message.GetChain<PlainTextChain>()?.Content.Trim() ?? null;
+            var textChain = messageEvent.Message.ToString().Trim() ?? null;
             if (textChain == null) return;
             var atChain = messageEvent.Message.GetChain<AtChain>();
 
@@ -110,16 +110,19 @@ namespace ProjektRin
                     return;
                 textChain = textChain.Replace("铃酱", "");
                 if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
-                if (!textChain.StartsWith('/')) textChain = '/' + textChain;
             }
             else
             {
-                if (atChain != null && atChain.AtUin == bot.Uin || textChain != null && textChain.StartsWith("铃酱"))
+                if ((atChain == null || atChain.AtUin != bot.Uin)
+                    && (textChain == null || !textChain.StartsWith("铃酱"))
+                    && (textChain == null || !textChain.StartsWith('/'))
+                    )
                 {
-                    textChain = textChain.Replace("铃酱", "");
-                    if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
-                    if (!textChain.StartsWith('/')) textChain = '/' + textChain;
+                    return;
                 }
+                textChain = textChain.Replace("铃酱", "");
+                if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
+                if (textChain.StartsWith('/')) textChain = textChain.Replace("/", "");
             }
 
             foreach (var set in _cmdSets)

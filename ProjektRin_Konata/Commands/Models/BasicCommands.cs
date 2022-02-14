@@ -17,12 +17,12 @@ namespace ProjektRin.Commands.Models
 
         [GroupMessageCommand("help",
             "查看某条命令的帮助",
-            "/help [<命令>]",
-            @"/help")]
+            "help [<命令>]",
+            @"^help\s?([\s\S]+)?")]
         public void OnHelpCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            var regex = new Regex(@"(?<=/help).*");
+            var regex = new Regex(@"(?<=help).*");
             var targetCmd = regex.Match(textChain.Content).Value.Trim();
             var message = new MessageBuilder();
 
@@ -70,12 +70,12 @@ namespace ProjektRin.Commands.Models
 
         [GroupMessageCommand("echo",
             "输出一段指定的消息",
-            "/echo [<消息内容>]",
-            @"/echo")]
+            "echo [<消息内容>]",
+            @"^echo\s(.*)")]
         public void OnEchoCmd(Bot bot, GroupMessageEvent messageEvent)
         {
-            var regex = new Regex(@"(?<=/echo).*");
-            var echo = regex.Match(messageEvent.Message.ToString()).Value.Trim();
+            var regex = new Regex(@"echo\s(.*)");
+            var echo = regex.Match(messageEvent.Message.ToString()).Groups.Values.ToList()[1].Value ?? "";
             if (echo == "")
             {
                 return;
@@ -88,8 +88,8 @@ namespace ProjektRin.Commands.Models
 
         [GroupMessageCommand("status",
             "查看Bot当前的运行状态",
-            "/status",
-            @"/status")]
+            "status",
+            @"^status$")]
         public void OnStatusCmd(Bot bot, GroupMessageEvent messageEvent)
         {
             var cmdmgr = CommandManager.Instance;
@@ -127,8 +127,8 @@ namespace ProjektRin.Commands.Models
 
         [GroupMessageCommand("ping",
             "检查Bot网络连通情况",
-            "/ping",
-            @"/ping")]
+            "ping",
+            @"^ping$")]
         public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
             var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
@@ -143,8 +143,8 @@ namespace ProjektRin.Commands.Models
 
         [GroupMessageCommand("reload",
             "重新加载所有命令",
-            "/reload",
-            @"/reload")]
+            "reload",
+            @"^reload$")]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             string reply;

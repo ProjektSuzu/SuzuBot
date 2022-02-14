@@ -108,14 +108,14 @@ namespace ProjektRin.Commands.Models
 
         }
 
-        [GroupMessageCommand("arcaea",
+        [GroupMessageCommand("arc",
             "调用Arcaea相关的功能",
             "/arc <功能名> [<参数>]",
-            @"/arc")]
+            @"^arc\s?([\S]+)?\s?([\s\S]+)?")]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent)
         {
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            var regex = new Regex(@"/arc\s?([\S]+)?\s?([\s\S]+)?");
+            var regex = new Regex(@"arc\s?([\S]+)?\s?([\s\S]+)?");
             var match = regex.Match(textChain.Content.ToString()).Groups.Values.Skip(1).Select(v => v.Value);
             var funcName = match.First().Trim();
             var args = match.Last().Trim().Split(' ').ToList();
@@ -148,9 +148,9 @@ namespace ProjektRin.Commands.Models
 
             CheckServer();
             var reply = $"[Arcaea]\n" +
-                $"b30\n用法: /arc b30 [<好友代码>]\n    查看B30成绩图\n" +
-                $"bind\n用法: /arc bind <好友代码>\n    为当前QQ号绑定一个好友代码\n" +
-                $"unbind\n用法: /arc unbind\n    为当前QQ号解除绑定好友代码\n" +
+                $"b30\n用法: arc b30 [<好友代码>]\n    查看B30成绩图\n" +
+                $"bind\n用法: arc bind <好友代码>\n    为当前QQ号绑定一个好友代码\n" +
+                $"unbind\n用法: arc unbind\n    为当前QQ号解除绑定好友代码\n" +
                 $"\n" +
                 $"本地服务器连通性: {(localStatus ? "OK" : "FAIL")}\n" +
                 $"远端服务器连通性: {(remoteStatus ? "OK" : "FAIL")}";

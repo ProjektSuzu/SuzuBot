@@ -16,6 +16,7 @@ namespace ProjektRin
         private CommandManager _commandManager = CommandManager.Instance;
         private static CommandLineInterface _cli = CommandLineInterface.Instance;
         private static string TAG = "Bot";
+        private static string rootPath = Directory.GetCurrentDirectory();
 
         public BotConfig GetConfig()
         {
@@ -30,10 +31,10 @@ namespace ProjektRin
 
         public BotDevice GetDevice()
         {
-            if (File.Exists("device.json"))
+            if (File.Exists(rootPath + "/device.json"))
             {
                 return JsonSerializer.Deserialize
-                    <BotDevice>(File.ReadAllText("device.json"));
+                    <BotDevice>(File.ReadAllText(rootPath + "/device.json"));
             }
             else
             {
@@ -41,7 +42,7 @@ namespace ProjektRin
                 {
                     var deviceJson = JsonSerializer.Serialize(_botDevice,
                         new JsonSerializerOptions { WriteIndented = true });
-                    File.WriteAllText("device.json", deviceJson);
+                    File.WriteAllText(rootPath + "/device.json", deviceJson);
                 }
                 return _botDevice;
             }
@@ -49,10 +50,10 @@ namespace ProjektRin
 
         public BotKeyStore GetKeyStore()
         {
-            if (File.Exists("keystore.json"))
+            if (File.Exists(rootPath + "/keystore.json"))
             {
                 return JsonSerializer.Deserialize
-                    <BotKeyStore>(File.ReadAllText("keystore.json"));
+                    <BotKeyStore>(File.ReadAllText(rootPath + "/keystore.json"));
             }
             else
             {
@@ -74,7 +75,7 @@ namespace ProjektRin
         {
             var deviceJson = JsonSerializer.Serialize(botKeyStore,
                 new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText("keystore.json", deviceJson);
+            File.WriteAllText(rootPath + "/keystore.json", deviceJson);
             return botKeyStore;
         }
 

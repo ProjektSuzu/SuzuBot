@@ -124,5 +124,5 @@ namespace ProjektRin
             return _bot.Login().Result;
         }
 
-    }   
+    }
 }

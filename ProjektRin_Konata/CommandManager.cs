@@ -18,6 +18,8 @@ namespace ProjektRin
         private Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> _cmdSets = new();
         public Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> CmdSets => _cmdSets;
         private static CommandLineInterface _cli = CommandLineInterface.Instance;
+        private static BotManager _botManager = BotManager.Instance;
+        private static GroupManager _groupManager = GroupManager.Instance;
         private static string TAG = "CMDMGR";
 
         public void LoadCommands()
@@ -98,9 +100,27 @@ namespace ProjektRin
         {
             var bot = (Bot)sender!;
             if (messageEvent.MemberUin == bot.Uin) return;
-            var message = messageEvent.Message.ToString();
-            if (message == null) return;
+            var textChain = messageEvent.Message.GetChain<PlainTextChain>()?.Content.Trim() ?? null;
+            if (textChain == null) return;
+            var atChain = messageEvent.Message.GetChain<AtChain>();
 
+            if (_groupManager.IsPassiveMode(messageEvent.GroupUin))
+            {
+                if ((atChain == null || atChain.AtUin != bot.Uin) && (textChain == null || !textChain.StartsWith("铃酱")))
+                    return;
+                textChain = textChain.Replace("铃酱", "");
+                if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
+                if (!textChain.StartsWith('/')) textChain = '/' + textChain;
+            }
+            else
+            {
+                if (atChain != null && atChain.AtUin == bot.Uin || textChain != null && textChain.StartsWith("铃酱"))
+                {
+                    textChain = textChain.Replace("铃酱", "");
+                    if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
+                    if (!textChain.StartsWith('/')) textChain = '/' + textChain;
+                }
+            }
 
             foreach (var set in _cmdSets)
             {
@@ -109,12 +129,12 @@ namespace ProjektRin
                     var regexs = attr.Patterns;
                     if (regexs == null)
                     {
-                        _ = method.Invoke(bot, new object[] { message });
+                        _ = method.Invoke(bot, new object[] { bot, messageEvent });
                         continue;
                     }
                     foreach (var regex in regexs)
                     {
-                        if ((regex.Match(message).Success))
+                        if ((regex.Match(textChain).Success))
                         {
                             if (messageEvent.MemberUin == bot.Uin) return;
                             _ = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent });

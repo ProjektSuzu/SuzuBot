@@ -69,8 +69,12 @@ namespace ProjektRin.Commands.Models
             }
             catch { remoteStatus = localStatus = false; return; }
 
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
-            remoteStatus = (bool)(dict["status"] ?? false);
+            try
+            {
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
+                remoteStatus = (bool)(dict["status"] ?? false);
+            } catch { remoteStatus = localStatus = false; return; }
+            
         }
 
         private void LoadPlayerInfo()
@@ -82,7 +86,7 @@ namespace ProjektRin.Commands.Models
         private void SavePlayerInfo()
         {
             var json = JsonConvert.SerializeObject(_playerInfo);
-            File.WriteAllText(resourcePath + "/arcaea.json", json);
+            File.WriteAllText(resourcePath + "/arcaea.json", json, Encoding.UTF8);
         }
 
         private (string, byte[]?) GetB30Graph(string userCode)
@@ -110,26 +114,39 @@ namespace ProjektRin.Commands.Models
             @"/arc")]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent)
         {
-            CheckServer();
             var textChain = messageEvent.Message.GetChain<PlainTextChain>();
-            var regex = new Regex(@"(?<=/arc).*");
-            var funcName = regex.Match(textChain.Content.ToString()).Value.Trim().Split(' ').FirstOrDefault();
-            if (funcName == "b30")
+            var regex = new Regex(@"/arc\s?([\S]+)?\s?([\s\S]+)?");
+            var match = regex.Match(textChain.Content.ToString()).Groups.Values.Skip(1).Select(v => v.Value);
+            var funcName = match.First().Trim();
+            var args = match.Last().Trim().Split(' ').ToList();
+
+            if (funcName != null && funcName != "")
             {
-                OnArcaeaB30(bot, messageEvent);
-                return;
-            }
-            else if (funcName == "bind")
-            {
-                OnArcaeaBind(bot, messageEvent);
-                return;
-            }
-            else if (funcName == "unbind")
-            {
-                OnArcaeaUnbind(bot, messageEvent);
-                return;
+                if (funcName == "b30")
+                {
+                    CheckServer();
+
+                    OnArcaeaB30(bot, messageEvent, args);
+                    return;
+                }
+                else if (funcName == "bind")
+                {
+                    OnArcaeaBind(bot, messageEvent, args);
+                    return;
+                }
+                else if (funcName == "unbind")
+                {
+                    OnArcaeaUnbind(bot, messageEvent);
+                    return;
+                }
+                else
+                {
+                    _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder($"未能识别的功能: {funcName}"));
+                    return;
+                }
             }
 
+            CheckServer();
             var reply = $"[Arcaea]\n" +
                 $"b30\n用法: /arc b30 [<好友代码>]\n    查看B30成绩图\n" +
                 $"bind\n用法: /arc bind <好友代码>\n    为当前QQ号绑定一个好友代码\n" +
@@ -156,7 +173,7 @@ namespace ProjektRin.Commands.Models
             }
         }
 
-        public void OnArcaeaBind(Bot bot, GroupMessageEvent messageEvent)
+        public void OnArcaeaBind(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var userCode = "";
 
@@ -166,9 +183,9 @@ namespace ProjektRin.Commands.Models
                     $"{userCode} => U{messageEvent.MemberUin}"));
                 return;
             }
-
-            var regex = new Regex(@"(?<=/arc bind )[0-9]{9}");
-            var match = regex.Match(messageEvent.Message.ToString());
+            userCode = args.FirstOrDefault(defaultValue: "");
+            var regex = new Regex(@"[0-9]{9}");
+            var match = regex.Match(userCode);
 
             if (match.Success)
             {
@@ -184,15 +201,15 @@ namespace ProjektRin.Commands.Models
             }
         }
 
-        public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent)
+        public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             if (!localStatus || !remoteStatus)
             {
                 _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("本地服务器或远端服务器无法连接"));
                 return;
             }
-            var userCode = "";
-            var regex = new Regex(@"(?<=/arc b30 )[0-9]*");
+            var userCode = args.FirstOrDefault(defaultValue: "");
+            var regex = new Regex(@"[0-9]{9}");
             var match = regex.Match(messageEvent.Message.ToString());
 
             if (match.Success)

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace ProjektRin;
 
@@ -32,7 +33,6 @@ public static class Program
         BotManager.Instance.InitBot();
         _cli.Info(TAG, "Logging in.");
         BotManager.Instance.LoginBot();
-
 
         return 0;
     }

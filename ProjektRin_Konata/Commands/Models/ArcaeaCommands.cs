@@ -48,9 +48,7 @@ namespace ProjektRin.Commands.Models
             python.StartInfo.CreateNoWindow = true;
             python.StartInfo.FileName = "python3";
             python.StartInfo.Arguments = Path.Combine(pythonPath, "main.py");
-            //python.StartInfo.RedirectStandardOutput = true;
 
-            python.OutputDataReceived += (s, e) => _cli.Info(TAG, e.Data);
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
             python.Start();
             _cli.Info(TAG, "Python daemon started.");
@@ -72,7 +70,7 @@ namespace ProjektRin.Commands.Models
             try
             {
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
-                remoteStatus = (bool)(dict["status"] ?? false);
+                remoteStatus = (bool)(dict?["status"] ?? false);
             } catch { remoteStatus = localStatus = false; return; }
             
         }
@@ -100,7 +98,7 @@ namespace ProjektRin.Commands.Models
             var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
             if (result == null || result.code != 0)
             {
-                return (result.message ?? "convert error.", null);
+                return (result?.message ?? "convert error.", null);
             }
 
             byte[] bytes = Convert.FromBase64String(result.data.img);

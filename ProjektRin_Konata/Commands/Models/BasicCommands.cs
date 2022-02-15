@@ -60,7 +60,8 @@ namespace ProjektRin.Commands.Models
 
             var reply = $"[Help]\n" +
                 $"{handler.Name}\n" +
-                $"{handler.Description}\n\n" +
+                $"用法: {handler.Usage}\n" +
+                $"  {handler.Description}\n\n" +
                 
                 $"所属命令集: {set.Name}";
 

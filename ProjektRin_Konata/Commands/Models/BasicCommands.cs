@@ -106,7 +106,8 @@ namespace ProjektRin.Commands.Models
             var friendCount = bot.GetFriendList().Result.Count;
 
             var reply = 
-                $"[ProjektRin] 运行状态汇报\n" +
+                $"[ProjektRin] {RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}\n" +
+                $"运行状态汇报\n" +
                 $"UTC {currentDateTime.ToUniversalTime():s}\n" +
 
                 $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
@@ -117,7 +118,7 @@ namespace ProjektRin.Commands.Models
                 $"[CMDMGR]\n" +
                 $"载入了 {cmdmgr.GetCommandSetCount()} 个命令集, {cmdmgr.GetCommandCount()} 条命令.\n\n" +
 
-                $"[KonataCore]\n" +
+                $"[KonataCore] {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}\n" +
                 $"共有 {friendCount} 个好友, {groupCount} 个群.";
 
             var message = new MessageBuilder(reply);

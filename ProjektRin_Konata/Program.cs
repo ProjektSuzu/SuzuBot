@@ -25,8 +25,11 @@ public static class Program
     @" | | \ \ _| |_| |\  |                             " + "\n" +
     @" |_|  \_\_____|_| \_|                             " + "\n" +
     @"==================================================" + "\n" +
-    $"ProjektRin" + "\n" +
+    $"ProjektRin {RinBuildStamp.Version}" + "\n" +
+    $"Build: {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
+    $"Time: {RinBuildStamp.BuildTime}" + "\n\n" +
     @"Powered by Konata (C)" + "\n" +
+    $"Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" +
     "\n"
     );
         _cli.Info(TAG, $"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
@@ -45,8 +48,11 @@ public static class Program
         }
 
         uint devGroupUin = 644504300;
-        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("已从远端Git库拉取更改并自动构建\n" +
-            $"UTC {DateTime.Now.ToUniversalTime():s}"));
+        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]" + "\n" +
+            $"UTC {DateTime.UtcNow:s}" + "\n" +
+            "RinBot启动成功" + "\n\n" +
+            $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
+            $"构建时间: UTC {RinBuildStamp.BuildTime}"));
 
         return 0;
     }

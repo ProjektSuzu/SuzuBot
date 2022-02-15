@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/AkulaKirov/RinBot</RepositoryUrl>
     <PackageProjectUrl>https://github.com/AkulaKirov/RinBot</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
+    <Version>1.1.0-alpha</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +26,54 @@
   <ItemGroup>
     <ProjectReference Include="..\Konata.Core\Konata.Core.csproj" />
   </ItemGroup>
+
+	  <!-- Get Build Stamp -->
+  <Target Name="GetBuildStamp" BeforeTargets="GenerateBuildStamp" Condition="'$(BuildHash)' == ''">
+    <PropertyGroup>
+      <BuildStampFile>$(IntermediateOutputPath)BuildStamp</BuildStampFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BuildDate>$([System.DateTime]::Now.ToString(s))</BuildDate>
+    </PropertyGroup>
+
+    <!-- Git Branch -->
+    <Exec Command="git -C $(ProjectDir) rev-parse --abbrev-ref HEAD &gt; $(BuildStampFile)" />
+
+    <!-- Git Commit Hash -->
+    <Exec Command="git -C $(ProjectDir) rev-parse HEAD &gt;&gt; $(BuildStampFile)" />
+
+    <!--Build Date -->
+    <Exec Command="echo $(BuildDate) &gt;&gt; $(BuildStampFile)" />
+
+    <ReadLinesFromFile File="$(BuildStampFile)">
+      <Output TaskParameter="Lines" ItemName="Stamp" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <BuildStamp>@(Stamp)</BuildStamp>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Generate Build Stamp -->
+  <Target Name="GenerateBuildStamp" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <CustomAssemblyInfoFile>$(IntermediateOutputPath)CustomAssemblyInfo.cs</CustomAssemblyInfoFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="$(CustomAssemblyInfoFile)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AssemblyAttributes Include="AssemblyMetadata">
+        <_Parameter1>BuildStamp</_Parameter1>
+        <_Parameter2>$(BuildStamp)</_Parameter2>
+      </AssemblyAttributes>
+    </ItemGroup>
+
+    <WriteCodeFragment Language="C#" OutputFile="$(CustomAssemblyInfoFile)" AssemblyAttributes="@(AssemblyAttributes)" />
+  </Target>
+
 
 </Project>

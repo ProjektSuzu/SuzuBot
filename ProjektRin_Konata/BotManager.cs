@@ -53,7 +53,7 @@ namespace ProjektRin
             if (File.Exists(rootPath + "/keystore.json"))
             {
                 return JsonSerializer.Deserialize
-                    <BotKeyStore>(File.ReadAllText(Path.Combine(rootPath, "device.json")));
+                    <BotKeyStore>(File.ReadAllText(Path.Combine(rootPath, "keystore.json")));
             }
             else
             {

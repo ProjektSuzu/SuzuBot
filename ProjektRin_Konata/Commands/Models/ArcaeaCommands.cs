@@ -34,8 +34,8 @@ namespace ProjektRin.Commands.Models
             _httpClient = new HttpClient();
 
             rootPath = AppDomain.CurrentDomain.BaseDirectory;
-            resourcePath = Path.Combine(rootPath, "/resources");
-            pythonPath = Path.Combine(rootPath, "/ArcaeaProbe_Rework");
+            resourcePath = Path.Combine(rootPath, "resources");
+            pythonPath = Path.Combine(resourcePath, "ArcaeaProbe_Rework");
             python = new Process();
 
             try
@@ -47,7 +47,7 @@ namespace ProjektRin.Commands.Models
             python.StartInfo.UseShellExecute = false;
             python.StartInfo.CreateNoWindow = true;
             python.StartInfo.FileName = "python3";
-            python.StartInfo.Arguments = Path.Combine(pythonPath, "/main.py");
+            python.StartInfo.Arguments = Path.Combine(pythonPath, "main.py");
             //python.StartInfo.RedirectStandardOutput = true;
 
             python.OutputDataReceived += (s, e) => _cli.Info(TAG, e.Data);
@@ -79,14 +79,14 @@ namespace ProjektRin.Commands.Models
 
         private void LoadPlayerInfo()
         {
-            var json = File.ReadAllText(resourcePath + "/arcaea.json");
+            var json = File.ReadAllText(Path.Combine(resourcePath, "arcaea.json"));
             _playerInfo = JsonConvert.DeserializeObject<Dictionary<uint, string>>(json) ?? new Dictionary<uint, string>();
         }
 
         private void SavePlayerInfo()
         {
             var json = JsonConvert.SerializeObject(_playerInfo);
-            File.WriteAllText(resourcePath + "/arcaea.json", json, Encoding.UTF8);
+            File.WriteAllText(Path.Combine(resourcePath, "arcaea.json"), json, Encoding.UTF8);
         }
 
         private (string, byte[]?) GetB30Graph(string userCode)

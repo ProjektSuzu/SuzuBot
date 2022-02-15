@@ -31,7 +31,7 @@ namespace ProjektRin
 
         public BotDevice GetDevice()
         {
-            if (File.Exists(Path.Combine(rootPath, "device.json"))
+            if (File.Exists(Path.Combine(rootPath, "device.json")))
             {
                 return JsonSerializer.Deserialize
                     <BotDevice>(File.ReadAllText(Path.Combine(rootPath, "device.json")));

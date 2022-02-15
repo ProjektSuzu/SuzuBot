@@ -33,9 +33,9 @@ namespace ProjektRin.Commands.Models
         {
             _httpClient = new HttpClient();
 
-            rootPath = Directory.GetCurrentDirectory();
-            resourcePath = rootPath + "/resources";
-            pythonPath = resourcePath + "/ArcaeaProbe_Rework";
+            rootPath = AppDomain.CurrentDomain.BaseDirectory;
+            resourcePath = Path.Combine(rootPath, "/resources");
+            pythonPath = Path.Combine(rootPath, "/ArcaeaProbe_Rework");
             python = new Process();
 
             try
@@ -47,7 +47,7 @@ namespace ProjektRin.Commands.Models
             python.StartInfo.UseShellExecute = false;
             python.StartInfo.CreateNoWindow = true;
             python.StartInfo.FileName = "python3";
-            python.StartInfo.Arguments = $"{pythonPath}/main.py";
+            python.StartInfo.Arguments = Path.Combine(pythonPath, "/main.py");
             //python.StartInfo.RedirectStandardOutput = true;
 
             python.OutputDataReceived += (s, e) => _cli.Info(TAG, e.Data);

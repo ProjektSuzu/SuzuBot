@@ -29,7 +29,7 @@ public static class Program
     @"Powered by Konata (C)" + "\n" +
     "\n"
     );
-        _cli.Info(TAG, $"Current Dir: {Directory.GetCurrentDirectory()}");
+        _cli.Info(TAG, $"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
         _cli.Info(TAG, "Initializing Bot.");
         BotManager.Instance.InitBot();
         _cli.Info(TAG, "Logging in.");

@@ -24,9 +24,10 @@ namespace ProjektRin
 
         public void LoadCommands()
         {
-            var types = typeof(CommandSet).Assembly.GetTypes();
+            var types = Assembly.GetExecutingAssembly().GetTypes();
             foreach (var type in types)
             {
+                if (type.BaseType != typeof(BaseCommand)) continue;
                 var attr = type?.GetCustomAttribute<CommandSet>();
                 if (attr != null)
                 {

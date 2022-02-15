@@ -227,8 +227,8 @@ namespace ProjektRin.Commands.Models
             }
 
             _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                .Add(AtChain.Create(messageEvent.MemberUin))
-                .Add(PlainTextChain.Create("收到, 正在处理成绩图..."))
+                .At(messageEvent.MemberUin)
+                .PlainText("收到, 正在处理成绩图...")
                 );
 
             var (message, bytes) = GetB30Graph(userCode);
@@ -240,8 +240,8 @@ namespace ProjektRin.Commands.Models
             }
 
             var reply = new MessageBuilder()
-                .Add(AtChain.Create(messageEvent.MemberUin))
-                .Add(ImageChain.Create(bytes));
+                .At(messageEvent.MemberUin)
+                .Image(bytes);
 
 
             _ = bot.SendGroupMessage(messageEvent.GroupUin, reply);

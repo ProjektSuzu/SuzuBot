@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Konata.Core.Message;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace ProjektRin;
@@ -33,7 +34,9 @@ public static class Program
         BotManager.Instance.InitBot();
         _cli.Info(TAG, "Logging in.");
         BotManager.Instance.LoginBot();
-
+        uint devGroupUin = 644504300;
+        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("已从远端Git库拉取更改并自动构建\n" +
+            $"UTC {DateTime.Now.ToUniversalTime():s}"));
         return 0;
     }
 

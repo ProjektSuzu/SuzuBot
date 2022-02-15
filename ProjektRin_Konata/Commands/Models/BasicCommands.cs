@@ -11,8 +11,10 @@ namespace ProjektRin.Commands.Models
     [CommandSet("BasicCommandSet")]
     internal class BasicCommands : BaseCommand
     {
+        uint devGroupUin = 644504300;
         public override void OnInit()
         {
+            _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("已从远端Git库拉取更改并自动构建"));
         }
 
         [GroupMessageCommand("help",

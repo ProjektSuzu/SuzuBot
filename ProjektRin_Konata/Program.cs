@@ -33,10 +33,21 @@ public static class Program
         _cli.Info(TAG, "Initializing Bot.");
         BotManager.Instance.InitBot();
         _cli.Info(TAG, "Logging in.");
-        BotManager.Instance.LoginBot();
+
+        var maxAttempt = 5;
+
+        for (var i = 0; i < maxAttempt; i++)
+        {
+            if (BotManager.Instance.LoginBot())
+            {
+                break;
+            }
+        }
+
         uint devGroupUin = 644504300;
         _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("已从远端Git库拉取更改并自动构建\n" +
             $"UTC {DateTime.Now.ToUniversalTime():s}"));
+
         return 0;
     }
 

@@ -97,7 +97,7 @@ namespace ProjektRin.Commands.Models
                 response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}").Result;
             }
             catch(Exception e) { return (e.Message, null); }
-            var result = JsonConvert.DeserializeObject<BAAResult>(response.Content.ReadAsStringAsync().Result);
+            var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
             if (result == null || result.code != 0)
             {
                 return (result.message ?? "convert error.", null);
@@ -250,7 +250,7 @@ namespace ProjektRin.Commands.Models
         }
     }
 
-    class BAAResult
+    class B30Result
     {
         public int code;
         public string message;

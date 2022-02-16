@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  Publish:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -22,22 +22,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: |
+        dotnet build --no-restore
+        dotnet publish -c Release -o publish
     - name: Test
       run: dotnet test --no-build --verbosity normal
-  
-  publish:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Copy via ssh
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: /
-          remote: /home/RinBot_Kotana/publish
-          host: ${{ secrets.host }}
-          username: ${{ secrets.username }}
-          password: ${{ secrets.password }}
-          
-
     
   

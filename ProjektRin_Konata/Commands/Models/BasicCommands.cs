@@ -36,7 +36,7 @@ namespace ProjektRin.Commands.Models
                     allCommands += $"[{cmdSet.Item1.Name}]\n";
                     foreach (var j in cmds.OrderBy(cmd => cmd.handler.Name))
                     {
-                        allCommands += $"{j.handler.Name}\n用法: {j.handler.Usage}\n    {j.handler.Description}\n";
+                        allCommands += $"{j.handler.Name}\n用法: \n{j.handler.Usage}\n    {j.handler.Description}\n";
                     }
                     allCommands += "\n";
                 }
@@ -60,7 +60,7 @@ namespace ProjektRin.Commands.Models
 
             var reply = $"[Help]\n" +
                 $"{handler.Name}\n" +
-                $"用法: {handler.Usage}\n" +
+                $"用法: \n{handler.Usage}\n" +
                 $"  {handler.Description}\n\n" +
                 
                 $"所属命令集: {set.Name}";

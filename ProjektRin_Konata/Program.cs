@@ -47,12 +47,23 @@ public static class Program
             }
         }
 
+#if DEBUG
         uint devGroupUin = 644504300;
-        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]" + "\n" +
+        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]DEBUG" + "\n" +
             $"UTC {DateTime.UtcNow:s}" + "\n" +
             "RinBot启动成功" + "\n\n" +
             $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
             $"构建时间: UTC {RinBuildStamp.BuildTime}"));
+#else
+        uint devGroupUin = 644504300;
+        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]" + "\n" +
+            $"UTC {DateTime.UtcNow:s}" + "\n" +
+            "Github Actions 自动构建任务成功" + "\n" +
+            "RinBot启动成功" + "\n\n" +
+            $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
+            $"构建时间: UTC {RinBuildStamp.BuildTime}"));
+#endif
+
 
         return 0;
     }

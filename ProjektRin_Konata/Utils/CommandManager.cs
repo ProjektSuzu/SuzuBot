@@ -101,29 +101,29 @@ namespace ProjektRin
         {
             var bot = (Bot)sender!;
             if (messageEvent.MemberUin == bot.Uin) return;
-            var textChain = messageEvent.Message.ToString().Trim() ?? null;
-            if (textChain == null) return;
+            var message = messageEvent.Message.ToString().Trim() ?? null;
+            if (message == null) return;
             var atChain = messageEvent.Message.GetChain<AtChain>();
 
             if (_groupManager.IsPassiveMode(messageEvent.GroupUin))
             {
-                if ((atChain == null || atChain.AtUin != bot.Uin) && (textChain == null || !textChain.StartsWith("铃酱")))
+                if ((atChain == null || atChain.AtUin != bot.Uin) && (message == null || !message.StartsWith("铃酱")))
                     return;
-                textChain = textChain.Replace("铃酱", "");
-                if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
+                message = message.Replace("铃酱", "");
+                if (atChain != null) message = message.Replace(atChain.ToString(), "");
             }
             else
             {
                 if ((atChain == null || atChain.AtUin != bot.Uin)
-                    && (textChain == null || !textChain.StartsWith("铃酱"))
-                    && (textChain == null || !textChain.StartsWith('/'))
+                    && (message == null || !message.StartsWith("铃酱"))
+                    && (message == null || !message.StartsWith('/'))
                     )
                 {
                     return;
                 }
-                textChain = textChain.Replace("铃酱", "");
-                if (atChain != null) textChain = textChain.Replace(atChain.ToString(), "");
-                if (textChain.StartsWith('/')) textChain = textChain.Replace("/", "");
+                message = message.Replace("铃酱", "");
+                if (atChain != null) message = message.Replace(atChain.ToString(), "");
+                if (message.StartsWith('/')) message = message.Replace("/", "");
             }
 
             foreach (var set in _cmdSets)
@@ -138,13 +138,25 @@ namespace ProjektRin
                     }
                     foreach (var regex in regexs)
                     {
-                        if ((regex.Match(textChain).Success))
+                        if ((regex.Match(message).Success))
                         {
                             if (messageEvent.MemberUin == bot.Uin) return;
-                            _ = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent });
-                            if (method.ReturnType != typeof(void)) return;
+                            object methodReturn;
+                            if (method.GetParameters().Count() == 2)
+                                methodReturn = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent }) ?? true;
+                            else if (method.GetParameters().Count() == 3)
+                                methodReturn = method.Invoke(set.Key.Item2, new object[] { bot, messageEvent, regex.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList() }) ?? true;
+                            else
+                                continue;
 
                             _cli.Info(TAG, $"{method.Name} Invoked.");
+                            if (method.ReturnType != typeof(bool))
+                            {
+                                if ((bool)methodReturn)
+                                    return;
+                            }
+                            else return;
+
                         }
                     }
                 }

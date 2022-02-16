@@ -42,9 +42,9 @@ jobs:
       with:
         local: publish
         remote: /home/RinBot_Kotana/publish
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.SSH_USER }}
-        password: ${{ secrets.PASSWORD }}
+        host: ${{ secrets.host }}
+        username: ${{ secrets.username }}
+        password: ${{ secrets.password }}
         
     - name: Run new program
       uses: garygrossgarten/github-action-ssh@v0.6.3

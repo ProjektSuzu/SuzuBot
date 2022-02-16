@@ -27,5 +27,32 @@ jobs:
         dotnet publish -c Release -o publish
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      
+    - name: Stop current program
+      uses: garygrossgarten/github-action-ssh@v0.6.3
+      with:
+        command: |
+          sudo screen -S rin -X stuff $'\003'
+        host: ${{ secrets.host }}
+        username: ${{ secrets.username }}
+        password: ${{ secrets.password }}
+        
+    - name: Copy folder content recursively to remote
+      uses: garygrossgarten/github-action-scp@v0.7.3
+      with:
+        local: publish
+        remote: /home/RinBot_Kotana/publish
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.PASSWORD }}
+        
+    - name: Run new program
+      uses: garygrossgarten/github-action-ssh@v0.6.3
+      with:
+        command: |
+          screen -S rin -X exec dotnet /home/RinBot_Kotana/publish/ProjektRin.dll
+        host: ${{ secrets.host }}
+        username: ${{ secrets.username }}
+        password: ${{ secrets.password }}
     
   

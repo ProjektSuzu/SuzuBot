@@ -95,10 +95,14 @@ namespace ProjektRin.Commands.Models
                 response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}").Result;
             }
             catch(Exception e) { return (e.Message, null); }
+            if (!response.IsSuccessStatusCode)
+            {
+                return ("server response request error.", null);
+            }
             var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
             if (result == null || result.code != 0)
             {
-                return (result?.message ?? "convert error.", null);
+                return (result?.message ?? "data convert error.", null);
             }
 
             byte[] bytes = Convert.FromBase64String(result.data.img);
@@ -117,7 +121,7 @@ namespace ProjektRin.Commands.Models
             var match = regex.Match(textChain.Content.ToString()).Groups.Values.Skip(1).Select(v => v.Value);
             var funcName = match.First().Trim();
             var args = match.Last().Trim().Split(' ').ToList();
-
+            CheckServer();
             if (funcName != null && funcName != "")
             {
                 if (funcName == "b30")
@@ -144,7 +148,6 @@ namespace ProjektRin.Commands.Models
                 }
             }
 
-            CheckServer();
             var reply = $"[Arcaea]\n" +
                 $"b30\n用法: arc b30 [<好友代码>]\n    查看B30成绩图\n" +
                 $"bind\n用法: arc bind <好友代码>\n    为当前QQ号绑定一个好友代码\n" +

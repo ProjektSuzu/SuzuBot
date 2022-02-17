@@ -95,10 +95,14 @@ namespace ProjektRin.Commands.Models
                 response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}").Result;
             }
             catch(Exception e) { return (e.Message, null); }
+            if (!response.IsSuccessStatusCode)
+            {
+                return ("server response request error.", null);
+            }
             var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
             if (result == null || result.code != 0)
             {
-                return (result?.message ?? "convert error.", null);
+                return (result?.message ?? "data convert error.", null);
             }
 
             byte[] bytes = Convert.FromBase64String(result.data.img);

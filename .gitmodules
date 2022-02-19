@@ -1,0 +1,3 @@
+[submodule "Konata.Core"]
+	path = Konata.Core
+	url = git@github.com:KonataDev/Konata.Core.git

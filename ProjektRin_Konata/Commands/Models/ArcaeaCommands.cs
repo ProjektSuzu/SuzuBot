@@ -111,7 +111,8 @@ namespace ProjektRin.Commands.Models
         }
 
         [GroupMessageCommand("arc",
-            "调用Arcaea相关的功能",
+            "调用Arcaea相关的功能\n" +
+            "输入 /arc 查看更多帮助",
             "/arc <功能名> [<参数>]",
             @"^arc\s?([\S]+)?\s?([\s\S]+)?")]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent)

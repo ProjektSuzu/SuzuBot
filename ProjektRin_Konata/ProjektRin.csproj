@@ -23,10 +23,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Konata.Core\Konata.Core.csproj" />
-  </ItemGroup>
-
 	  <!-- Get Build Stamp -->
   <Target Name="GetBuildStamp" BeforeTargets="GenerateBuildStamp" Condition="'$(BuildHash)' == ''">
     <PropertyGroup>

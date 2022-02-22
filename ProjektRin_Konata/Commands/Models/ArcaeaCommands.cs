@@ -62,7 +62,7 @@ namespace ProjektRin.Commands.Models
             localStatus = false;
             try
             {
-                response = _httpClient.GetAsync("http://127.0.0.1:6002").Result;
+                response = _httpClient.GetAsync("http://127.0.0.1:6002/connect").Result;
                 localStatus = response.IsSuccessStatusCode;
             }
             catch { remoteStatus = localStatus = false; return; }
@@ -70,7 +70,8 @@ namespace ProjektRin.Commands.Models
             try
             {
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
-                remoteStatus = (int)(dict?["status"]) == 0;
+                var statusCode = (Int64)(dict?["status"]);
+                remoteStatus = statusCode == 0;
             } catch { remoteStatus = localStatus = false; return; }
             
         }

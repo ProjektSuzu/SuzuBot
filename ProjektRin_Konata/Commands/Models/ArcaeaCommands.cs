@@ -70,9 +70,10 @@ namespace ProjektRin.Commands.Models
             try
             {
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
+                Logger.Info(dict.ToString());
                 var statusCode = (Int64)(dict?["status"]);
                 remoteStatus = statusCode == 0;
-            } catch { remoteStatus = localStatus = false; return; }
+            } catch { remoteStatus = false; return; }
             
         }
 

@@ -49,8 +49,10 @@ namespace ProjektRin.Commands.Models
             python.StartInfo.FileName = "python3";
             python.StartInfo.Arguments = Path.Combine(pythonPath, "main.py");
 
+#if !DEBUG
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
             python.Start();
+#endif
             Logger.Info("Python daemon started.");
 
             CheckServer();

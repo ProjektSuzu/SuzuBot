@@ -1,6 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
+using NLog;
 using System.Text.Json;
 
 namespace ProjektRin
@@ -15,9 +16,9 @@ namespace ProjektRin
         public Bot Bot { get { return _bot; } }
 
         private CommandManager _commandManager = CommandManager.Instance;
-        private static CommandLineInterface _cli = CommandLineInterface.Instance;
         private static string TAG = "Bot";
         private static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public BotConfig GetConfig()
         {
@@ -93,19 +94,19 @@ namespace ProjektRin
                 _botKeyStore
                 );
             {
-                _bot.OnLog += (s, e) => { _cli.Debug(TAG, e.EventMessage); };
+                _bot.OnLog += (s, e) => { Logger.Trace(e.EventMessage); };
                 _bot.OnCaptcha += (s, e)
                     =>
                 {
                     switch (e.Type)
                     {
                         case CaptchaEvent.CaptchaType.SMS:
-                            _cli.Print(e.Phone);
+                            Logger.Info(e.Phone);
                             ((Bot)s)!.SubmitSmsCode(Console.ReadLine());
                             break;
 
                         case CaptchaEvent.CaptchaType.Slider:
-                            _cli.Print(e.SliderUrl);
+                            Logger.Info(e.SliderUrl);
                             ((Bot)s)!.SubmitSliderTicket(Console.ReadLine());
                             break;
 

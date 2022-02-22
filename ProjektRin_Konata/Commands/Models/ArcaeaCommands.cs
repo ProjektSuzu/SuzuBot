@@ -3,6 +3,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using Newtonsoft.Json;
+using NLog;
 using ProjektRin.Attributes;
 using System.Diagnostics;
 using System.Text;
@@ -25,9 +26,8 @@ namespace ProjektRin.Commands.Models
 
         private Dictionary<uint, string> _playerInfo;
 
-
-        private static CommandLineInterface _cli = CommandLineInterface.Instance;
         private static string TAG = "Arcaea";
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public override void OnInit()
         {
@@ -51,7 +51,7 @@ namespace ProjektRin.Commands.Models
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
             python.Start();
-            _cli.Info(TAG, "Python daemon started.");
+            Logger.Info("Python daemon started.");
 
             CheckServer();
         }
@@ -70,7 +70,7 @@ namespace ProjektRin.Commands.Models
             try
             {
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.Content.ReadAsStringAsync().Result);
-                remoteStatus = (bool)(dict?["status"] ?? false);
+                remoteStatus = (int)(dict?["status"]) == 0;
             } catch { remoteStatus = localStatus = false; return; }
             
         }
@@ -97,12 +97,12 @@ namespace ProjektRin.Commands.Models
             catch(Exception e) { return (e.Message, null); }
             if (!response.IsSuccessStatusCode)
             {
-                return ("server response request error.", null);
+                return ("服务器内部错误.", null);
             }
             var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
             if (result == null || result.code != 0)
             {
-                return (result?.message ?? "data convert error.", null);
+                return (result?.message ?? "数据转换失败.", null);
             }
 
             byte[] bytes = Convert.FromBase64String(result.data.img);

@@ -1,4 +1,5 @@
 ﻿using Konata.Core.Message;
+using NLog;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -6,12 +7,11 @@ namespace ProjektRin;
 
 public static class Program
 {
-    private static CommandLineInterface _cli = CommandLineInterface.Instance;
     private static string TAG = "Main";
-
+    private static readonly Logger Logger = LogManager.GetLogger(TAG);
     public static int Main()
     {
-        _cli.Print(
+        Console.WriteLine(
     @"==================================================" + "\n" +
     @"  _____  _____   ____       _ ______ _  _________ " + "\n" +
     @" |  __ \|  __ \ / __ \     | |  ____| |/ /__   __|" + "\n" +
@@ -32,10 +32,10 @@ public static class Program
     $"Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" +
     "\n"
     );
-        _cli.Info(TAG, $"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
-        _cli.Info(TAG, "Initializing Bot.");
+        Logger.Info($"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
+        Logger.Info("Initializing Bot.");
         BotManager.Instance.InitBot();
-        _cli.Info(TAG, "Logging in.");
+        Logger.Info("Logging in.");
 
         var maxAttempt = 5;
 
@@ -64,7 +64,7 @@ public static class Program
             $"构建时间: UTC {RinBuildStamp.BuildTime}"));
 #endif
 
-
+        Logger.Info("Bot started.");
         return 0;
     }
 

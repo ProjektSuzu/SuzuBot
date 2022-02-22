@@ -1,6 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message.Model;
+using NLog;
 using ProjektRin.Attributes;
 using ProjektRin.Commands;
 using System.Collections.Generic;
@@ -17,10 +18,10 @@ namespace ProjektRin
 
         private Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> _cmdSets = new();
         public Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> CmdSets => _cmdSets;
-        private static CommandLineInterface _cli = CommandLineInterface.Instance;
         private static BotManager _botManager = BotManager.Instance;
         private static GroupManager _groupManager = GroupManager.Instance;
         private static string TAG = "CMDMGR";
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public void LoadCommands()
         {
@@ -31,7 +32,7 @@ namespace ProjektRin
                 var attr = type?.GetCustomAttribute<CommandSet>();
                 if (attr != null)
                 {
-                    _cli.Info(TAG, $"Loading Command Set: {attr.Name}.");
+                    Logger.Info($"Loading Command Set: {attr.Name}.");
                     var table = new List<(Command h, MethodInfo m)>();
 
                     var instance = (BaseCommand)Activator.CreateInstance(type)!;
@@ -42,7 +43,7 @@ namespace ProjektRin
                             if (command is GroupMessageCommand cmd)
                             {
                                 table.Add((cmd, method));
-                                _cli.Info(TAG, $"Loading Command: {cmd.Name}.");
+                                Logger.Info($"Loading Command: {cmd.Name}.");
                             }
                         }
                     }
@@ -56,7 +57,7 @@ namespace ProjektRin
             {
                 count += i.Value.Count;
             }
-            _cli.Info(TAG, $"{_cmdSets.Count} command set(s) found, {count} command(s) loaded.");
+            Logger.Info($"{_cmdSets.Count} command set(s) found, {count} command(s) loaded.");
         }
 
         public ((CommandSet, BaseCommand), (Command handler, MethodInfo method))? TryGetCommand(string cmdName)
@@ -149,7 +150,7 @@ namespace ProjektRin
                             else
                                 continue;
 
-                            _cli.Info(TAG, $"{method.Name} Invoked.");
+                            Logger.Info($"{method.Name} Invoked.");
                             if (method.ReturnType != typeof(bool))
                             {
                                 if ((bool)methodReturn)

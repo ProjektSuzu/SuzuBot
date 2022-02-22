@@ -27,6 +27,10 @@
     <ProjectReference Include="..\Konata.Core\Konata.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Utils\Log\" />
+  </ItemGroup>
+
 	  <!-- Get Build Stamp -->
   <Target Name="GetBuildStamp" BeforeTargets="GenerateBuildStamp" Condition="'$(BuildHash)' == ''">
     <PropertyGroup>

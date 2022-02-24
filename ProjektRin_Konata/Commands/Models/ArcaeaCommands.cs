@@ -140,7 +140,7 @@ namespace ProjektRin.Commands.Models
                 {
                     CheckServer();
 
-                    OnArcaeaB30(bot, messageEvent, args);
+                    OnArcaeaB30(bot, messageEvent, args, true);
                     return;
                 }
                 else if (funcName == "bind")
@@ -215,7 +215,7 @@ namespace ProjektRin.Commands.Models
             }
         }
 
-        public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent, List<string> args, bool flag)
+        public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent, List<string> args, bool flag = false)
         {
             if (!localStatus || !remoteStatus)
             {

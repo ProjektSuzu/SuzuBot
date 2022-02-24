@@ -91,12 +91,12 @@ namespace ProjektRin.Commands.Models
             File.WriteAllText(Path.Combine(resourcePath, "arcaea.json"), json, Encoding.UTF8);
         }
 
-        private (string, byte[]?) GetB30Graph(string userCode)
+        private (string, byte[]?) GetB30Graph(string userCode, string api = "BAA")
         {
             HttpResponseMessage response;
             try
             {
-                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}").Result;
+                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}&api={api}").Result;
             }
             catch(Exception e) { return (e.Message, null); }
             if (!response.IsSuccessStatusCode)
@@ -136,6 +136,13 @@ namespace ProjektRin.Commands.Models
                     OnArcaeaB30(bot, messageEvent, args);
                     return;
                 }
+                if (funcName == "b30b")
+                {
+                    CheckServer();
+
+                    OnArcaeaB30(bot, messageEvent, args);
+                    return;
+                }
                 else if (funcName == "bind")
                 {
                     OnArcaeaBind(bot, messageEvent, args);
@@ -155,11 +162,12 @@ namespace ProjektRin.Commands.Models
 
             var reply = $"[Arcaea]\n" +
                 $"b30\n用法: arc b30 [<好友代码>]\n    查看B30成绩图\n" +
+                $"b30b\n用法: arc b30b [<好友代码>]\n    使用备用API查看B30成绩图  速度较慢\n" +
                 $"bind\n用法: arc bind <好友代码>\n    为当前QQ号绑定一个好友代码\n" +
                 $"unbind\n用法: arc unbind\n    为当前QQ号解除绑定好友代码\n" +
                 $"\n" +
                 $"本地服务器连通性: {(localStatus ? "OK" : "FAIL")}\n" +
-                $"远端服务器连通性: {(remoteStatus ? "OK" : "FAIL")}";
+                $"API1连通性: {(remoteStatus ? "OK" : "FAIL")}";
 
             var message = new MessageBuilder(reply);
             _ = bot.SendGroupMessage(messageEvent.GroupUin, message);
@@ -207,7 +215,7 @@ namespace ProjektRin.Commands.Models
             }
         }
 
-        public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        public void OnArcaeaB30(Bot bot, GroupMessageEvent messageEvent, List<string> args, bool flag)
         {
             if (!localStatus || !remoteStatus)
             {
@@ -238,8 +246,10 @@ namespace ProjektRin.Commands.Models
                 .At(messageEvent.MemberUin)
                 .PlainText("收到, 正在处理成绩图...")
                 );
-
-            var (message, bytes) = GetB30Graph(userCode);
+            string api = "BAA";
+            if (flag)
+                api = "esterTion";
+            var (message, bytes) = GetB30Graph(userCode, api);
             if (message != "")
             {
                 _ = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("发生错误: \n" +

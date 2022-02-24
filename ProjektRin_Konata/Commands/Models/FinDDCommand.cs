@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Models
 {
-    [CommandSet("ArcaeaCommandSet")]
+    [CommandSet("FinddCommandSet")]
     internal class FinDDCommand : BaseCommand
     {
         private static HttpClient _httpClient;

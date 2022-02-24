@@ -32,7 +32,7 @@ namespace ProjektRin.Commands.Models
         public override void OnInit()
         {
             _httpClient = new HttpClient();
-
+            _httpClient.Timeout = new TimeSpan(0, 2, 0);
             rootPath = AppDomain.CurrentDomain.BaseDirectory;
             resourcePath = Path.Combine(rootPath, "resources");
             pythonPath = Path.Combine(resourcePath, "ArcaeaProbe_Rework");

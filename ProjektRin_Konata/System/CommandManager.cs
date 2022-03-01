@@ -1,0 +1,167 @@
+﻿using Konata.Core;
+using Konata.Core.Events.Model;
+using Konata.Core.Message;
+using Konata.Core.Message.Model;
+using NLog;
+using ProjektRin.Attributes.Command;
+using ProjektRin.Attributes.CommandSet;
+using ProjektRin.Commands;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Text.RegularExpressions;
+
+namespace ProjektRin.System
+{
+    public class CommandManager
+    {
+        private static CommandManager _instance = new();
+        private CommandManager() { }
+        public static CommandManager Instance => _instance;
+
+        private static BotManager _botManager = BotManager.Instance;
+        private static GroupManager _groupManager = GroupManager.Instance;
+        private static string TAG = "CMDMGR";
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
+
+        private Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> _cmdSets = new();
+        public Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> CmdSets => _cmdSets;
+
+        public int CommandSetCount
+            => _cmdSets.Count;
+
+        public int CommandCount
+        {
+            get
+            {
+                var count = 0;
+                foreach (var i in _cmdSets)
+                {
+                    count += i.Value.Count;
+                }
+                return count;
+            }
+        }
+
+
+        public void LoadCommands()
+        {
+            //获取所有加载的类
+            var types = Assembly.GetExecutingAssembly().GetTypes();
+            foreach (var type in types)
+            {
+                //判断是否为 BaseCommand 类
+                if (type.BaseType != typeof(BaseCommand)) continue;
+                var attr = type.GetCustomAttribute<CommandSet>();
+                //判断是否有 CommandSet 特性
+                if (attr == null) continue;
+
+                Logger.Info($"Loading Command Set: {attr.Name}.");
+                var instance = (BaseCommand)Activator.CreateInstance(type)!;
+                var commands = new List<(Command handler, MethodInfo method)>();
+
+                foreach (var method in type.GetMethods())
+                {
+                    foreach (var command in method.GetCustomAttributes())
+                    {
+                        //通过属性获取方法
+                        if (command is GroupMessageCommand cmd)
+                        {
+                            commands.Add((cmd, method));
+                            Logger.Info($"Loading Command: {cmd.Name}");
+                        }
+                    }
+                }
+
+                //执行启动前方法
+                instance.OnInit();
+                instance.OnEnable();
+
+                _cmdSets.Add((attr, instance), commands);
+            }
+            Logger.Info($"{CommandSetCount} command set(s) found, {CommandCount} command(s) loaded.");
+        }
+
+        public void ReloadCommands()
+        {
+            _cmdSets.Clear();
+            GC.Collect();
+            LoadCommands();
+        }
+
+        public void GroupMessageEventHandler(object sender, GroupMessageEvent groupMessageEvent)
+        {
+            Bot bot = (Bot)sender;
+            //排除自己发送的消息
+            if (groupMessageEvent.MemberUin == bot.Uin) return;
+            var message = groupMessageEvent.Message.ToString().Trim();
+            if (message == null) return;
+            if (!ShouldProcess(bot, groupMessageEvent)) return;
+
+            message = RemoveCommandIndicator(groupMessageEvent.Message);
+
+            foreach (var set in _cmdSets)
+            {
+                if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.Name)) continue;
+
+                foreach (var (attr, method) in set.Value)
+                {
+                    var patterns = attr.Patterns;
+                    if (patterns == null || patterns.Count == 0)
+                    {
+                        method.Invoke(bot, new object[] { bot, groupMessageEvent });
+                        continue;
+                    }
+
+                    foreach (var pattern in patterns)
+                    {
+                        if (pattern.Match(message).Success)
+                        {
+                            bool methodReturn = true;
+                            if (method.GetParameters().Count() == 2)
+                                methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;
+                            else if (method.GetParameters().Count() == 3)
+                                methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList() }) ?? true;
+                            else
+                                continue;
+
+                            Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
+
+                            if (methodReturn)
+                                return;
+                            else
+                                continue;
+                        }
+                    }
+                }
+            }
+            
+        }
+
+        private bool ShouldProcess(Bot bot, GroupMessageEvent groupMessageEvent)
+        {
+            var messageChain = groupMessageEvent.Message;
+            var message = messageChain.ToString().Trim();
+            var atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain);
+            if (
+                !_groupManager.IsPassiveMode(groupMessageEvent.GroupUin) && message.StartsWith('/') ||
+                message.StartsWith("铃酱") ||
+                atChain != null && atChain.AtUin == bot.Uin
+                ) return true;
+
+            return false;
+        }
+
+        private string RemoveCommandIndicator(MessageChain messageChain)
+        {
+            var message = messageChain.ToString().Trim();
+            var atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain);
+
+            message = message.Replace("铃酱", "");
+            if (atChain != null) message = message.Replace(atChain.ToString(), "");
+            message = message.Split('/', 2).Last();
+
+            return message.Trim();
+        }
+
+    }
+}

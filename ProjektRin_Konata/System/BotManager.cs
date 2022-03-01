@@ -4,7 +4,7 @@ using Konata.Core.Events.Model;
 using NLog;
 using System.Text.Json;
 
-namespace ProjektRin
+namespace ProjektRin.System
 {
     public class BotManager
     {
@@ -115,7 +115,7 @@ namespace ProjektRin
                             break;
                     }
                 };
-                _bot.OnGroupMessage += _commandManager.GroupMessageEventListener;
+                _bot.OnGroupMessage += _commandManager.GroupMessageEventHandler;
             }
 
             _commandManager.LoadCommands();

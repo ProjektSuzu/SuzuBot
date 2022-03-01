@@ -1,7 +1,7 @@
 ﻿using Konata.Core;
 using System.Reflection;
 
-namespace ProjektRin
+namespace ProjektRin.Utils
 {
     public static class CoreBuildStamp
     {

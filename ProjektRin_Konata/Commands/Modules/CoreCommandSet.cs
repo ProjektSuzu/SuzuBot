@@ -1,6 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
+using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.System;
@@ -11,6 +12,10 @@ namespace ProjektRin.Commands.Modules
     internal class CoreCommandSet : BaseCommand
     {
         GroupManager groupManager;
+
+        private static string TAG = "CORECMD";
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
+
         public override void OnInit()
         {
             groupManager = GroupManager.Instance;
@@ -44,7 +49,7 @@ namespace ProjektRin.Commands.Modules
             var flag = groupManager.TogglePassiveMode(groupUin);
 
             var reply = $"G{groupUin} => Passive Mode {(flag ? "On" : "Off")}";
-
+            Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => Passive Mode {(flag ? "On" : "Off")}");
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
@@ -77,6 +82,7 @@ namespace ProjektRin.Commands.Modules
             groupManager.SetDisabledCommandSet(groupUin, (bool)action, sets);
 
             reply = $"G{groupUin} => {sets.Count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")}";
+            Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => {sets.Count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")}");
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 

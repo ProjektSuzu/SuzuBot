@@ -1,7 +1,7 @@
 ﻿using Konata.Core.Message;
 using NLog;
-using System.Reflection;
-using System.Text.RegularExpressions;
+using ProjektRin.System;
+using ProjektRin.Utils;
 
 namespace ProjektRin;
 
@@ -32,6 +32,7 @@ public static class Program
     $"Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" +
     "\n"
     );
+        Logger.Info("\n\n\n\n");
         Logger.Info($"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
         Logger.Info("Initializing Bot.");
         BotManager.Instance.InitBot();

@@ -1,4 +1,4 @@
-﻿namespace ProjektRin.Attributes
+﻿namespace ProjektRin.Attributes.CommandSet
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public class CommandSet : Attribute
@@ -7,7 +7,7 @@
 
         public CommandSet(string name)
         {
-            this.Name = name;
+            Name = name;
         }
     }
 }

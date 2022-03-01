@@ -5,41 +5,33 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace ProjektRin.Attributes
+namespace ProjektRin.Attributes.Command
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 
     public class Command : Attribute
     {
         public string Name { get; }
-        public string Description { get; }
-        public string Usage { get; }
         public List<Regex>? Patterns;
 
-        public Command(string name, string description, string usage, string pattern)
+        public Command(string name, string pattern)
         {
-            this.Name = name;
-            this.Description = description;
-            this.Usage = usage;
-            this.Patterns = new List<Regex>();
+            Name = name;
+            Patterns = new List<Regex>();
             Patterns.Add(new Regex(pattern));
         }
 
-        public Command(string name, string description, string usage, string[] patterns)
+        public Command(string name, string[] patterns)
         {
-            this.Name = name;
-            this.Description = description;
-            this.Usage = usage;
-            this.Patterns = patterns.Select(x => new Regex(x)).ToList();
+            Name = name;
+            Patterns = patterns.Select(x => new Regex(x)).ToList();
 
         }
 
-        public Command(string name, string description, string usage)
+        public Command(string name)
         {
             Name = name;
-            Description = description;
-            this.Usage = usage;
-            this.Patterns = null;
+            Patterns = null;
         }
     }
 }

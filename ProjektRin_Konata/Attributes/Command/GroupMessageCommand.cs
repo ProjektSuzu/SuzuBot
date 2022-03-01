@@ -1,18 +1,18 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace ProjektRin.Attributes
+namespace ProjektRin.Attributes.Command
 {
     public class GroupMessageCommand : Command
     {
-        public GroupMessageCommand(string name, string description, string usage) : base(name, description, usage)
+        public GroupMessageCommand(string name) : base(name)
         {
         }
 
-        public GroupMessageCommand(string name, string description, string usage, string pattern) : base(name, description, usage, pattern)
+        public GroupMessageCommand(string name, string pattern) : base(name, pattern)
         {
         }
 
-        public GroupMessageCommand(string name, string description, string usage, string[] pattern) : base(name, description, usage, pattern)
+        public GroupMessageCommand(string name, string[] pattern) : base(name, pattern)
         {
         }
     }

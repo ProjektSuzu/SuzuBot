@@ -5,6 +5,8 @@ using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.System;
+using ProjektRin.Utils;
+using System.Diagnostics;
 
 namespace ProjektRin.Commands.Modules
 {
@@ -12,6 +14,7 @@ namespace ProjektRin.Commands.Modules
     internal class CoreCommandSet : BaseCommand
     {
         GroupManager groupManager;
+        CommandManager commandManager;
 
         private static string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
@@ -19,15 +22,132 @@ namespace ProjektRin.Commands.Modules
         public override void OnInit()
         {
             groupManager = GroupManager.Instance;
+            commandManager = CommandManager.Instance;
         }
+        public override void OnDisable() { }
 
-        [GroupMessageCommand("Ping", @"^ping")]
-        public void OnPing(Bot bot, GroupMessageEvent messageEvent)
+        [GroupMessageCommand("CommandControl", @"^cmdctl\s?([\s\S]+)?")]
+        public void OnCommandControl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
-            long ticksSend = (long)messageEvent.MessageTime * 1000;
-            var reply = $"Pong! ({ticksNow - ticksSend}ms)";
+            var groupUin = messageEvent.GroupUin;
+            bool? action = null;
+            bool global = false;
+            string help = 
+                $"[CommandControl]\n" +
+                $"用法: /cmdctl <enable/disable> [-opts] [<args>]\n\n" +
+                $"启用或禁用某个命令集\n" +
+                $"选项:\n" +
+                $"  -G              全局操作\n" +
+                $"  -g <GroupUin>   指定群\n" +
+                $"  -h              打印帮助信息\n" +
+                $"\n" +
+                $"  enable      启用\n" +
+                $"  disable     禁用";
+            string reply = "";
+            var arg = args.FirstOrDefault();
+            if (arg == null)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
+                return;
+            }
+            List<string> sets = new();
+            while (args.Count > 0)
+            {
+                arg = args.First();
+                args.RemoveAt(0);
 
+                switch (arg)
+                {
+                    case "-G":
+                        {
+                            global = true;
+                            break;
+                        }
+
+                    case "enable": action = true; break;
+                    case "disable": action = false; break;
+
+                    case "-g":
+                        {
+                            var group = args.FirstOrDefault();
+                            args.RemoveAt(0);
+                            if (group == null)
+                            {
+                                reply = $"错误: 缺少参数: -g <GroupUin>.";
+                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
+
+                            if (!uint.TryParse(group, out groupUin))
+                            {
+                                reply = $"错误: 参数非法: -g <GroupUin>.";
+                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
+
+                            break;
+                        }
+
+                    case "-h":
+                        {
+                            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
+                            return;
+                        }
+
+                    default: sets.Add(arg); break;
+                }
+            }
+
+            if (action == null)
+            {
+                reply = $"错误: 缺少参数: <enable/disable>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            var count = 0;
+            if (global)
+            {
+                foreach (var set in sets)
+                {
+                    try
+                    {
+                        if (commandManager.ToggleCommandSet(set, (bool)action)) count++;
+                    }
+                    catch (Exception e)
+                    {
+                        reply = $"错误: {e.Message}";
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var set in sets)
+                {
+                    try
+                    {
+                        if (groupManager.SetDisabledCommandSet(groupUin, (bool)action, set)) count++;
+                    }
+                    catch (Exception e)
+                    {
+                        reply = $"错误: {e.Message}";
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                        return;
+                    }
+                }
+            }
+            if (global) 
+            {
+                reply = $"{count} 个命令集被全局 {((bool)action ? "启用" : "禁用")}.";
+                Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => {count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")} Globally.");
+            }
+            else
+            {
+                reply = $"G{groupUin} => {count} 个命令集被 {((bool)action ? "启用" : "禁用")}.";
+                Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => {count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")}.");
+            }
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
@@ -48,43 +168,53 @@ namespace ProjektRin.Commands.Modules
 
             var flag = groupManager.TogglePassiveMode(groupUin);
 
-            var reply = $"G{groupUin} => Passive Mode {(flag ? "On" : "Off")}";
-            Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => Passive Mode {(flag ? "On" : "Off")}");
+            var reply = $"G{groupUin} => 被动模式 {(flag ? "启用" : "禁用")}.";
+            Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => Passive Mode {(flag ? "On" : "Off")}.");
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("ToggleCommandSet", @"^cmdctl\s?([\S]+)?([\s\S]+)?")]
-        public void OnToggleSet(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        [GroupMessageCommand("Ping", @"^ping")]
+        public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
-            var groupUin = messageEvent.GroupUin;
-            List<string> sets = new List<string>();
-            bool? action = null;
-            string reply = "";
-            switch (args[0])
-            {
-                case "enable": action = true; break;
-                case "disable": action = false; break;
+            var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
+            long ticksSend = (long)messageEvent.MessageTime * 1000;
+            var reply = $"Pong! ({ticksNow - ticksSend}ms)";
 
-                default:
-                    {
-                        reply = $"Error: IllegalArgument: \"{args[0]}\" for <enable/disable>";
-                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                        return;
-                    }
-            }
-
-            if (args.Count > 1)
-            {
-                sets = args[1].Trim().Split(' ').ToList();
-                sets.RemoveAll(x => x.Trim() == "");
-            }
-
-            groupManager.SetDisabledCommandSet(groupUin, (bool)action, sets);
-
-            reply = $"G{groupUin} => {sets.Count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")}";
-            Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => {sets.Count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")}");
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
+
+        [GroupMessageCommand("Status", @"^status")]
+        public void OnStatus(Bot bot, GroupMessageEvent messageEvent)
+        {
+            var osVersion = Environment.OSVersion.Platform;
+            var processorCount = Environment.ProcessorCount;
+            var clrVersion = Environment.Version.ToString();
+            var usedMemoryMB = Environment.WorkingSet / 1024 / 1024;
+            var tickCount = DateTime.Now - Process.GetCurrentProcess().StartTime;
+
+            var cmdmgr = CommandManager.Instance;
+
+            var groupCount = bot.GetGroupList().Result.Count;
+            var friendCount = bot.GetFriendList().Result.Count;
+
+            var reply = 
+                $"[ProjektRin] {RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}\n" +
+                $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
+                $"DotNET CLR版本: {clrVersion}\n" +
+                $"内存占用: {usedMemoryMB} MB\n" +
+                $"运行时间: {tickCount:dd\\d\\ hh\\h\\ mm\\m\\ ss\\s}\n\n" +
+
+                $"[CMDMGR]\n" +
+                $"载入了 {cmdmgr.CommandSetCount} 个命令集, {cmdmgr.CommandCount} 条命令.\n\n" +
+
+                $"[KonataCore] {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}\n" +
+                $"共有 {friendCount} 个好友, {groupCount} 个群.\n\n"+
+
+                $"EOT\n{DateTime.Now:O}";
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+        }
+
 
     }
 }

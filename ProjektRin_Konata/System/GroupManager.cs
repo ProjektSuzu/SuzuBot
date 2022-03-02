@@ -76,6 +76,7 @@ namespace ProjektRin.System
             else
             {
                 if (preference.DisabledCommandSets.Contains(commandSet)) return false;
+                else preference.DisabledCommandSets.Add(commandSet);
             }
             SavePreferences();
             return true;

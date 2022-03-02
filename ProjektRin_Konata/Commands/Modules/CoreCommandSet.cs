@@ -70,7 +70,7 @@ namespace ProjektRin.Commands.Modules
                     case "-g":
                         {
                             var group = args.FirstOrDefault();
-                            args.RemoveAt(0);
+                            if (args.Count > 0) args.RemoveAt(0);
                             if (group == null)
                             {
                                 reply = $"错误: 缺少参数: -g <GroupUin>.";
@@ -80,7 +80,7 @@ namespace ProjektRin.Commands.Modules
 
                             if (!uint.TryParse(group, out groupUin))
                             {
-                                reply = $"错误: 参数非法: -g <GroupUin>.";
+                                reply = $"错误: 参数非法: \"{group}\" => -g <GroupUin>.";
                                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                                 return;
                             }

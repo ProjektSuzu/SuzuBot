@@ -148,6 +148,7 @@ namespace ProjektRin.System
                             else if (method.GetParameters().Count() == 3)
                             {
                                 var args = pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList().FirstOrDefault(defaultValue: "").Split(' ').ToList();
+                                args.RemoveAll(x => x.Trim() == "");
                                 if (args.All(x => x == "")) args = new List<string>();
                                 methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, args}) ?? true;
                             }

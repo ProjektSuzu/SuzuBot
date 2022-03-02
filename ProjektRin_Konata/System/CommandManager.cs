@@ -7,12 +7,13 @@ using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Commands;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace ProjektRin.System
 {
-    public class CommandManager
+    internal class CommandManager
     {
         private static CommandManager _instance = new();
         private CommandManager() { }
@@ -43,7 +44,7 @@ namespace ProjektRin.System
         }
 
 
-        public void LoadCommands()
+        public void LoadCommandSet()
         {
             //获取所有加载的类
             var types = Assembly.GetExecutingAssembly().GetTypes();
@@ -81,11 +82,36 @@ namespace ProjektRin.System
             Logger.Info($"{CommandSetCount} command set(s) found, {CommandCount} command(s) loaded.");
         }
 
-        public void ReloadCommands()
+        public void ReloadCommandSet()
         {
             _cmdSets.Clear();
             GC.Collect();
-            LoadCommands();
+            LoadCommandSet();
+        }
+
+        public bool HasCommandSet(string name)
+        {
+            return _cmdSets.Any(x => x.Key.Item1.Name == name);
+        }
+
+        public bool ToggleCommandSet(string name, bool action)
+        {
+            if (!HasCommandSet(name))
+            {
+                throw new InvalidOperationException($"命令集 \"{name}\" 不存在.");
+            }
+
+            if (name == "CoreCommands")
+            {
+                throw new InvalidOperationException($"命令集 \"{name}\" 是核心部件.");
+            }
+
+            var set = _cmdSets.First(x => x.Key.Item1.Name == name).Key.Item2;
+            if (action)
+                set.OnEnable();
+            else
+                set.OnDisable();
+            return true;
         }
 
         public void GroupMessageEventHandler(object sender, GroupMessageEvent groupMessageEvent)
@@ -120,7 +146,11 @@ namespace ProjektRin.System
                             if (method.GetParameters().Count() == 2)
                                 methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;
                             else if (method.GetParameters().Count() == 3)
-                                methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList() }) ?? true;
+                            {
+                                var args = pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList().FirstOrDefault(defaultValue: "").Split(' ').ToList();
+                                if (args.All(x => x == "")) args = new List<string>();
+                                methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, args}) ?? true;
+                            }
                             else
                                 continue;
 

@@ -20,6 +20,8 @@ namespace ProjektRin.System
 
         string rootPath = AppDomain.CurrentDomain.BaseDirectory;
 
+        private static CommandManager commandManager = CommandManager.Instance;
+
         internal List<GroupPreference> groupPreference;
 
 
@@ -54,19 +56,29 @@ namespace ProjektRin.System
             return preference.PassiveMode;
         }
 
-        public int SetDisabledCommandSet(uint groupUin, bool action, List<string> commandSets)
+        public bool SetDisabledCommandSet(uint groupUin, bool action, string commandSet)
         {
             var preference = GetPreference(groupUin);
+            if (!commandManager.HasCommandSet(commandSet))
+            {
+                throw new InvalidOperationException($"命令集 \"{commandSet}\" 不存在.");
+            }
+
+            if (commandSet == "CoreCommands")
+            {
+                throw new InvalidOperationException($"命令集 \"{commandSet}\" 是核心部件.");
+            }
+
             if (action)
             {
-                preference.DisabledCommandSets = preference.DisabledCommandSets.Except(commandSets).ToList();
+                if (!preference.DisabledCommandSets.Remove(commandSet)) return false;
             }
             else
             {
-                preference.DisabledCommandSets = preference.DisabledCommandSets.Union(commandSets).ToList();
+                if (preference.DisabledCommandSets.Contains(commandSet)) return false;
             }
             SavePreferences();
-            return preference.DisabledCommandSets.Count;
+            return true;
         }
 
         public bool IsCommandSetDisabled(uint groupUin, string commandSet)

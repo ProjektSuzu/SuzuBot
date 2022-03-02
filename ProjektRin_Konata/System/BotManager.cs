@@ -15,9 +15,11 @@ namespace ProjektRin.System
         private Bot _bot;
         public Bot Bot { get { return _bot; } }
 
+        public static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+        public static string resourcePath = Path.Combine(rootPath, "resources");
+
         private CommandManager _commandManager = CommandManager.Instance;
         private static string TAG = "Bot";
-        private static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public BotConfig GetConfig()
@@ -118,7 +120,7 @@ namespace ProjektRin.System
                 _bot.OnGroupMessage += _commandManager.GroupMessageEventHandler;
             }
 
-            _commandManager.LoadCommands();
+            _commandManager.LoadCommandSet();
             return _bot;
         }
 

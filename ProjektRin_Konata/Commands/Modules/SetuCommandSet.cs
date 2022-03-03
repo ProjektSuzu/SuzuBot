@@ -46,7 +46,7 @@ namespace ProjektRin.Commands.Modules
             return result;
         }
 
-        [GroupMessageCommand("Setu", @"^setu\s?([\s\S]+)?")]
+        [GroupMessageCommand("Setu", new[] { @"^setu\s?([\s\S]+)?" , @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
@@ -136,13 +136,13 @@ namespace ProjektRin.Commands.Modules
     class SetuPost
     {
         public int r18;
-        public List<string> tags;
+        public List<string> tag;
         public string size = "regular";
 
-        public SetuPost(int r18, List<string> tags)
+        public SetuPost(int r18, List<string> tag)
         {
             this.r18 = r18;
-            this.tags = tags;
+            this.tag = tag;
         }
 
     }

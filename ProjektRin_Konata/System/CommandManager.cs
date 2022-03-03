@@ -123,7 +123,7 @@ namespace ProjektRin.System
             if (message == null) return;
             if (!ShouldProcess(bot, groupMessageEvent)) return;
 
-            message = RemoveCommandIndicator(groupMessageEvent.Message);
+            message = RemoveCommandIndicator(bot, groupMessageEvent.Message);
 
             foreach (var set in _cmdSets)
             {
@@ -182,10 +182,10 @@ namespace ProjektRin.System
             return false;
         }
 
-        private string RemoveCommandIndicator(MessageChain messageChain)
+        private string RemoveCommandIndicator(Bot bot, MessageChain messageChain)
         {
             var message = messageChain.ToString().Trim();
-            var atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain);
+            var atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain && (x as AtChain).AtUin == bot.Uin);
 
             message = message.Replace("铃酱", "");
             if (atChain != null) message = message.Replace(atChain.ToString(), "");

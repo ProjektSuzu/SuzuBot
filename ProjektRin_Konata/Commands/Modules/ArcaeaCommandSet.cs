@@ -164,7 +164,8 @@ namespace ProjektRin.Commands.Modules
                 var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
                 if (info == null)
                 {
-                    reply = $"错误: 当前QQ号不存在绑定的记录.\n" +
+                    reply = 
+                        $"错误: 当前QQ号不存在绑定的记录.\n" +
                         $"若要使用此功能, 请先使用 /arc bind <Usercode> 进行绑定\n" +
                         $"或者直接使用 /arc b30 [<Usercode>] [-a <API>] 并指定 [<Usercode>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));

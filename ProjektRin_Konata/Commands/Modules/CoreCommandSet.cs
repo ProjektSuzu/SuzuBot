@@ -178,7 +178,10 @@ namespace ProjektRin.Commands.Modules
         {
             var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
             long ticksSend = (long)messageEvent.MessageTime * 1000;
-            var reply = $"Pong! ({ticksNow - ticksSend}ms)";
+
+            var test = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(1970, 1, 1), TimeZoneInfo.Local).AddMilliseconds(ticksSend);
+            var reply = $"Pong! ({Math.Abs(ticksNow - ticksSend)}ms)\n" +
+                $"Receive: {test}";
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }

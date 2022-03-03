@@ -123,8 +123,8 @@ namespace ProjektRin.Commands.Modules
             var message = new MessageBuilder(reply);
             message.Image(bytes);
 
-            var multiReply = MultiMsgChain.Create();
-            multiReply.AddMessage(
+            var multiReply = MultiMsgChain.Create()
+                .AddMessage(
                 new SourceInfo(bot.Uin, bot.Name),
                 message
                 );

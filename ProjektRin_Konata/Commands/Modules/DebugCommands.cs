@@ -13,8 +13,8 @@ namespace ProjektRin.Commands.Modules
     {
         public override void OnInit() { }
 
-        [GroupMessageCommand("Test", @"^test\s?([\s\S]+)?")]
-        public void OnTest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        [GroupMessageCommand("Fake", @"^fake\s?([\s\S]+)?")]
+        public void OnFake(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var atChain = (AtChain?)messageEvent.Message.FirstOrDefault(x => x is AtChain);
             if (atChain == null) { return; }

@@ -20,6 +20,19 @@ namespace ProjektRin.Commands.Modules
 
         private List<ArcaeaUserInfo> userInfos;
 
+        private static string help =
+                $"[Arcaea]\n" +
+                $"/arc      打印帮助信息\n" +
+                $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +
+                $"/arc bind <usercode>      为当前QQ号绑定好友代码\n" +
+                $"/arc unbind       为当前QQ号解绑好友代码\n" +
+                $"\n" +
+                $"  -a <api>    指定使用的API\n" +
+                $"              1: ArcaeaUnlimitedAPI   (默认 推荐)\n" +
+                $"              2: redive.estertion.win (很慢 较稳定)\n" +
+                $"\n" +
+                $"  usercode    Arcaea好友代码 必须是9位纯数字";
+
         public override void OnInit()
         {
             _httpClient = new HttpClient();
@@ -62,18 +75,6 @@ namespace ProjektRin.Commands.Modules
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var funcName = args.FirstOrDefault();
-            var help =
-                $"[Arcaea]\n" +
-                $"/arc      打印帮助信息\n" +
-                $"/arc b30 [<Usercode>] [-a <API>]       获取b30成绩图\n" +
-                $"/arc bind <Usercode>      为当前QQ号绑定好友代码\n" +
-                $"/arc unbind       为当前QQ号解绑好友代码\n" +
-                $"\n" +
-                $"  -a <API>    指定使用的API\n" +
-                $"              1: ArcaeaUnlimitedAPI   (默认 推荐)\n" +
-                $"              2: redive.estertion.win (很慢 较稳定)\n" +
-                $"\n" +
-                $"  Usercode    Arcaea好友代码 必须是9位纯数字";
             var reply = "";
 
             if (funcName == null)
@@ -131,7 +132,7 @@ namespace ProjektRin.Commands.Modules
                             api = args.FirstOrDefault(defaultValue: "");
                             if (args.Count > 0) args.RemoveAt(0);
 
-                            if (api == "0")
+                            if (api == "")
                             {
                                 reply = $"错误: 缺少参数: -a <api>.";
                                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));

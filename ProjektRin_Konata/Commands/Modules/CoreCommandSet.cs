@@ -38,7 +38,7 @@ namespace ProjektRin.Commands.Modules
                 $"启用或禁用某个命令集\n" +
                 $"选项:\n" +
                 $"  -G              全局操作\n" +
-                $"  -g <GroupUin>   指定群\n" +
+                $"  -g <groupUin>   指定群\n" +
                 $"  -h              打印帮助信息\n" +
                 $"\n" +
                 $"  enable      启用\n" +
@@ -73,14 +73,14 @@ namespace ProjektRin.Commands.Modules
                             if (args.Count > 0) args.RemoveAt(0);
                             if (group == null)
                             {
-                                reply = $"错误: 缺少参数: -g <GroupUin>.";
+                                reply = $"错误: 缺少参数: -g <groupUin>.";
                                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                                 return;
                             }
 
                             if (!uint.TryParse(group, out groupUin))
                             {
-                                reply = $"错误: 参数非法: \"{group}\" => -g <GroupUin>.";
+                                reply = $"错误: 参数非法: \"{group}\" => -g <groupUin>.";
                                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                                 return;
                             }

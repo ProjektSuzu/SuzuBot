@@ -18,17 +18,26 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("SetuCommands")]
     internal class SetuCommandSet : BaseCommand
     {
-        private HttpClient _httpClient;
-
         private static string api = @"https://api.lolicon.app/setu/v2";
-        public override void OnInit() 
-        {
-            _httpClient = new HttpClient();
-        }
 
-        private SetuResult GetSetu(List<string> tags, int r18 = 0)
+        private static string help =
+                $"[Setu]\n" +
+                $"/setu [-r18] [-n <Num>] [<tag>...]      获取色图\n" +
+                $"\n" +
+                $"  -h          显示帮助信息\n" +
+                $"  -r18        R18开关 (慎用)\n" +
+                $"  -n <num>    指定要获取的数量 默认为1\n" +
+                $"              实际数量可能会根据返回图片数量而变化\n" +
+                $"\n" +
+                $"  tag         指定图片的标签 按空格分开 最多3个" +
+                $"";
+
+        public override void OnInit() {}
+
+        private SetuResult GetSetu(List<string> tags, int r18 = 0, int num = 1)
         {
-            var json = JsonConvert.SerializeObject(new SetuPost(r18, tags));
+            HttpClient _httpClient = new HttpClient();
+            var json = JsonConvert.SerializeObject(new SetuPost(r18, tags, num));
             HttpContent content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             var response = _httpClient.PostAsync(api, content).Result;
@@ -51,6 +60,7 @@ namespace ProjektRin.Commands.Modules
         {
             var reply = "";
             int r18 = 0;
+            int num = 1;
             List<string> tags = new();
 
             var arg = "";
@@ -67,6 +77,26 @@ namespace ProjektRin.Commands.Modules
                             break;
                         }
 
+                    case "-n":
+                        {
+                            arg = args.FirstOrDefault(defaultValue: "");
+                            if (args.Count > 0) args.RemoveAt(0);
+                            if (!int.TryParse(arg, out num) || num < 1)
+                            {
+                                reply = $"错误: 参数非法: \"{arg}\" => -n <num>";
+                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
+                            break;
+                        }
+
+                    case "-h":
+                        {
+                            reply = help;
+                            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                            return;
+                        }
+
                     default:
                         {
                             tags.Add(arg);
@@ -81,7 +111,7 @@ namespace ProjektRin.Commands.Modules
             SetuResult result;
             try
             {
-                result = GetSetu(tags, r18);
+                result = GetSetu(tags, r18, num);
             }
             catch (Exception e)
             {
@@ -96,38 +126,54 @@ namespace ProjektRin.Commands.Modules
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
+            var multiReply = MultiMsgChain.Create();
 
-            var data = result.data[0];
-            byte[] bytes;
-            try
-            {
-                bytes = _httpClient.GetByteArrayAsync(data.urls.regular).Result;
-            }
-            catch (Exception e)
-            {
-                reply = $"错误: 下载图片时发生错误.";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
+            List<Task> tasks = new List<Task>();
 
-            reply =
+            void DownloadPic(SetuResult.Data data)
+            {
+                HttpClient httpClient = new HttpClient();
+                byte[] bytes;
+                try
+                {
+                    bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
+                }
+                catch (Exception e)
+                {
+                    reply = $"错误: 下载图片时发生错误.";
+                    var errorMessage = new MessageBuilder(reply);
+                    multiReply
+                    .AddMessage(
+                    new SourceInfo(bot.Uin, bot.Name),
+                    errorMessage
+                    );
+                    return;
+                }
+                reply =
                 $"es ein Bild für dich (º﹃º )\n" +
                 $"标题: {data.title}\n" +
                 $"作者: {data.author}\n" +
                 $"PID: {data.pid}\n" +
                 $"标签: {String.Join(' ', data.tags)}\n" +
                 $"\n";
+                var message = new MessageBuilder(reply);
+                message.Image(bytes);
 
-            
+                multiReply
+                    .AddMessage(
+                    new SourceInfo(bot.Uin, bot.Name),
+                    message
+                    );
+            }
 
-            var message = new MessageBuilder(reply);
-            message.Image(bytes);
+            foreach (var data in result.data)
+            {
+                var task = new Task(() => DownloadPic(data));
+                task.Start();
+                tasks.Add(task);
+            }
 
-            var multiReply = MultiMsgChain.Create()
-                .AddMessage(
-                new SourceInfo(bot.Uin, bot.Name),
-                message
-                );
+            Task.WaitAll(tasks.ToArray());
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             return;
@@ -137,12 +183,14 @@ namespace ProjektRin.Commands.Modules
     {
         public int r18;
         public List<string> tag;
+        public int num;
         public string size = "regular";
 
-        public SetuPost(int r18, List<string> tag)
+        public SetuPost(int r18, List<string> tag, int num = 1)
         {
             this.r18 = r18;
             this.tag = tag;
+            this.num = num;
         }
 
     }

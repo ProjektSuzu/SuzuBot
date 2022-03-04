@@ -5,7 +5,7 @@ using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.System;
-using ProjektRin.Utils;
+using ProjektRin.Utils.BuildStamp;
 using System.Diagnostics;
 
 namespace ProjektRin.Commands.Modules

@@ -1,7 +1,7 @@
 ﻿using Konata.Core.Message;
 using NLog;
 using ProjektRin.System;
-using ProjektRin.Utils;
+using ProjektRin.Utils.BuildStamp;
 
 namespace ProjektRin;
 

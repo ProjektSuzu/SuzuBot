@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace ProjektRin.Utils
+namespace ProjektRin.Utils.BuildStamp
 {
     public static class RinBuildStamp
     {

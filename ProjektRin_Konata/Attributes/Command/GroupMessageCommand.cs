@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace ProjektRin.Attributes.Command
+﻿namespace ProjektRin.Attributes.Command
 {
     public class GroupMessageCommand : Command
     {

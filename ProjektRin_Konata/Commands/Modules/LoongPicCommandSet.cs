@@ -73,7 +73,7 @@ namespace ProjektRin.Commands.Modules
                         }
                 }
             }
-            
+
         }
     }
 }

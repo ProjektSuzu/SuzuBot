@@ -119,8 +119,6 @@ namespace ProjektRin.System
                 };
                 _bot.OnGroupMessage += _commandManager.GroupMessageEventHandler;
             }
-
-            _commandManager.LoadCommandSet();
             return _bot;
         }
 

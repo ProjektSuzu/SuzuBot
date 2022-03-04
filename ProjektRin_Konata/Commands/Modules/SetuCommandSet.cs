@@ -5,13 +5,7 @@ using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Modules
 {
@@ -32,7 +26,7 @@ namespace ProjektRin.Commands.Modules
                 $"  tag         指定图片的标签 按空格分开 最多3个" +
                 $"";
 
-        public override void OnInit() {}
+        public override void OnInit() { }
 
         private SetuResult GetSetu(List<string> tags, int r18 = 0, int num = 1)
         {
@@ -55,7 +49,7 @@ namespace ProjektRin.Commands.Modules
             return result;
         }
 
-        [GroupMessageCommand("Setu", new[] { @"^setu\s?([\s\S]+)?" , @"^色图\s?([\s\S]+)?" })]
+        [GroupMessageCommand("Setu", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

@@ -6,10 +6,7 @@ using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Commands;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace ProjektRin.System
 {
@@ -21,7 +18,7 @@ namespace ProjektRin.System
 
         private static BotManager _botManager = BotManager.Instance;
         private static GroupManager _groupManager = GroupManager.Instance;
-        private static string TAG = "CMDMGR";
+        private static readonly string TAG = "CMDMGR";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         private Dictionary<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> _cmdSets = new();

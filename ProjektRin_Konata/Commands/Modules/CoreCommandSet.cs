@@ -32,7 +32,7 @@ namespace ProjektRin.Commands.Modules
             var groupUin = messageEvent.GroupUin;
             bool? action = null;
             bool global = false;
-            string help = 
+            string help =
                 $"[CommandControl]\n" +
                 $"用法: /cmdctl <enable/disable> [-opts] [<args>]\n\n" +
                 $"启用或禁用某个命令集\n" +
@@ -138,7 +138,7 @@ namespace ProjektRin.Commands.Modules
                     }
                 }
             }
-            if (global) 
+            if (global)
             {
                 reply = $"{count} 个命令集被全局 {((bool)action ? "启用" : "禁用")}.";
                 Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => {count} CommandSet(s) {((bool)action ? "Enabled" : "Disabled")} Globally.");
@@ -200,7 +200,7 @@ namespace ProjektRin.Commands.Modules
             var groupCount = bot.GetGroupList().Result.Count;
             var friendCount = bot.GetFriendList().Result.Count;
 
-            var reply = 
+            var reply =
                 $"[ProjektRin] {RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}\n" +
                 $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
                 $"DotNET CLR版本: {clrVersion}\n" +
@@ -211,7 +211,7 @@ namespace ProjektRin.Commands.Modules
                 $"载入了 {cmdmgr.CommandSetCount} 个命令集, {cmdmgr.CommandCount} 条命令.\n\n" +
 
                 $"[KonataCore] {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}\n" +
-                $"共有 {friendCount} 个好友, {groupCount} 个群.\n\n"+
+                $"共有 {friendCount} 个好友, {groupCount} 个群.\n\n" +
 
                 $"EOT\n{DateTime.Now:O}";
 

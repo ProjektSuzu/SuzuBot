@@ -2,6 +2,7 @@
 using NLog;
 using ProjektRin.System;
 using ProjektRin.Utils.BuildStamp;
+using ProjektRin.Utils.Database;
 
 namespace ProjektRin;
 
@@ -36,6 +37,14 @@ public static class Program
         Logger.Info($"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
         Logger.Info("Initializing Bot.");
         BotManager.Instance.InitBot();
+        Logger.Info("Initializing Database.");
+        if (!DatabaseManager.Instance.OpenConnection())
+        {
+            Logger.Fatal("Aborting.");
+            return -1;
+        }
+        Logger.Info("Loading Commands.");
+        CommandManager.Instance.LoadCommandSet();
         Logger.Info("Logging in.");
 
         var maxAttempt = 5;

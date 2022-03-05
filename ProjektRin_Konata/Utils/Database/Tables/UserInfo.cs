@@ -7,6 +7,42 @@ using System.Threading.Tasks;
 
 namespace ProjektRin.Utils.Database.Tables
 {
+    public static class UserInfoManager
+    {
+        private static SQLiteConnection _db = DatabaseManager.Instance.dbConnection;
+
+        public static bool UpdateUserInfo(UserInfo info)
+        {
+            var result = _db
+                .Update(info);
+            return result > 0;
+        }
+
+        public static UserInfo? GetUserInfo(uint uin, bool create = true)
+        {
+            var result = _db
+                .Table<UserInfo>()
+                .Where(t => t.uin == uin).ToList();
+            if (result.Count == 0)
+            {
+                if (create)
+                {
+                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime() };
+                    _db.Insert(record);
+                    return GetUserInfo(uin);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return result[0];
+            }
+        }
+    }
+
     [Table("T_USER_INFO")]
     public class UserInfo
     {
@@ -25,5 +61,6 @@ namespace ProjektRin.Utils.Database.Tables
 
         [Column("last_sign")]
         public DateTime lastSign { get; set; }
+
     }
 }

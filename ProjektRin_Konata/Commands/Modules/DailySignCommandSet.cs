@@ -15,7 +15,7 @@ namespace ProjektRin.Commands.Modules
         private SQLiteConnection _db;
         public override void OnInit()
         {
-            _db = DatabaseManager.Instance._db;
+            _db = DatabaseManager.Instance.dbConnection;
         }
 
         [GroupMessageCommand("UserInfo", new[] { @"^info\s?([\s\S]+)?" , @"^信息\s?([\s\S]+)?" })]
@@ -34,7 +34,7 @@ namespace ProjektRin.Commands.Modules
                 }
                 create = false;
             }
-            var info = GetUserInfo(uin, create);
+            var info = UserInfoManager.GetUserInfo(uin, create);
             if (info == null)
             {
                 reply = $"错误: 找不到用户: \"U{uin}\".";
@@ -58,7 +58,7 @@ namespace ProjektRin.Commands.Modules
         {
             var reply = "";
             var uin = messageEvent.MemberUin;
-            var info = GetUserInfo(uin);
+            var info = UserInfoManager.GetUserInfo(uin);
             //应该不会 但是以防万一
             if (info == null)
             {
@@ -85,7 +85,7 @@ namespace ProjektRin.Commands.Modules
                     info.level++;
                 }
 
-                if (!UpdateUserInfo(info))
+                if (!UserInfoManager.UpdateUserInfo(info))
                 {
                     reply = $"错误: 更新用户信息时失败.";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -155,37 +155,6 @@ namespace ProjektRin.Commands.Modules
 
             return (result, comment);
 
-        }
-
-        public bool UpdateUserInfo(UserInfo info)
-        {
-            var result = _db
-                .Update(info);
-            return result > 0;
-        }
-
-        public UserInfo? GetUserInfo(uint uin, bool create = true)
-        {
-            var result = _db
-                .Table<UserInfo>()
-                .Where(t => t.uin == uin).ToList();
-            if (result.Count == 0)
-            {
-                if (create)
-                {
-                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1 , lastSign = new DateTime()};
-                    _db.Insert(record);
-                    return GetUserInfo(uin);
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            else
-            {
-                return result[0];
-            }
         }
 
         public static int LevelToExp(int level)

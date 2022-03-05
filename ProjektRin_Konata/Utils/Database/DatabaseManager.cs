@@ -14,7 +14,7 @@ namespace ProjektRin.Utils.Database
         public static DatabaseManager Instance => _instance;
 
         private static string dbPath = Path.Combine(BotManager.rootPath, "database/rin.db");
-        public SQLiteConnection _db;
+        public SQLiteConnection dbConnection;
 
         private static readonly string TAG = "DBMGR";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
@@ -27,8 +27,8 @@ namespace ProjektRin.Utils.Database
                 Logger.Error("Database not found.");
                 return false;
             }
-            _db = new SQLiteConnection(dbPath);
-            _db.CreateTable<UserInfo>();
+            dbConnection = new SQLiteConnection(dbPath);
+            dbConnection.CreateTable<UserInfo>();
             Logger.Info("Database connected.");
             return true;
         }

@@ -150,13 +150,13 @@ namespace ProjektRin.Commands.Modules
 
         public enum 八卦
         {
-            乾,
-            巽,
-            离,
-            艮,
-            兑,
-            坎,
+            坤,
             震,
+            坎,
+            兑,
+            艮,
+            离,
+            巽,
             坤,
         };
 

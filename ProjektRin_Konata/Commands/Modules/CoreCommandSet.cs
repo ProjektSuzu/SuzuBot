@@ -186,6 +186,15 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
+        [GroupMessageCommand("Reload", @"^reload")]
+        public void OnReload(Bot bot, GroupMessageEvent messageEvent)
+        {
+            commandManager.ReloadCommandSet();
+            var reply =
+                "所有命令重载成功";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+        }
+
         [GroupMessageCommand("Status", @"^status")]
         public void OnStatus(Bot bot, GroupMessageEvent messageEvent)
         {

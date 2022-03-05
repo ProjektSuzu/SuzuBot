@@ -193,7 +193,7 @@ namespace ProjektRin.Commands.Modules
         public static string[] Bad = {
             "今天还是小心一点的好..",
             "一定要好好的..",
-            "这种事情也是没法控制的.."
+            "这种事情也是没法控制的嘛.."
         };
         public static string[] Good = { 
             "运气不错.",

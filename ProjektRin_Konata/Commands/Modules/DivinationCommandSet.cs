@@ -157,7 +157,7 @@ namespace ProjektRin.Commands.Modules
             艮,
             离,
             巽,
-            坤,
+            乾,
         };
 
         private 卦象() { }

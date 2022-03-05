@@ -33,7 +33,7 @@ namespace ProjektRin.Commands.Modules
             json64Gua = JObject.Parse(File.ReadAllText(jsonPath));
         }
 
-        [GroupMessageCommand("SuanGua", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算卦\s?([\s\S]+)?" })]
+        [GroupMessageCommand("SuanGua", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算命\s?([\s\S]+)?" , @"^算卦\s?([\s\S]+)?" })]
         public void OnSuanGua(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

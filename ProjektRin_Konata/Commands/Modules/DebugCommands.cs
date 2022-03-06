@@ -13,6 +13,8 @@ namespace ProjektRin.Commands.Modules
     {
         public override void OnInit() { }
 
+        public override string Help => "DEBUG";
+
         [GroupMessageCommand("Fake", @"^fake\s?([\s\S]+)?")]
         public void OnFake(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {

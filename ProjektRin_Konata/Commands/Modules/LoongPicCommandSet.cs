@@ -12,9 +12,7 @@ namespace ProjektRin.Commands.Modules
     internal class LoongPicCommandSet : BaseCommand
     {
         private DirectoryInfo picDir;
-
-        public static string help =
-                $"[龙图]\n" +
+        public override string Help => $"[龙图]\n" +
                 $"/loong [-a <pic>]      发龙图\n" +
                 $"\n" +
                 $"  -a <pic>     添加图片\n" +

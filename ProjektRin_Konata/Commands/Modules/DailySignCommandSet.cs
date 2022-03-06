@@ -12,8 +12,7 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("每日签到")]
     internal class DailySignCommandSet : BaseCommand
     {
-        public static string help =
-                $"[每日签到]\n" +
+        public override string Help => $"[每日签到]\n" +
                 $"/sign      进行当日签到并抽签\n" +
                 $"           每天只能签到一次 每天的签都是一样的\n" +
                 $"\n" +

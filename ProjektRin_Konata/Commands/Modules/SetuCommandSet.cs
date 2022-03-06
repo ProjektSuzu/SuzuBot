@@ -13,9 +13,7 @@ namespace ProjektRin.Commands.Modules
     internal class SetuCommandSet : BaseCommand
     {
         private static string api = @"https://api.lolicon.app/setu/v2";
-
-        public static string help =
-                $"[Setu]\n" +
+        public override string Help => $"[色图]\n" +
                 $"/setu [-r18] [-n <Num>] [<tag>...]      获取色图\n" +
                 $"\n" +
                 $"  -h          显示帮助信息\n" +
@@ -23,9 +21,10 @@ namespace ProjektRin.Commands.Modules
                 $"  -n <num>    指定要获取的数量 默认为1\n" +
                 $"              实际数量可能会根据返回图片数量而变化\n" +
                 $"\n" +
-                $"  tag         指定图片的标签 按空格分开 最多3个" +
+                $"  tag         指定图片的标签 按空格分开 最多3个\n" +
+                $"快捷名:\n" +
+                $"/色图" +
                 $"";
-
         public override void OnInit() { }
 
         private SetuResult GetSetu(List<string> tags, int r18 = 0, int num = 1)
@@ -86,7 +85,7 @@ namespace ProjektRin.Commands.Modules
 
                     case "-h":
                         {
-                            reply = help;
+                            reply = Help;
                             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                             return;
                         }

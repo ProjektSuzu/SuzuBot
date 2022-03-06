@@ -1,6 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
+using Konata.Core.Message.Model;
 using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
@@ -20,12 +21,53 @@ namespace ProjektRin.Commands.Modules
         private static string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
+        public override string Help => "";
+
         public override void OnInit()
         {
             groupManager = GroupManager.Instance;
             commandManager = CommandManager.Instance;
         }
         public override void OnDisable() { }
+
+        [GroupMessageCommand("帮助", new[] { @"^help\s?([\s\S]+)?", @"^帮助\s?([\s\S]+)?" })]
+        public void OnHelp(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var setName = "";
+            var sourceInfo = new SourceInfo(bot.Uin, bot.Name);
+            var multiReply = MultiMsgChain.Create();
+            if (args.Count > 0)
+            {
+                setName = args[0];
+            }
+
+            if (setName == "")
+            {
+                foreach (var set in commandManager.CmdSets)
+                {
+                    if (set.Key.Item1.Name == "核心功能") continue;
+                    var help = set.Key.Item2.Help;
+                    var message = new MessageBuilder(help);
+                    multiReply.AddMessage(sourceInfo, message);
+                }
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
+                return;
+            }
+            else
+            {
+                if (!commandManager.CmdSets.Any(x => x.Key.Item1.Name.Equals(setName)))
+                {
+                    reply = $"错误: 找不到命令集: \"{setName}\".";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+                var set = commandManager.CmdSets.Where(x => x.Key.Item1.Name == setName).First();
+                var help = set.Key.Item2.Help;
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
+                return;
+            }
+        }
 
         [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
         public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
@@ -83,7 +125,17 @@ namespace ProjektRin.Commands.Modules
             var arg = args.FirstOrDefault();
             if (arg == null)
             {
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
+                reply = "当前加载的命令集:\n";
+                foreach (var set in commandManager.CmdSets)
+                {
+                    if (set.Key.Item1.Name == "核心功能") continue;
+                    var name = set.Key.Item1.Name;
+                    reply +=
+                        $"{(groupManager.IsCommandSetDisabled(messageEvent.GroupUin, name) ? "◇" : "◆")} {name}\n";
+                }
+                reply += $"\n被动模式: {(groupManager.IsPassiveMode(messageEvent.GroupUin) ? "开启" : "关闭")}\n" +
+                    $"如需查看详细使用帮助, 请输入 /cmdctl -h";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
             List<string> sets = new();

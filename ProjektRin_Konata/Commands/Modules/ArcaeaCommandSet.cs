@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("Arcaea功能")]
+    [CommandSet("Arcaea")]
     internal class ArcaeaCommandSet : BaseCommand
     {
         private string pythonPath;
@@ -20,8 +20,7 @@ namespace ProjektRin.Commands.Modules
 
         private List<ArcaeaUserInfo> userInfos;
 
-        public static string help =
-                $"[Arcaea]\n" +
+        public override string Help => $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
                 $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +
                 $"/arc bind <usercode>      为当前QQ号绑定好友代码\n" +
@@ -79,7 +78,7 @@ namespace ProjektRin.Commands.Modules
 
             if (funcName == null)
             {
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(Help));
                 return;
             }
 

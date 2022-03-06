@@ -169,7 +169,7 @@ namespace ProjektRin.Commands.Modules
             卦象 卦 = new();
             卦.上卦 = (byte)(先 % 8);
             卦.下卦 = (byte)(后 % 8);
-            卦.动爻 = (byte)(1 << ((int)(先 + 后) % 6));
+            卦.动爻 = (byte)(Math.Abs(先 + 后) % 6);
             return 卦;
         }
 
@@ -182,7 +182,8 @@ namespace ProjektRin.Commands.Modules
 
         public 卦象 变卦()
         {
-            return new((byte)(this & (byte)(~动爻) | (int)(this ^ (byte)动爻)));
+            var mask = 1 << 动爻;
+            return new((byte)((this & (byte)(~mask)) | (this ^ (byte)mask)));
         }
 
         public 卦解 解卦()

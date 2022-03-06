@@ -8,7 +8,7 @@ using ProjektRin.Utils.Database.Tables;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("LotteryCommands")]
+    [CommandSet("抽奖")]
     internal class LotteryCommands : BaseCommand
     {
         private static readonly string[] wheel = new[]
@@ -38,7 +38,7 @@ namespace ProjektRin.Commands.Modules
         {
         }
 
-        [GroupMessageCommand("Roll", new[] { @"^roll", @"^抽奖" , @"([0-9]+)连" })]
+        [GroupMessageCommand("老虎机", new[] { @"^roll", @"^抽奖" , @"([0-9]+)连" })]
         public void OnRoll(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

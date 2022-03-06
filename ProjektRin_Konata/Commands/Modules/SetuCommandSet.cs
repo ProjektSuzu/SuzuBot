@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("SetuCommands")]
+    [CommandSet("色图")]
     internal class SetuCommandSet : BaseCommand
     {
         private static string api = @"https://api.lolicon.app/setu/v2";
@@ -49,7 +49,7 @@ namespace ProjektRin.Commands.Modules
             return result;
         }
 
-        [GroupMessageCommand("Setu", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
+        [GroupMessageCommand("色图", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

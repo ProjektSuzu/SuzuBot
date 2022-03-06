@@ -9,7 +9,7 @@ using SQLite;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("DailySignCommands")]
+    [CommandSet("每日签到")]
     internal class DailySignCommandSet : BaseCommand
     {
         private SQLiteConnection _db;
@@ -18,7 +18,7 @@ namespace ProjektRin.Commands.Modules
             _db = DatabaseManager.Instance.dbConnection;
         }
 
-        [GroupMessageCommand("UserInfo", new[] { @"^info\s?([\s\S]+)?" , @"^信息\s?([\s\S]+)?" })]
+        [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?" , @"^信息\s?([\s\S]+)?" })]
         public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
@@ -53,7 +53,7 @@ namespace ProjektRin.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("Sign", new[] { @"^sign" , @"^fortune", @"^打卡" , @"^签到" , @"^(今日)?运势" })]
+        [GroupMessageCommand("签到", new[] { @"^sign" , @"^fortune", @"^打卡" , @"^签到" , @"^(今日)?运势" })]
         public void OnSign(Bot bot, GroupMessageEvent messageEvent)
         {
             var reply = "";

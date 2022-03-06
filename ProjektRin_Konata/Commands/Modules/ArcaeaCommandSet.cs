@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("ArcaeaCommands")]
+    [CommandSet("Arcaea功能")]
     internal class ArcaeaCommandSet : BaseCommand
     {
         private string pythonPath;

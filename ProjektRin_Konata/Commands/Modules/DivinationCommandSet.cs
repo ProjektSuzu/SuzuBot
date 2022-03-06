@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("DivinationCommands")]
+    [CommandSet("算命")]
     internal class DivinationCommandSet : BaseCommand
     {
         private static readonly string 念诗 =
@@ -33,7 +33,7 @@ namespace ProjektRin.Commands.Modules
             json64Gua = JObject.Parse(File.ReadAllText(jsonPath));
         }
 
-        [GroupMessageCommand("SuanGua", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算命\s?([\s\S]+)?" , @"^算卦\s?([\s\S]+)?" })]
+        [GroupMessageCommand("算卦", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算命\s?([\s\S]+)?" , @"^算卦\s?([\s\S]+)?" })]
         public void OnSuanGua(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

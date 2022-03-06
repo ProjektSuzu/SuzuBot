@@ -8,7 +8,7 @@ using ProjektRin.System;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("LoongPicCommands")]
+    [CommandSet("龙图")]
     internal class LoongPicCommandSet : BaseCommand
     {
         private DirectoryInfo picDir;
@@ -17,7 +17,7 @@ namespace ProjektRin.Commands.Modules
             picDir = new DirectoryInfo(Path.Combine(BotManager.resourcePath, "LoongPic"));
         }
 
-        [GroupMessageCommand("SendLoongPic", new[] { @"^loong\s?([\s\S]+)?", @"^龙图\s?([\s\S]+)?" })]
+        [GroupMessageCommand("发龙图", new[] { @"^loong\s?([\s\S]+)?", @"^龙图\s?([\s\S]+)?" })]
         public void OnSendLoongPic(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

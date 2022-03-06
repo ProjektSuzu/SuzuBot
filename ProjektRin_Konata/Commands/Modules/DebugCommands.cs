@@ -8,7 +8,7 @@ using ProjektRin.Attributes.CommandSet;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("DebugCommands")]
+    [CommandSet("Debug")]
     internal class DebugCommands : BaseCommand
     {
         public override void OnInit() { }

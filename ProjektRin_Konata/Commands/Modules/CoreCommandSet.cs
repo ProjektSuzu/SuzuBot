@@ -62,7 +62,7 @@ namespace ProjektRin.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?")]
+        [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?", PermissionManager.Permission.Operator)]
         public void OnCommandControl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var groupUin = messageEvent.GroupUin;
@@ -96,6 +96,12 @@ namespace ProjektRin.Commands.Modules
                 {
                     case "-G":
                         {
+                            if (!PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
+                            {
+                                reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Admin}.";
+                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
                             global = true;
                             break;
                         }
@@ -190,12 +196,19 @@ namespace ProjektRin.Commands.Modules
         //这里应该有一个权限功能
         //记得写
 
-        [GroupMessageCommand("被动模式", @"^passive\s?([\s\S]+)?")]
+        [GroupMessageCommand("被动模式", @"^passive\s?([\s\S]+)?", PermissionManager.Permission.Operator)]
         public void OnPassiveMode(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
+            var reply = "";
             var groupUin = messageEvent.GroupUin;
             while (args.Count > 0)
             {
+                if (!PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
+                {
+                    reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Admin}.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
                 var arg = args.ElementAt(0);
                 args.RemoveAt(0);
 
@@ -207,12 +220,12 @@ namespace ProjektRin.Commands.Modules
 
             var flag = groupManager.TogglePassiveMode(groupUin);
 
-            var reply = $"G{groupUin} => 被动模式 {(flag ? "启用" : "禁用")}.";
+            reply = $"G{groupUin} => 被动模式 {(flag ? "启用" : "禁用")}.";
             Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => Passive Mode {(flag ? "On" : "Off")}.");
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("Ping", @"^ping")]
+        [GroupMessageCommand("Ping", @"^ping", PermissionManager.Permission.Operator)]
         public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
             var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
@@ -225,7 +238,7 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("命令集重载", @"^reload")]
+        [GroupMessageCommand("命令集重载", @"^reload", PermissionManager.Permission.Admin)]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             commandManager.ReloadCommandSet();

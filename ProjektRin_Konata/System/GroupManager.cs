@@ -1,4 +1,6 @@
 ﻿
+using Konata.Core.Common;
+using Konata.Core.Events.Model;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -23,8 +25,6 @@ namespace ProjektRin.System
         private static CommandManager commandManager = CommandManager.Instance;
 
         internal List<GroupPreference> groupPreference;
-
-
 
         private void LoadPreferences()
         {

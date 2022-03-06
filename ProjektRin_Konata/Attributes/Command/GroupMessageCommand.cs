@@ -1,16 +1,18 @@
-﻿namespace ProjektRin.Attributes.Command
+﻿using static ProjektRin.System.PermissionManager;
+
+namespace ProjektRin.Attributes.Command
 {
     public class GroupMessageCommand : Command
     {
-        public GroupMessageCommand(string name) : base(name)
+        public GroupMessageCommand(string name, Permission permission = Permission.User) : base(name, permission)
         {
         }
 
-        public GroupMessageCommand(string name, string pattern) : base(name, pattern)
+        public GroupMessageCommand(string name, string pattern, Permission permission = Permission.User) : base(name, pattern, permission)
         {
         }
 
-        public GroupMessageCommand(string name, string[] pattern) : base(name, pattern)
+        public GroupMessageCommand(string name, string[] pattern, Permission permission = Permission.User) : base(name, pattern, permission)
         {
         }
     }

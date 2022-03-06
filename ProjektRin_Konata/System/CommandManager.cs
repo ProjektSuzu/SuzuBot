@@ -7,6 +7,7 @@ using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Commands;
 using System.Reflection;
+using static ProjektRin.System.PermissionManager;
 
 namespace ProjektRin.System
 {
@@ -139,6 +140,25 @@ namespace ProjektRin.System
                     {
                         if (pattern.Match(message).Success)
                         {
+                            //获取用户权限组
+                            var permission = Permission.User;
+                            if (groupMessageEvent.MemberUin == 1785416538u)
+                            {
+                                permission = Permission.Admin;
+                            }
+                            else if (PermissionManager.Instance.IsOperator(groupMessageEvent))
+                            {
+                                permission = Permission.Operator;
+                            }
+
+                            if (permission < attr.Permission)
+                            {
+                                Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Rejected.");
+                                var reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission}.";
+                                bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
+
                             bool methodReturn = true;
                             if (method.GetParameters().Count() == 2)
                                 methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;

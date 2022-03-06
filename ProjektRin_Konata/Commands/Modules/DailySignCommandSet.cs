@@ -12,10 +12,9 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("每日签到")]
     internal class DailySignCommandSet : BaseCommand
     {
-        private SQLiteConnection _db;
         public override void OnInit()
         {
-            _db = DatabaseManager.Instance.dbConnection;
+
         }
 
         [GroupMessageCommand("签到", new[] { @"^sign", @"^fortune", @"^打卡", @"^签到", @"^(今日)?运势" })]

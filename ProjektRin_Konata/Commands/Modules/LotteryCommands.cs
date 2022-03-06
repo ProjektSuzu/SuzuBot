@@ -11,6 +11,17 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("抽奖")]
     internal class LotteryCommands : BaseCommand
     {
+        public static string help =
+                $"[抽奖]\n" +
+                $"/roll [<num>]      玩 num 次老虎机\n" +
+                $"                   默认玩一次\n" +
+                $"/<num>连           玩 num 次老虎机\n" +
+                $"\n" +
+                $"快捷名:\n" +
+                $"/抽奖\n" +
+                $"\n" +
+                $"  num     游玩次数";
+
         private static readonly string[] wheel = new[]
         {
             "♠",
@@ -38,7 +49,7 @@ namespace ProjektRin.Commands.Modules
         {
         }
 
-        [GroupMessageCommand("老虎机", new[] { @"^roll", @"^抽奖" , @"([0-9]+)连" })]
+        [GroupMessageCommand("老虎机", new[] { @"^roll\s?([0-9]+)?", @"^抽奖\s?([0-9]+)?", @"([0-9]+)连" })]
         public void OnRoll(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

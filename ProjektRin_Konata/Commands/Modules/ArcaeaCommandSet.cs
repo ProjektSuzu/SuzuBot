@@ -20,7 +20,7 @@ namespace ProjektRin.Commands.Modules
 
         private List<ArcaeaUserInfo> userInfos;
 
-        private static string help =
+        public static string help =
                 $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
                 $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +

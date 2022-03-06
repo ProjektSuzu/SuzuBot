@@ -17,6 +17,16 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("算命")]
     internal class DivinationCommandSet : BaseCommand
     {
+        public static string help =
+                $"[算命]\n" +
+                $"/suan-gua [<所求之事>]      以其数卦之\n" +
+                $"\n" +
+                $"  所求之事    言所求\n" +
+                $"\n" +
+                $"他名:\n" +
+                $"/算命\n" +
+                $"/算卦\n";
+
         private static readonly string 念诗 =
             "一物从来有一身，一身还有一乾坤。\n" +
             "能知万物备于我，肯把三才别立根。\n" +

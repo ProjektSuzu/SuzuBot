@@ -14,7 +14,7 @@ namespace ProjektRin.Commands.Modules
     {
         private static string api = @"https://api.lolicon.app/setu/v2";
 
-        private static string help =
+        public static string help =
                 $"[Setu]\n" +
                 $"/setu [-r18] [-n <Num>] [<tag>...]      获取色图\n" +
                 $"\n" +

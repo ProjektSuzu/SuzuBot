@@ -12,6 +12,17 @@ namespace ProjektRin.Commands.Modules
     internal class LoongPicCommandSet : BaseCommand
     {
         private DirectoryInfo picDir;
+
+        public static string help =
+                $"[龙图]\n" +
+                $"/loong [-a <pic>]      发龙图\n" +
+                $"\n" +
+                $"  -a <pic>     添加图片\n" +
+                $"\n" +
+                $"快捷名:\n" +
+                $"/龙图\n" +
+                $"\n" +
+                $"  pic     图片";
         public override void OnInit()
         {
             picDir = new DirectoryInfo(Path.Combine(BotManager.resourcePath, "LoongPic"));

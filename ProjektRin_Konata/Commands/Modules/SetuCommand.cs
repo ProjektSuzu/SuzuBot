@@ -10,7 +10,7 @@ using System.Net.Http.Headers;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("色图")]
-    internal class SetuCommandSet : BaseCommand
+    internal class SetuCommand : BaseCommand
     {
         private static string api = @"https://api.lolicon.app/setu/v2";
         public override string Help => $"[色图]\n" +

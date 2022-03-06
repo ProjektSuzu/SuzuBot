@@ -12,7 +12,7 @@ using System.Text.RegularExpressions;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("Arcaea")]
-    internal class ArcaeaCommandSet : BaseCommand
+    internal class ArcaeaCommand : BaseCommand
     {
         private string pythonPath;
         private Process python;

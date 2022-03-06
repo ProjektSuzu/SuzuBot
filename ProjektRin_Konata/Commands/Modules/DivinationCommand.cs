@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("算命")]
-    internal class DivinationCommandSet : BaseCommand
+    internal class DivinationCommand : BaseCommand
     {
         public override string Help => $"「算命」\n" +
                 $"/suan-gua 「《所求之事》」      以其数卦之\n" +

@@ -9,7 +9,7 @@ using ProjektRin.System;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("龙图")]
-    internal class LoongPicCommandSet : BaseCommand
+    internal class LoongPicCommand : BaseCommand
     {
         private DirectoryInfo picDir;
         public override string Help => $"[龙图]\n" +

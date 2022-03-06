@@ -10,7 +10,7 @@ using SQLite;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("每日签到")]
-    internal class DailySignCommandSet : BaseCommand
+    internal class DailySignCommand : BaseCommand
     {
         public override string Help => $"[每日签到]\n" +
                 $"/sign      进行当日签到并抽签\n" +

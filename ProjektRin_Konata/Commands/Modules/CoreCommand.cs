@@ -13,7 +13,7 @@ using System.Diagnostics;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("核心功能")]
-    internal class CoreCommandSet : BaseCommand
+    internal class CoreCommand : BaseCommand
     {
         GroupManager groupManager;
         CommandManager commandManager;

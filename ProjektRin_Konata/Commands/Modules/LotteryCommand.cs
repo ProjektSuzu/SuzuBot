@@ -9,7 +9,7 @@ using ProjektRin.Utils.Database.Tables;
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("抽奖")]
-    internal class LotteryCommands : BaseCommand
+    internal class LotteryCommand : BaseCommand
     {
         public override string Help => $"[抽奖]\n" +
                 $"/roll [<num>]      玩 num 次老虎机\n" +

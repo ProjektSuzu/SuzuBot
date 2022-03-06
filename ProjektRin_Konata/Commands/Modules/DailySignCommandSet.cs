@@ -18,42 +18,7 @@ namespace ProjektRin.Commands.Modules
             _db = DatabaseManager.Instance.dbConnection;
         }
 
-        [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?" , @"^信息\s?([\s\S]+)?" })]
-        public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
-        {
-            var reply = "";
-            var uin = messageEvent.MemberUin;
-            var create = true;
-            if (args.Count > 0)
-            {
-                if (!uint.TryParse(args[0], out uin))
-                {
-                    reply = $"错误: 参数非法: \"{args[0]}\" => <uin>.";
-                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                    return;
-                }
-                create = false;
-            }
-            var info = UserInfoManager.GetUserInfo(uin, create);
-            if (info == null)
-            {
-                reply = $"错误: 找不到用户: \"U{uin}\".";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
-
-            reply =
-                $"[UserInfo]\n" +
-                $"用户: {info.uin}\n" +
-                $"内存: {CoinToString(info.coin)}\n" +
-                $"等级: {info.level}\n" +
-                $"经验: {info.exp} exp\n" +
-                $"距离下一等级: {LevelToExp(info.level) - info.exp} exp";
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-            return;
-        }
-
-        [GroupMessageCommand("签到", new[] { @"^sign" , @"^fortune", @"^打卡" , @"^签到" , @"^(今日)?运势" })]
+        [GroupMessageCommand("签到", new[] { @"^sign", @"^fortune", @"^打卡", @"^签到", @"^(今日)?运势" })]
         public void OnSign(Bot bot, GroupMessageEvent messageEvent)
         {
             var reply = "";
@@ -79,9 +44,9 @@ namespace ProjektRin.Commands.Modules
                 info.exp += exp;
                 info.coin += coin;
                 info.lastSign = DateTime.Today;
-                if (info.exp >= LevelToExp(info.level))
+                if (info.exp >= UserInfoManager.LevelToExp(info.level))
                 {
-                    info.exp -= LevelToExp(info.level);
+                    info.exp -= UserInfoManager.LevelToExp(info.level);
                     info.level++;
                 }
 
@@ -95,9 +60,9 @@ namespace ProjektRin.Commands.Modules
                 reply =
                 $"\n打卡成功!\n" +
                 $"经验+ {exp} exp\n" +
-                $"内存+ {CoinToString(coin)}\n" +
+                $"内存+ {UserInfoManager.CoinToString(coin)}\n" +
                 $"当前等级: {info.level}\n" +
-                $"距离下一级还差: {LevelToExp(info.level) - info.exp} exp\n\n";
+                $"距离下一级还差: {UserInfoManager.LevelToExp(info.level) - info.exp} exp\n\n";
             }
 
             var (lot, comment) = Lot(uin);
@@ -141,7 +106,7 @@ namespace ProjektRin.Commands.Modules
                     }
                 case 3:
                     {
-                        result = "吉"; 
+                        result = "吉";
                         comment = LotComment.Random(LotComment.Great);
                         break;
                     }
@@ -157,61 +122,37 @@ namespace ProjektRin.Commands.Modules
 
         }
 
-        public static int LevelToExp(int level)
+        static class LotComment
         {
-            return level * (level + 5) * 10;
-        }
-
-        public static string CoinToString(uint coin)
-        {
-            if (coin < 1000)
-            {
-                return $"{coin} Byte";
-            }
-            else if (coin < 1000000)
-            {
-                return $"{(float)coin / 1000:f3} KB";
-            }
-            else if (coin < 1000000000)
-            {
-                return $"{(float)coin / 1000000:f3} MB";
-            }
-            else
-            {
-                return $"{(float)coin / 1000000000:f3} GB";
-            }
-        }
-    }
-    static class LotComment
-    {
-        //别问我为什么要这么命名 就是玩
-        public static string[] Miss = { 
+            //别问我为什么要这么命名 就是玩
+            public static string[] Miss = {
             "铃会为你祈祷的...",
             "现在偷偷改签还来得及吗...",
             "也许还能再抢救一下...",
         };
-        public static string[] Bad = {
+            public static string[] Bad = {
             "今天还是小心一点的好..",
             "一定要好好的..",
             "这种事情也是没法控制的嘛.."
         };
-        public static string[] Good = { 
+            public static string[] Good = {
             "运气不错.",
             "美好的一天从此开始."
         };
-        public static string[] Great = { 
+            public static string[] Great = {
             "今天或许有意外的惊喜呢~",
             "I`m so happy~",
         };
-        public static string[] Pure = { 
+            public static string[] Pure = {
             "这种运气..真的是存在的吗~~",
             "其实是铃偷偷帮你改的~不要告诉别人哦~~",
             "三☆倍☆Ice☆Cream~~"
         };
 
-        public static string Random(IEnumerable<string> vs)
-        {
-            return vs.ElementAt(new Random().Next(vs.Count()));
+            public static string Random(IEnumerable<string> vs)
+            {
+                return vs.ElementAt(new Random().Next(vs.Count()));
+            }
         }
     }
 }

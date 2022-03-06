@@ -6,11 +6,12 @@ using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.System;
 using ProjektRin.Utils.BuildStamp;
+using ProjektRin.Utils.Database.Tables;
 using System.Diagnostics;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("CoreCommands")]
+    [CommandSet("核心功能")]
     internal class CoreCommandSet : BaseCommand
     {
         GroupManager groupManager;
@@ -26,7 +27,42 @@ namespace ProjektRin.Commands.Modules
         }
         public override void OnDisable() { }
 
-        [GroupMessageCommand("CommandControl", @"^cmdctl\s?([\s\S]+)?")]
+        [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
+        public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var uin = messageEvent.MemberUin;
+            var create = true;
+            if (args.Count > 0)
+            {
+                if (!uint.TryParse(args[0], out uin))
+                {
+                    reply = $"错误: 参数非法: \"{args[0]}\" => <uin>.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+                create = false;
+            }
+            var info = UserInfoManager.GetUserInfo(uin, create);
+            if (info == null)
+            {
+                reply = $"错误: 找不到用户: \"U{uin}\".";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            reply =
+                $"[UserInfo]\n" +
+                $"用户: {info.uin}\n" +
+                $"内存: {UserInfoManager.CoinToString(info.coin)}\n" +
+                $"等级: {info.level}\n" +
+                $"经验: {info.exp} exp\n" +
+                $"距离下一等级: {UserInfoManager.LevelToExp(info.level) - info.exp} exp";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            return;
+        }
+
+        [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?")]
         public void OnCommandControl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var groupUin = messageEvent.GroupUin;
@@ -151,7 +187,10 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("PassiveMode", @"^passive\s?([\s\S]+)?")]
+        //这里应该有一个权限功能
+        //记得写
+
+        [GroupMessageCommand("被动模式", @"^passive\s?([\s\S]+)?")]
         public void OnPassiveMode(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var groupUin = messageEvent.GroupUin;
@@ -186,7 +225,7 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("Reload", @"^reload")]
+        [GroupMessageCommand("命令集重载", @"^reload")]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             commandManager.ReloadCommandSet();
@@ -195,7 +234,7 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("Status", @"^status")]
+        [GroupMessageCommand("状态信息", @"^status")]
         public void OnStatus(Bot bot, GroupMessageEvent messageEvent)
         {
             var osVersion = Environment.OSVersion.Platform;

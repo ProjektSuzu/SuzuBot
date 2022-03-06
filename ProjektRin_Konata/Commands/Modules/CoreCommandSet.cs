@@ -193,9 +193,6 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        //这里应该有一个权限功能
-        //记得写
-
         [GroupMessageCommand("被动模式", @"^passive\s?([\s\S]+)?", PermissionManager.Permission.Operator)]
         public void OnPassiveMode(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {

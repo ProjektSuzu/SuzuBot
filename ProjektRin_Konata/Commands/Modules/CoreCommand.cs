@@ -69,6 +69,104 @@ namespace ProjektRin.Commands.Modules
             }
         }
 
+        [GroupMessageCommand("支付", new[] { @"^pay\s?([\s\S]+)?", @"^转账\s?([\s\S]+)?" })]
+        public void OnPay(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var uin = messageEvent.MemberUin;
+            var info = UserInfoManager.GetUserInfo(uin);
+
+            var target = 0u;
+            var amount = 0u;
+
+            if (args.Count < 2)
+            {
+                reply = $"错误: 参数不足: <targetUin> <amount>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (!uint.TryParse(args[0], out target))
+            {
+                var atChain = (AtChain?)messageEvent.Message.FirstOrDefault(x => x is AtChain);
+                if (atChain == null)
+                {
+                    reply = $"错误: 参数错误: {args[0]} => <targetUin>.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+                target = atChain.AtUin;
+            }
+
+            if (target == uin)
+            {
+                reply = $"错误: 支付目标不能是自己.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            var targetInfo = UserInfoManager.GetUserInfo(target, false);
+            if (targetInfo == null)
+            {
+                reply = $"错误: 目标用户不存在: U{target}.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (!uint.TryParse(args[1], out amount))
+            {
+                reply = $"错误: 参数错误: {args[1]} => <amount>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (info.coin < amount)
+            {
+                reply =
+                    $"你的内存不足\n" +
+                    $"尝试支付 {UserInfoManager.CoinToString(amount)}, 而你只有 {UserInfoManager.CoinToString(info.coin)}.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            info.coin -= amount;
+            targetInfo.coin += amount;
+
+            UserInfoManager.UpdateUserInfo(info);
+            UserInfoManager.UpdateUserInfo(targetInfo);
+
+            reply =
+                    $"转账成功: {UserInfoManager.CoinToString(amount)} => U{target}\n" +
+                    $"当前余额: {UserInfoManager.CoinToString(info.coin)}.";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            return;
+        }
+
+        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?", @"^给我\s?([0-9]+)?", @"^v我\s?([0-9]+)?" }, PermissionManager.Permission.Admin)]
+        public void OnGive(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var uin = messageEvent.MemberUin;
+            var info = UserInfoManager.GetUserInfo(uin);
+
+            var coin = 0u;
+            if (args.Count > 0)
+            {
+                if (!uint.TryParse(args[0], out coin))
+                {
+                    reply = $"错误: 参数非法: \"{args[0]}\" => <amount>.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+
+            info.coin += coin;
+            UserInfoManager.UpdateUserInfo(info);
+            reply = $"已经向 U{uin} 的账户添加 {UserInfoManager.CoinToString(coin)}.";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            return;
+        }
+
         [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
         public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {

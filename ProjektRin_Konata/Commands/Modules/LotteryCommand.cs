@@ -45,7 +45,7 @@ namespace ProjektRin.Commands.Modules
         {
         }
 
-        [GroupMessageCommand("老虎机", new[] { @"^slot\s?([0-9]+)?", @"^抽奖\s?([0-9]+)?", @"([0-9]+)连" })]
+        [GroupMessageCommand("老虎机", new[] { @"^slot\s?([0-9]+)?", @"^老虎机\s?([0-9]+)?", @"^老虎机([0-9]+)连" })]
         public void OnSlot(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";

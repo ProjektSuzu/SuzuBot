@@ -32,6 +32,10 @@ namespace ProjektRin.Commands.Modules
             "♥",
             "♣",
             "♦",
+            "♠",
+            "♥",
+            "♣",
+            "♦",
             "★",
             "★",
             "⑦"

@@ -13,7 +13,14 @@ namespace ProjektRin.Commands.Modules
     internal class TarotCommands : BaseCommand
     {
         public override string Help =>
-            "1145141919810";
+            $"[塔罗牌]\n" +
+                $"/tarot [<question>]      让塔罗牌回应你的请求\n" +
+                $"\n" +
+                $"  question    所想解答的问题\n" +
+                $"\n" +
+                $"快捷名:\n" +
+                $"/塔罗牌\n" +
+                $"\n\n(图一乐 别真信)";
 
         private static DirectoryInfo coverDir;
         public static List<Tarot> tarots;

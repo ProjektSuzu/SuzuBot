@@ -2,6 +2,7 @@
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Utils.Database.Tables;
@@ -98,6 +99,7 @@ namespace ProjektRin.Commands.Modules
                     }
 
                     var a1 = result[0];
+
                     if (result.All(x => x == a1))
                     {
                         switch (a1)
@@ -127,7 +129,7 @@ namespace ProjektRin.Commands.Modules
                                 }
                         }
                     }
-                    else if (result.TakeWhile(x => x == "★").Count() == 2)
+                    else if (result.Count(x => x == "★") == 2)
                     {
                         reward = "双星";
                         coin += 5000;
@@ -204,7 +206,7 @@ namespace ProjektRin.Commands.Modules
                             }
                     }
                 }
-                else if (result.TakeWhile(x => x == "★").Count() == 2)
+                else if (result.Count(x => x == "★") == 2)
                 {
                     reward = "双星";
                     coin += 5000;

@@ -2,7 +2,6 @@
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Utils.Database.Tables;

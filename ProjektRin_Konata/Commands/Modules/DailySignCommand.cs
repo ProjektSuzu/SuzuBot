@@ -3,9 +3,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using ProjektRin.Utils.Database;
 using ProjektRin.Utils.Database.Tables;
-using SQLite;
 
 namespace ProjektRin.Commands.Modules
 {
@@ -31,6 +29,7 @@ namespace ProjektRin.Commands.Modules
         public void OnSign(Bot bot, GroupMessageEvent messageEvent)
         {
             var reply = "";
+            var message = new MessageBuilder();
             var uin = messageEvent.MemberUin;
             var info = UserInfoManager.GetUserInfo(uin);
             //应该不会 但是以防万一
@@ -74,22 +73,45 @@ namespace ProjektRin.Commands.Modules
                 $"距离下一级还差: {UserInfoManager.LevelToExp(info.level) - info.exp} exp\n\n";
             }
 
+            message.Text(reply);
+            reply = "";
+
             var (lot, comment) = Lot(uin);
 
-            reply +=
+            reply =
                 $"今天的运势是: {lot}\n" +
                 $"{comment}\n" +
-                $"";
+                $"\n";
 
-            reply += "\n结果仅供参考, 自己的命运要自己把握哦(ﾉﾟ▽ﾟ)ﾉ";
+            message.Text(reply);
+            reply = "";
 
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder().At(uin).Text(reply));
+            var seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
+            if (seed > int.MaxValue) seed /= 2;
+            var isReversed = new Random((int)seed).Next(0, 2) == 0;
+
+            var card = TarotCommands.GetCards(1, (int)seed).First();
+            reply =
+                $"今天的塔罗牌是: {card.title} {(isReversed ? "正位" : "逆位")}\n" +
+                $"{(isReversed ? card.positive : card.negative )}\n" +
+                $"\n";
+
+            message.Image(TarotCommands.GetCardCoverPath(card.title)).Text(reply);
+            reply = "";
+
+            reply = "\n结果仅供参考, 自己的命运要自己把握哦(ﾉﾟ▽ﾟ)ﾉ";
+
+            message.Text(reply);
+            reply = "";
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder().At(uin).Add(message.Build()));
             return;
         }
 
         public (string, string) Lot(uint uin)
         {
-            var seed = uint.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
+            var seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
+            if (seed > int.MaxValue) seed /= 2;
             var random = new Random((int)seed).Next(0, 4);
             var result = "";
             var comment = "";

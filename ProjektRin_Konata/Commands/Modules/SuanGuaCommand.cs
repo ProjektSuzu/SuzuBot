@@ -6,16 +6,11 @@ using Newtonsoft.Json.Linq;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.System;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("算命")]
-    internal class DivinationCommand : BaseCommand
+    [CommandSet("算卦")]
+    internal class SuanGuaCommand : BaseCommand
     {
         public override string Help => $"「算命」\n" +
                 $"/suan-gua 「《所求之事》」      以其数卦之\n" +
@@ -23,7 +18,6 @@ namespace ProjektRin.Commands.Modules
                 $"  所求之事    言所求\n" +
                 $"\n" +
                 $"他名：\n" +
-                $"/算命\n" +
                 $"/算卦\n";
 
 
@@ -43,7 +37,7 @@ namespace ProjektRin.Commands.Modules
             json64Gua = JObject.Parse(File.ReadAllText(jsonPath));
         }
 
-        [GroupMessageCommand("算卦", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算命\s?([\s\S]+)?" , @"^算卦\s?([\s\S]+)?" })]
+        [GroupMessageCommand("算卦", new[] { @"^suan-gua\s?([\s\S]+)?" , @"^算卦\s?([\s\S]+)?" })]
         public void OnSuanGua(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
@@ -73,7 +67,7 @@ namespace ProjektRin.Commands.Modules
                 后 += (uint)hash;
             }
 
-            reply = $"{messageEvent.MemberCard}{(args.Count > 0 ? $" \"{thing}\"" : "")} 的占卜结果:\n";
+            reply = $"{messageEvent.MemberCard} {(args.Count > 0 ? $"的\"{thing}\"" : "")} 占卜结果:\n";
             卦象 本卦 = 卦象.起卦(先, 后);
             var (name1, desc1) = Get(((卦象.八卦)本卦.上卦).ToString() + ((卦象.八卦)本卦.下卦).ToString());
             reply += $"本卦: {本卦} 上{(卦象.八卦)本卦.上卦}下{(卦象.八卦)本卦.下卦} {本卦.解卦()}  {name1}\n";

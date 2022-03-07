@@ -9,16 +9,18 @@ using ProjektRin.System;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("算卦")]
+    [CommandSet("算命")]
     internal class SuanGuaCommand : BaseCommand
     {
-        public override string Help => $"「算命」\n" +
+        public override string Help => 
+                $"「算命」\n" +
                 $"/suan-gua 「《所求之事》」      以其数卦之\n" +
                 $"\n" +
                 $"  所求之事    言所求\n" +
                 $"\n" +
                 $"他名：\n" +
-                $"/算卦\n";
+                $"/算卦\n" +
+                $"\n\n（止增笑耳 劝君莫信）";
 
 
         private static readonly string 念诗 =

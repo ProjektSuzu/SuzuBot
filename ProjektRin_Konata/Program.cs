@@ -48,14 +48,22 @@ public static class Program
         Logger.Info("Logging in.");
 
         var maxAttempt = 5;
+        var attempt = 0;
 
-        for (var i = 0; i < maxAttempt; i++)
+        for (; attempt < maxAttempt; attempt++)
         {
             if (BotManager.Instance.LoginBot())
             {
                 break;
             }
         }
+
+        if (!BotManager.Instance.Bot.IsOnline())
+        {
+            Logger.Fatal("Bot Login Failed.");
+            return -1;
+        }
+
 
 #if DEBUG
         uint devGroupUin = 644504300;

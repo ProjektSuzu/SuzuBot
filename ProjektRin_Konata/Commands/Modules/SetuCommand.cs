@@ -98,7 +98,7 @@ namespace ProjektRin.Commands.Modules
                 }
             }
 
-            reply = $"处理中 请稍后.";
+            reply = $"处理中 请稍候.";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
 
             SetuResult result;

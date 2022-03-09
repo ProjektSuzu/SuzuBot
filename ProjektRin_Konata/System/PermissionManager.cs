@@ -18,7 +18,8 @@ namespace ProjektRin.System
 
         private List<uint> admins = new()
         {
-            1785416538
+            1785416538,
+            1156933758,
         };
         public enum Permission
         {

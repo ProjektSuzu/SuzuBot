@@ -21,7 +21,34 @@ namespace ProjektRin.Commands.Modules
         private static string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
-        public override string Help => "";
+        public override string Help => 
+            "[ProjektRin]核心命令\n" +
+            "/help [<commandSet>]      查看帮助文本\n" +
+            "   commandSet             指定的命令集名字\n" +
+            "\n" +
+            "/cmdctl                   管理命令集启用/禁用等功能\n" +
+            "                          具体使用方法请使用 /cmdctl -h 查阅\n" +
+            "\n" +
+            "/pay <at / uin> <amount>  向指定账户打款\n" +
+            "   at                     目标用户的At\n" +
+            "   uin                    目标用户的QQ号\n" +
+            "   amount                 打款金额\n" +
+            "\n" +
+            "/ban <uin>                封禁目标账户, 使Bot不再响应对方的任何指令\n" +
+            "   uin                    目标的QQ号\n" +
+            "\n" +
+            "/info [<uin>]             查询用户的信息\n" +
+            "   uin                    目标的QQ号\n" +
+            "\n" +
+            "/passive [<groupUin>]     启动被动模式\n" +
+            "                          使Bot只能以At或称呼的形式调用命令\n" +
+            "                          并且不再响应以 \'/\' 开头的命令\n" +
+            "   groupUin               目标群的群号\n" +
+            "\n" +
+            "/reload                   重新载入所有命令\n" +
+            "\n" +
+            "/status                   打印运行状态信息\n" +
+            "";
 
         public override void OnInit()
         {
@@ -44,6 +71,7 @@ namespace ProjektRin.Commands.Modules
 
             if (setName == "")
             {
+                multiReply.AddMessage(sourceInfo, new MessageBuilder(Help));
                 foreach (var set in commandManager.CmdSets)
                 {
                     if (set.Key.Item1.Name == "核心功能") continue;

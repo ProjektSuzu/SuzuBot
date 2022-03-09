@@ -53,7 +53,7 @@ namespace ProjektRin.Commands.Modules
                 DateTime.Now.Day +
                 DateTime.Now.Hour +
                 DateTime.Now.Minute +
-                DateTime.Now.Second + 
+                DateTime.Now.Second +
                 messageEvent.MemberUin);
 
             if (seed > int.MaxValue)

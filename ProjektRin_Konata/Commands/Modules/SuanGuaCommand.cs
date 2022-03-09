@@ -12,7 +12,7 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("算命", "com.akulak.suanGua")]
     internal class SuanGuaCommand : BaseCommand
     {
-        public override string Help => 
+        public override string Help =>
                 $"「算命」\n" +
                 $"/suan-gua 「《所求之事》」      以其数卦之\n" +
                 $"\n" +
@@ -39,7 +39,7 @@ namespace ProjektRin.Commands.Modules
             json64Gua = JObject.Parse(File.ReadAllText(jsonPath));
         }
 
-        [GroupMessageCommand("算卦", new[] { @"^suan-gua\s?([\s\S]+)?" , @"^算卦\s?([\s\S]+)?" })]
+        [GroupMessageCommand("算卦", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算卦\s?([\s\S]+)?" })]
         public void OnSuanGua(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
@@ -50,11 +50,11 @@ namespace ProjektRin.Commands.Modules
             //先念诗
             multiReply.AddMessage(sourceInfo, new MessageBuilder(念诗));
 
-            先 = (uint)(DateTime.Now.Year + 
-                DateTime.Now.Month + 
-                DateTime.Now.Day + 
+            先 = (uint)(DateTime.Now.Year +
+                DateTime.Now.Month +
+                DateTime.Now.Day +
                 DateTime.Now.Hour +
-                DateTime.Now.Minute + 
+                DateTime.Now.Minute +
                 DateTime.Now.Second);
 
             后 = messageEvent.MemberUin;

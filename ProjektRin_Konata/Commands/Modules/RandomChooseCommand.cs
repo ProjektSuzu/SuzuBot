@@ -3,11 +3,6 @@ using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Modules
 {

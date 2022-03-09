@@ -1,10 +1,5 @@
 ﻿using Konata.Core.Common;
 using Konata.Core.Events.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjektRin.System
 {

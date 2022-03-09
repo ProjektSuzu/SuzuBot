@@ -47,7 +47,7 @@ namespace ProjektRin.Utils.Database.Tables
             {
                 if (create)
                 {
-                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime() , isBanned = false };
+                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime(), isBanned = false };
                     _db.Insert(record);
                     return GetUserInfo(uin);
                 }

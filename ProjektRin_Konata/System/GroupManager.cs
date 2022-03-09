@@ -1,7 +1,4 @@
-﻿
-using Konata.Core.Common;
-using Konata.Core.Events.Model;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Text;
 
 namespace ProjektRin.System
@@ -64,28 +61,34 @@ namespace ProjektRin.System
                 throw new InvalidOperationException($"命令集 \"{commandSet}\" 不存在.");
             }
 
-            if (commandSet == "CoreCommands")
+            if (commandSet == "核心功能")
             {
-                throw new InvalidOperationException($"命令集 \"{commandSet}\" 是核心部件.");
+                throw new InvalidOperationException($"命令集 \"{commandSet}\" 是核心部件, 不能被关闭.");
+            }
+
+            var packageName = commandManager.CmdSets.FirstOrDefault(x => x.Key.Item1.Name == commandSet).Key.Item1.PackageName;
+            if (packageName == null)
+            {
+                throw new InvalidOperationException($"命令集 \"{commandSet}\" 不存在.");
             }
 
             if (action)
             {
-                if (!preference.DisabledCommandSets.Remove(commandSet)) return false;
+                if (!preference.DisabledCommandSets.Remove(packageName)) return false;
             }
             else
             {
-                if (preference.DisabledCommandSets.Contains(commandSet)) return false;
-                else preference.DisabledCommandSets.Add(commandSet);
+                if (preference.DisabledCommandSets.Contains(packageName)) return false;
+                else preference.DisabledCommandSets.Add(packageName);
             }
             SavePreferences();
             return true;
         }
 
-        public bool IsCommandSetDisabled(uint groupUin, string commandSet)
+        public bool IsCommandSetDisabled(uint groupUin, string packageName)
         {
             var preference = GetPreference(groupUin);
-            return preference.DisabledCommandSets.Contains(commandSet);
+            return preference.DisabledCommandSets.Contains(packageName);
         }
 
         public bool TogglePassiveMode(uint groupUin)

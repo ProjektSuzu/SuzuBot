@@ -133,7 +133,7 @@ namespace ProjektRin.System
 
             foreach (var set in _cmdSets)
             {
-                if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.Name)) continue;
+                if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.PackageName)) continue;
 
                 foreach (var (attr, method) in set.Value)
                 {

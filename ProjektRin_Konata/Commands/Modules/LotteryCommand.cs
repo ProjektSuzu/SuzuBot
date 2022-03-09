@@ -14,7 +14,7 @@ namespace ProjektRin.Commands.Modules
         public override string Help => $"[抽奖]\n" +
                 $"/slot [<num>]      玩 num 次老虎机\n" +
                 $"                   默认玩一次\n" +
-                $"/<num>连           玩 num 次老虎机\n" +   
+                $"/<num>连           玩 num 次老虎机\n" +
                 $"\n" +
                 $"  num     游玩次数" +
                 $"\n" +
@@ -59,7 +59,7 @@ namespace ProjektRin.Commands.Modules
                 uint.TryParse(args[0], out times);
             }
 
-            
+
 
             if (times <= 0) return;
             if (times > 100)
@@ -73,12 +73,12 @@ namespace ProjektRin.Commands.Modules
             ticket *= times;
 
             var reward = "";
-            
+
             var info = UserInfoManager.GetUserInfo(uin);
 
             if (info.coin < ticket)
             {
-                reply = 
+                reply =
                     $"你的内存不足\n" +
                     $"抽奖需要 {CoinToString(ticket)}, 而你只有 {CoinToString(info.coin)}.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -163,7 +163,7 @@ namespace ProjektRin.Commands.Modules
                 }
                 info.coin += totalCoin;
                 UserInfoManager.UpdateUserInfo(info);
-                
+
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
                 reply =
                         $"{times} 抽完成, 总计: 内存+ {CoinToString(totalCoin)}";
@@ -237,8 +237,8 @@ namespace ProjektRin.Commands.Modules
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            
-            
+
+
         }
 
         public static string CoinToString(uint coin)
@@ -266,6 +266,6 @@ namespace ProjektRin.Commands.Modules
             return wheel[new Random().Next(wheel.Length)];
         }
 
-        
+
     }
 }

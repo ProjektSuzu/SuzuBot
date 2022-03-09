@@ -8,7 +8,7 @@ namespace ProjektRin.Utils.Database
     internal class DatabaseManager
     {
         private static DatabaseManager _instance = new();
-        private DatabaseManager() 
+        private DatabaseManager()
         {
         }
         public static DatabaseManager Instance => _instance;

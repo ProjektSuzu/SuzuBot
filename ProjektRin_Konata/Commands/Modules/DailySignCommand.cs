@@ -93,7 +93,7 @@ namespace ProjektRin.Commands.Modules
             var card = TarotCommands.GetCards(1, (int)seed).First();
             reply =
                 $"今天的塔罗牌是: {card.title} {(isReversed ? "正位" : "逆位")}\n" +
-                $"{(isReversed ? card.positive : card.negative )}\n" +
+                $"{(isReversed ? card.positive : card.negative)}\n" +
                 $"\n";
 
             message.Image(TarotCommands.GetCardCoverPath(card.title)).Text(reply);

@@ -167,6 +167,53 @@ namespace ProjektRin.Commands.Modules
             return;
         }
 
+        [GroupMessageCommand("封禁", new[] { @"^ban\s?([\s\S]+)?" })]
+        public void OnBan(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var uin = 0u;
+            if (args.Count > 0)
+            {
+                if (!uint.TryParse(args[0], out uin))
+                {
+                    reply = $"错误: 参数非法: \"{args[0]}\" => <uin>.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+
+            if (uin == 0u)
+            {
+                reply = $"错误: 缺少参数: <uin>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (PermissionManager.Instance.IsAdmin(uin))
+            {
+                reply = $"U{uin} 无法被封禁.";
+                Logger.Info($"U{messageEvent.MemberUin} try to ban an admin.");
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (uin == messageEvent.MemberUin)
+            {
+                reply = $"不能封禁自己.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            var info = UserInfoManager.GetUserInfo(uin);
+            info.isBanned = !info.isBanned;
+            UserInfoManager.UpdateUserInfo(info);
+
+            reply = $"U{uin} 已被 {(info.isBanned ? "封禁" : "解封")}.";
+            Logger.Info($"U{uin} => {(info.isBanned ? "Ban" : "Unban")}.");
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            return;
+        }
+
         [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
         public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {

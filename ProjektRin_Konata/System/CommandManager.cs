@@ -6,6 +6,7 @@ using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Commands;
+using ProjektRin.Utils.Database.Tables;
 using System.Reflection;
 using static ProjektRin.System.PermissionManager;
 
@@ -117,6 +118,13 @@ namespace ProjektRin.System
             Bot bot = (Bot)sender;
             //排除自己发送的消息
             if (groupMessageEvent.MemberUin == bot.Uin) return;
+            //黑名单
+            var info = UserInfoManager.GetUserInfo(groupMessageEvent.MemberUin);
+            if (info != null && info.isBanned)
+            {
+                Logger.Info($"U{groupMessageEvent.MemberUin} is Banned.");
+                return;
+            }
             var message = groupMessageEvent.Message.ToString().Trim();
             if (message == null) return;
             if (!ShouldProcess(bot, groupMessageEvent)) return;

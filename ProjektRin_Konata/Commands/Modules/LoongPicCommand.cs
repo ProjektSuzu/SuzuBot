@@ -8,7 +8,7 @@ using ProjektRin.System;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("龙图")]
+    [CommandSet("龙图", "com.akulak.loongPic")]
     internal class LoongPicCommand : BaseCommand
     {
         private DirectoryInfo picDir;

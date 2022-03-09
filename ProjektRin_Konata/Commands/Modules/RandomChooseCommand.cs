@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("随机数")]
+    [CommandSet("随机数", "com.akulak.random")]
     public class RandomChooseCommand : BaseCommand
     {
         public override string Help =>

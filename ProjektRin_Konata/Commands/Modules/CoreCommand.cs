@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("核心功能")]
+    [CommandSet("核心功能", "com.akulak.core")]
     internal class CoreCommand : BaseCommand
     {
         GroupManager groupManager;

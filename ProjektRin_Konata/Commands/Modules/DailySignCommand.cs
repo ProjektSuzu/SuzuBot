@@ -7,7 +7,7 @@ using ProjektRin.Utils.Database.Tables;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("每日签到")]
+    [CommandSet("每日签到", "com.akulak.dailySign")]
     internal class DailySignCommand : BaseCommand
     {
         public override string Help => $"[每日签到]\n" +

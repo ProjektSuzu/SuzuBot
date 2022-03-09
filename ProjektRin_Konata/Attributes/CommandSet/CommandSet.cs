@@ -5,9 +5,12 @@
     {
         public string Name;
 
-        public CommandSet(string name)
+        public string PackageName;
+
+        public CommandSet(string name, string packageName)
         {
             Name = name;
+            PackageName = packageName;
         }
     }
 }

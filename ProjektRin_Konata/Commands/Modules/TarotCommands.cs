@@ -9,7 +9,7 @@ using ProjektRin.System;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("塔罗牌")]
+    [CommandSet("塔罗牌", "com.akulak.tarot")]
     internal class TarotCommands : BaseCommand
     {
         public override string Help =>

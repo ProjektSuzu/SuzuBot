@@ -8,7 +8,7 @@ using ProjektRin.Utils.Database.Tables;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("抽奖")]
+    [CommandSet("抽奖", "com.akulak.lottery")]
     internal class LotteryCommand : BaseCommand
     {
         public override string Help => $"[抽奖]\n" +

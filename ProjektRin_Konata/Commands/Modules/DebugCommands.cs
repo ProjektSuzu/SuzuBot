@@ -9,7 +9,7 @@ using ProjektRin.Attributes.CommandSet;
 namespace ProjektRin.Commands.Modules
 {
 
-    [CommandSet("Debug")]
+    [CommandSet("Debug", "com.akulak.debug")]
     internal class DebugCommands : BaseCommand
     {
         public override void OnInit() { }

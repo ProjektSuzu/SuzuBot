@@ -12,9 +12,9 @@ namespace ProjektRin.Commands.Modules
     internal class LotteryCommand : BaseCommand
     {
         public override string Help => $"[抽奖]\n" +
-                $"/slot [<num>]      玩 num 次老虎机\n" +
+                $"/slot [<num>]      玩 num 次抽奖机\n" +
                 $"                   默认玩一次\n" +
-                $"/<num>连           玩 num 次老虎机\n" +
+                $"/<num>连           玩 num 次抽奖机\n" +
                 $"\n" +
                 $"  num     游玩次数" +
                 $"\n" +

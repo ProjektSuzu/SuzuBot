@@ -52,7 +52,7 @@ namespace ProjektRin.Utils.Database.Tables
             {
                 if (create)
                 {
-                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime() };
+                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime() , isBanned = false };
                     _db.Insert(record);
                     return GetUserInfo(uin);
                 }
@@ -87,5 +87,7 @@ namespace ProjektRin.Utils.Database.Tables
         [Column("last_sign")]
         public DateTime lastSign { get; set; }
 
+        [Column("is_banned")]
+        public bool isBanned { get; set; }
     }
 }

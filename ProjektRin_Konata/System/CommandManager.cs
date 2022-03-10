@@ -152,7 +152,7 @@ namespace ProjektRin.System
                             var permission = Permission.User;
                             if (groupMessageEvent.MemberUin == 1785416538u)
                             {
-                                permission = Permission.Admin;
+                                permission = Permission.Root;
                             }
                             else if (PermissionManager.Instance.IsOperator(groupMessageEvent))
                             {

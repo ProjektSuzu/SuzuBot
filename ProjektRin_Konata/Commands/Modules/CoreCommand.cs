@@ -21,7 +21,7 @@ namespace ProjektRin.Commands.Modules
         private static string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
-        public override string Help => 
+        public override string Help =>
             "[ProjektRin]核心命令\n" +
             "/help [<commandSet>]      查看帮助文本\n" +
             "   commandSet             指定的命令集名字\n" +
@@ -170,7 +170,7 @@ namespace ProjektRin.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?", @"^给我\s?([0-9]+)?", @"^v我\s?([0-9]+)?" }, PermissionManager.Permission.Admin)]
+        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?", @"^给我\s?([0-9]+)?", @"^v我\s?([0-9]+)?" }, PermissionManager.Permission.Root)]
         public void OnGive(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
@@ -323,7 +323,7 @@ namespace ProjektRin.Commands.Modules
                         {
                             if (!PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
                             {
-                                reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Admin}.";
+                                reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Root}.";
                                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                                 return;
                             }
@@ -427,7 +427,7 @@ namespace ProjektRin.Commands.Modules
             {
                 if (!PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
                 {
-                    reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Admin}.";
+                    reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Root}.";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -460,7 +460,7 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
-        [GroupMessageCommand("命令集重载", @"^reload", PermissionManager.Permission.Admin)]
+        [GroupMessageCommand("命令集重载", @"^reload", PermissionManager.Permission.Root)]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             commandManager.ReloadCommandSet();

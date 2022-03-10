@@ -20,7 +20,7 @@ namespace ProjektRin.System
         {
             User,
             Operator,
-            Admin
+            Root
         }
 
         public bool IsOperator(uint groupUin, uint memberUin)

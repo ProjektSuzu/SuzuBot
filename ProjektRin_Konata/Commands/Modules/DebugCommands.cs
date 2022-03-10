@@ -40,6 +40,14 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             return;
         }
+
+        [GroupMessageCommand("test", @"^test")]
+        public void OnTest(Bot bot, GroupMessageEvent messageEvent)
+        {
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(messageEvent.Message.GetChain<TextChain>()));
+            return;
+        }
     }
 }
 #endif

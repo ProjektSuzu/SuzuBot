@@ -79,7 +79,7 @@ namespace ProjektRin.System
         {
             var deviceJson = JsonSerializer.Serialize(botKeyStore,
                 new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(Path.Combine(rootPath, "device.json"), deviceJson);
+            File.WriteAllText(Path.Combine(rootPath, "keystore.json"), deviceJson);
             return botKeyStore;
         }
 

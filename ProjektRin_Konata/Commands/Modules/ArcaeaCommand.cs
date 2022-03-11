@@ -25,12 +25,14 @@ namespace ProjektRin.Commands.Modules
                 $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +
                 $"/arc bind <usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
+                $"/arc song <song>  查询一首歌的信息\n" +
                 $"\n" +
                 $"  -a <api>    指定使用的API\n" +
                 $"              1: ArcaeaUnlimitedAPI   (默认 推荐)\n" +
                 $"              2: redive.estertion.win (很慢 较稳定)\n" +
                 $"\n" +
-                $"  usercode    Arcaea好友代码 必须是9位纯数字";
+                $"  usercode    Arcaea好友代码 必须是9位纯数字\n" +
+                $"  song        歌曲名字 可以是歌曲全名、内部sid、或者别名";
 
         public override void OnDisable()
         {
@@ -108,6 +110,12 @@ namespace ProjektRin.Commands.Modules
                         break;
                     }
 
+                case "song":
+                    {
+                        OnSongInfo(bot, messageEvent, args);
+                        break;
+                    }
+
                 default:
                     {
                         reply = $"错误: 找不到功能: \"{funcName}\"";
@@ -115,6 +123,62 @@ namespace ProjektRin.Commands.Modules
                         return;
                     }
             }
+        }
+
+        private void OnSongInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var sid = args.FirstOrDefault(defaultValue: "");
+            if (sid == null || sid == "")
+            {
+                reply = $"错误: 缺少参数: <songName>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+            HttpResponseMessage response;
+            try
+            {
+                response = _httpClient.GetAsync($"http://127.0.0.1:6002/song?sid={sid}").Result;
+            }
+            catch (Exception e) 
+            {
+                reply = $"错误: {e.Message}.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                reply = $"错误: 服务器内部错误.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            var result = JsonConvert.DeserializeObject<SongResult>(response.Content.ReadAsStringAsync().Result);
+            if (result == null)
+            {
+                reply = $"错误: 数据转换失败.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (result.code != 0)
+            {
+                reply = $"错误: 找不到歌曲 \"{sid}\".";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            reply = $"曲名: {result.data.song_name}\n" +
+                $"曲师: {result.data.artist}\n" +
+                $"     PST/PRS/FTR/BYD\n" +
+                $"定数:{String.Join('/', result.data.info.OrderBy(x => x.difficulty).Select(x => x.rating == -1 ? "-" : $"{((float)x.rating / 10)}"))}\n" +
+                $"物量:{String.Join('/', result.data.info.OrderBy(x => x.difficulty).Select(x => x.note == -1 ? "-" : x.note.ToString()))}";
+            var img = Convert.FromBase64String(result.data.song_cover);
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder().Image(img).Text(reply));
+            return;
+
         }
 
         private void OnB30(Bot bot, GroupMessageEvent messageEvent, List<string> args)
@@ -312,6 +376,25 @@ namespace ProjektRin.Commands.Modules
         public class Data
         {
             public string img;
+        }
+    }
+
+    class SongResult
+    {
+        public int code;
+        public Data data;
+        public class Data
+        {
+            public string song_name;
+            public string song_cover;
+            public string artist;
+            public List<Info> info;
+            public class Info
+            {
+                public int difficulty;
+                public int note;
+                public int rating;
+            }
         }
     }
 

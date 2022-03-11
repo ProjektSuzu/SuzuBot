@@ -64,7 +64,7 @@ namespace ProjektRin.System
                     foreach (var command in method.GetCustomAttributes())
                     {
                         //通过属性获取方法
-                        if (command is GroupMessageCommand cmd)
+                        if (command is Command cmd)
                         {
                             commands.Add((cmd, method));
                             Logger.Info($"Loading Command: {cmd.Name}");
@@ -115,6 +115,53 @@ namespace ProjektRin.System
             return true;
         }
 
+        public void GroupPokeEventHandler(object sender, GroupPokeEvent groupPokeEvent)
+        {
+            Bot bot = (Bot)sender;
+            //排除自己发送的戳一戳
+            if (groupPokeEvent.OperatorUin == bot.Uin) return;
+            //黑名单
+            var info = UserInfoManager.GetUserInfo(groupPokeEvent.OperatorUin);
+            if (info != null && info.isBanned)
+            {
+                Logger.Info($"U{groupPokeEvent.OperatorUin} is Banned.");
+                return;
+            }
+
+            foreach (var set in _cmdSets)
+            {
+                if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupPokeEvent.GroupUin, set.Key.Item1.PackageName)) continue;
+                foreach (var (attr, method) in set.Value)
+                {
+                    if (attr is GroupPokeCommand)
+                    {
+                        //获取用户权限组
+                        var permission = Permission.User;
+                        if (PermissionManager.Instance.IsAdmin(groupPokeEvent.OperatorUin))
+                        {
+                            permission = Permission.Root;
+                        }
+                        else if (PermissionManager.Instance.IsOperator(groupPokeEvent.GroupUin, groupPokeEvent.OperatorUin))
+                        {
+                            permission = Permission.Operator;
+                        }
+
+                        if (permission < attr.Permission)
+                        {
+                            Logger.Warn($"G{groupPokeEvent.GroupUin}|U{groupPokeEvent.OperatorUin} => {method.Name} Rejected.");
+                            var reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission}.";
+                            bot.SendGroupMessage(groupPokeEvent.GroupUin, new MessageBuilder(reply));
+                            return;
+                        }
+
+                        var methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupPokeEvent }) ?? true;
+                        return;
+                    }
+                }
+
+            }
+        }
+
         public void GroupMessageEventHandler(object sender, GroupMessageEvent groupMessageEvent)
         {
             Bot bot = (Bot)sender;
@@ -139,55 +186,53 @@ namespace ProjektRin.System
 
                 foreach (var (attr, method) in set.Value)
                 {
-                    var patterns = attr.Patterns;
-                    if (patterns == null || patterns.Count == 0)
+                    if (attr is GroupMessageCommand)
                     {
-                        method.Invoke(bot, new object[] { bot, groupMessageEvent });
-                        continue;
-                    }
+                        var patterns = attr.Patterns;
 
-                    foreach (var pattern in patterns)
-                    {
-                        if (pattern.Match(message).Success)
+                        foreach (var pattern in patterns)
                         {
-                            //获取用户权限组
-                            var permission = Permission.User;
-                            if (groupMessageEvent.MemberUin == 1785416538u)
+                            if (pattern.Match(message).Success)
                             {
-                                permission = Permission.Root;
-                            }
-                            else if (PermissionManager.Instance.IsOperator(groupMessageEvent))
-                            {
-                                permission = Permission.Operator;
-                            }
+                                //获取用户权限组
+                                var permission = Permission.User;
+                                if (groupMessageEvent.MemberUin == 1785416538u)
+                                {
+                                    permission = Permission.Root;
+                                }
+                                else if (PermissionManager.Instance.IsOperator(groupMessageEvent))
+                                {
+                                    permission = Permission.Operator;
+                                }
 
-                            if (permission < attr.Permission)
-                            {
-                                Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Rejected.");
-                                var reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission}.";
-                                bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
-                                return;
+                                if (permission < attr.Permission)
+                                {
+                                    Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Rejected.");
+                                    var reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission}.";
+                                    bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
+                                    return;
+                                }
+
+                                bool methodReturn = true;
+                                if (method.GetParameters().Count() == 2)
+                                    methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;
+                                else if (method.GetParameters().Count() == 3)
+                                {
+                                    var args = pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList().FirstOrDefault(defaultValue: "").Split(' ').ToList();
+                                    args.RemoveAll(x => x.Trim() == "");
+                                    if (args.All(x => x == "")) args = new List<string>();
+                                    methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, args }) ?? true;
+                                }
+                                else
+                                    continue;
+
+                                Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
+
+                                if (methodReturn)
+                                    return;
+                                else
+                                    continue;
                             }
-
-                            bool methodReturn = true;
-                            if (method.GetParameters().Count() == 2)
-                                methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;
-                            else if (method.GetParameters().Count() == 3)
-                            {
-                                var args = pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList().FirstOrDefault(defaultValue: "").Split(' ').ToList();
-                                args.RemoveAll(x => x.Trim() == "");
-                                if (args.All(x => x == "")) args = new List<string>();
-                                methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, args }) ?? true;
-                            }
-                            else
-                                continue;
-
-                            Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
-
-                            if (methodReturn)
-                                return;
-                            else
-                                continue;
                         }
                     }
                 }

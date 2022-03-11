@@ -32,6 +32,11 @@ namespace ProjektRin.Commands.Modules
                 $"\n" +
                 $"  usercode    Arcaea好友代码 必须是9位纯数字";
 
+        public override void OnDisable()
+        {
+            python.Kill();
+            base.OnDisable();
+        }
         public override void OnInit()
         {
             _httpClient = new HttpClient();

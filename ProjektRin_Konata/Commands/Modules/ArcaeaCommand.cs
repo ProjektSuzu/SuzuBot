@@ -36,7 +36,8 @@ namespace ProjektRin.Commands.Modules
 
         public override void OnDisable()
         {
-            python.Kill();
+            if (python != null)
+                python.Kill();
             base.OnDisable();
         }
         public override void OnInit()

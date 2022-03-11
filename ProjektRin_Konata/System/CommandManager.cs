@@ -83,6 +83,8 @@ namespace ProjektRin.System
 
         public void ReloadCommandSet()
         {
+            foreach (var cmdSet in _cmdSets)
+                cmdSet.Key.Item2.OnDisable();
             _cmdSets.Clear();
             GC.Collect();
             LoadCommandSet();

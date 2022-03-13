@@ -57,7 +57,7 @@ namespace ProjektRin.Commands.Modules
             python.StartInfo.CreateNoWindow = true;
             python.StartInfo.FileName = "python";
             python.StartInfo.Arguments = pythonPath;
-            
+
             python.StartInfo.RedirectStandardOutput = true;
             python.OutputDataReceived += new DataReceivedEventHandler((sender, e) => Logger.Info(e.Data));
 
@@ -87,7 +87,7 @@ namespace ProjektRin.Commands.Modules
             File.WriteAllText(BotManager.resourcePath + "/arcaea.json", json, Encoding.UTF8);
         }
 
-        [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?" , @"^a\s?([\s\S]+)?" })]
+        [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?", @"^a\s?([\s\S]+)?" })]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var funcName = args.FirstOrDefault();
@@ -258,7 +258,7 @@ namespace ProjektRin.Commands.Modules
             {
                 response = _httpClient.GetAsync($"http://127.0.0.1:6002/song?sid={sid}").Result;
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 reply = $"错误: {e.Message}.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));

@@ -277,7 +277,7 @@ namespace ProjektRin.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?", PermissionManager.Permission.Operator)]
+        [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?")]
         public void OnCommandControl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var groupUin = messageEvent.GroupUin;
@@ -303,13 +303,23 @@ namespace ProjektRin.Commands.Modules
                 {
                     if (set.Key.Item1.Name == "核心功能") continue;
                     var name = set.Key.Item1.Name;
+                    var pakname = set.Key.Item1.PackageName;
                     reply +=
-                        $"{(groupManager.IsCommandSetDisabled(messageEvent.GroupUin, name) ? "◇" : "◆")} {name}\n";
+                        $"{(groupManager.IsCommandSetDisabled(messageEvent.GroupUin, pakname) ? "◇" : "◆")} {name}\n";
                 }
                 reply += $"\n被动模式: {(groupManager.IsPassiveMode(messageEvent.GroupUin) ? "开启" : "关闭")}\n" +
                     $"如需查看详细使用帮助, 请输入 /cmdctl -h";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
+            }
+            else
+            {
+                if (!PermissionManager.Instance.IsOperator(messageEvent.GroupUin, messageEvent.MemberUin))
+                {
+                    reply = $"你没有足够的权限来使用参数\n要求 {PermissionManager.Permission.Operator}.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
             }
             List<string> sets = new();
             while (args.Count > 0)

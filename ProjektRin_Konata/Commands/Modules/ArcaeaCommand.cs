@@ -62,7 +62,7 @@ namespace ProjektRin.Commands.Modules
             python.OutputDataReceived += new DataReceivedEventHandler((sender, e) => Logger.Info(e.Data));
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
-#if DEBUG
+#if !DEBUG
             python.Start();
             python.BeginOutputReadLine();
 #endif

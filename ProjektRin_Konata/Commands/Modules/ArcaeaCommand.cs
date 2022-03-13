@@ -23,6 +23,7 @@ namespace ProjektRin.Commands.Modules
         public override string Help => $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
                 $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +
+                $"/arc recent [<usercode>] [-a <api>]    获取最近一次游玩成绩图\n" +
                 $"/arc bind <usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
                 $"/arc song <song>  查询一首歌的信息\n" +
@@ -117,6 +118,12 @@ namespace ProjektRin.Commands.Modules
                         break;
                     }
 
+                case "recent":
+                    {
+                        OnRecent(bot, messageEvent, args);
+                        break;
+                    }
+
                 default:
                     {
                         reply = $"错误: 找不到功能: \"{funcName}\"";
@@ -124,6 +131,106 @@ namespace ProjektRin.Commands.Modules
                         return;
                     }
             }
+        }
+
+        private void OnRecent(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var usercode = "";
+            var api = "1";
+
+            var arg = "";
+            while (args.Count > 0)
+            {
+                arg = args[0];
+                args.RemoveAt(0);
+
+                switch (arg)
+                {
+                    case "-a":
+                        {
+                            api = args.FirstOrDefault(defaultValue: "");
+                            if (args.Count > 0) args.RemoveAt(0);
+
+                            if (api == "")
+                            {
+                                reply = $"错误: 缺少参数: -a <api>.";
+                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
+                            break;
+                        }
+
+                    default:
+                        {
+                            usercode = arg;
+                            break;
+                        }
+                }
+            }
+
+            if (usercode != "")
+            {
+                var regex = new Regex(@"[0-9]{9}");
+                var match = regex.Match(usercode);
+                if (!match.Success)
+                {
+                    reply = $"错误: 参数非法: \"{usercode}\" => [<Usercode>].";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+            else
+            {
+                var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+                if (info == null)
+                {
+                    reply =
+                        $"错误: 当前QQ号不存在绑定的记录.\n" +
+                        $"若要使用此功能, 请先使用 /arc bind <Usercode> 进行绑定\n" +
+                        $"或者直接使用 /arc b30 [<Usercode>] [-a <API>] 并指定 [<Usercode>].";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+                else
+                {
+                    usercode = info.Usercode;
+                }
+            }
+
+            switch (api)
+            {
+                case "1": api = "BAA"; break;
+                case "2": api = "esterTion"; break;
+
+                default:
+                    {
+                        reply = $"错误: 参数非法: \"{api}\" => [-a <api>].";
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                        return;
+                    }
+            }
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .At(messageEvent.MemberUin)
+                .Text("\n收到, 正在处理成绩图...")
+                );
+            var (message, bytes) = GetRecentGraph(usercode, api);
+            if (message != "")
+            {
+                reply = $"错误: {message}";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Text(reply)
+                    );
+                return;
+            }
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Image(bytes!)
+                    );
+            return;
         }
 
         private void OnSongInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
@@ -297,7 +404,31 @@ namespace ProjektRin.Commands.Modules
                 return ("服务器内部错误.", null);
             }
 
-            var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
+            var result = JsonConvert.DeserializeObject<ImgResult>(response.Content.ReadAsStringAsync().Result);
+            if (result == null || result.code != 0)
+            {
+                return (result?.message ?? "数据转换失败.", null);
+            }
+
+            byte[] bytes = Convert.FromBase64String(result.data.img);
+            return ("", bytes);
+        }
+
+        private (string, byte[]?) GetRecentGraph(string userCode, string api)
+        {
+            HttpResponseMessage response;
+            try
+            {
+                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getRecent?usercode={userCode}&api={api}").Result;
+            }
+            catch (Exception e) { return (e.Message, null); }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return ("服务器内部错误.", null);
+            }
+
+            var result = JsonConvert.DeserializeObject<ImgResult>(response.Content.ReadAsStringAsync().Result);
             if (result == null || result.code != 0)
             {
                 return (result?.message ?? "数据转换失败.", null);
@@ -369,7 +500,7 @@ namespace ProjektRin.Commands.Modules
             }
         }
     }
-    class B30Result
+    class ImgResult
     {
         public int code;
         public string message;

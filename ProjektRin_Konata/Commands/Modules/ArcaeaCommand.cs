@@ -2,6 +2,7 @@
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Newtonsoft.Json;
+using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.System;
@@ -19,6 +20,9 @@ namespace ProjektRin.Commands.Modules
         private HttpClient _httpClient;
 
         private List<ArcaeaUserInfo> userInfos;
+
+        private static string TAG = "ARCAEA";
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public override string Help => $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
@@ -47,16 +51,20 @@ namespace ProjektRin.Commands.Modules
             _httpClient.Timeout = new TimeSpan(0, 5, 0);
 
             pythonPath = Path.Combine(BotManager.resourcePath, "ArcaeaProbe_Rework/main.py");
-#if !DEBUG
+
             python = new Process();
             python.StartInfo.UseShellExecute = false;
             python.StartInfo.CreateNoWindow = true;
-            python.StartInfo.FileName = "python3";
+            python.StartInfo.FileName = "python";
             python.StartInfo.Arguments = pythonPath;
-
+            
+            python.StartInfo.RedirectStandardOutput = true;
+            python.OutputDataReceived += new DataReceivedEventHandler((sender, e) => Logger.Info(e.Data));
 
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
+#if DEBUG
             python.Start();
+            python.BeginOutputReadLine();
 #endif
 
             try
@@ -79,7 +87,7 @@ namespace ProjektRin.Commands.Modules
             File.WriteAllText(BotManager.resourcePath + "/arcaea.json", json, Encoding.UTF8);
         }
 
-        [GroupMessageCommand("Arcaea", @"^arc\s?([\s\S]+)?")]
+        [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?" , @"^a\s?([\s\S]+)?" })]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var funcName = args.FirstOrDefault();
@@ -126,7 +134,9 @@ namespace ProjektRin.Commands.Modules
 
                 default:
                     {
-                        reply = $"错误: 找不到功能: \"{funcName}\"";
+                        reply = $"错误: 找不到功能: \"{funcName}\"\n" +
+                            $"如需查看功能帮助 请输入\n" +
+                            $"/arc";
                         bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                         return;
                     }

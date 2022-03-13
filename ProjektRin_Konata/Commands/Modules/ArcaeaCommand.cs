@@ -55,7 +55,7 @@ namespace ProjektRin.Commands.Modules
             python = new Process();
             python.StartInfo.UseShellExecute = false;
             python.StartInfo.CreateNoWindow = true;
-            python.StartInfo.FileName = "python";
+            python.StartInfo.FileName = "python3";
             python.StartInfo.Arguments = pythonPath;
 
             python.StartInfo.RedirectStandardOutput = true;

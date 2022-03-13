@@ -21,6 +21,27 @@ namespace ProjektRin.Commands.Modules
         private static string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
+        public string Introduction =>
+            $"[自我介绍]\n" +
+            $"这里是铃, 是基于 .NET 下的 Konata 框架\n" +
+            $"由 AkulaKirov 开发和维护的机器人\n" +
+            $"如果想要使用铃, 请使用 \"/\" \"铃酱\" 或者 At 的方式, 并加上想要调用的命令即可\n" +
+            $"铃目前处在开发活跃期, 可能会有很多功能上的变动\n" +
+            $"所有的命令帮助可以在 /help 里查看, 虽然可能会有点复杂\n" +
+            $"但是这也是为了更全面的解释功能用法, 还请各位见谅\n" +
+            $"目前铃还有很多需要完善的地方, 如果有好的建议可以和开发者说\n" +
+            $"期待今后和你们共度的时光 ☆ ～('▽^人)";
+
+        public string Announcement =>
+            $"[开发者公告]\n" +
+            $"我也不知道我写了个啥玩意\n" +
+            $"目前没有写私聊功能, 因为容易被tx封\n" +
+            $"自动入群也没有, 如果, 啊, 想拉到别的群的, 吱我一声就行了\n" +
+            $"欢迎大家帮我测bug, 滥用的就算了\n" +
+            $"Take care of yourself, and be well." +
+            $"73 TU\n" +
+            $"{DateTime.Now:s}\n";
+
         public override string Help =>
             "[ProjektRin]核心命令\n" +
             "/help [<commandSet>]      查看帮助文本\n" +
@@ -71,6 +92,8 @@ namespace ProjektRin.Commands.Modules
 
             if (setName == "")
             {
+                multiReply.AddMessage(sourceInfo, new MessageBuilder(Introduction));
+                multiReply.AddMessage(sourceInfo, new MessageBuilder(Announcement));
                 multiReply.AddMessage(sourceInfo, new MessageBuilder(Help));
                 foreach (var set in commandManager.CmdSets)
                 {

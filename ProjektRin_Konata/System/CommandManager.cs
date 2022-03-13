@@ -182,7 +182,13 @@ namespace ProjektRin.System
 
             foreach (var set in _cmdSets)
             {
-                if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.PackageName)) continue;
+                if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.PackageName))
+                {
+                    Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.GroupUin} => {set.Key.Item1.Name} Rejected.");
+                    var reply = $"命令集被禁用: {set.Key.Item1.Name}\n请联系管理员或开发者来开启该功能.";
+                    bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
+                    continue;
+                }
 
                 foreach (var (attr, method) in set.Value)
                 {

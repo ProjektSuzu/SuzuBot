@@ -518,7 +518,7 @@ namespace ProjektRin.Commands.Modules
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            
+
             userInfos.Add(newInfo);
             SaveUserInfo();
             reply = $"绑定成功\n" +

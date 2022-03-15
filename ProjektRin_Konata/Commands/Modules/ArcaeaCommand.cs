@@ -182,7 +182,7 @@ namespace ProjektRin.Commands.Modules
                 var match = regex.Match(usercode);
                 if (!match.Success)
                 {
-                    reply = $"错误: 参数非法: \"{usercode}\" => [<Usercode>].";
+                    reply = $"错误: 参数非法: \"{usercode}\" => [<usercode>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -194,8 +194,8 @@ namespace ProjektRin.Commands.Modules
                 {
                     reply =
                         $"错误: 当前QQ号不存在绑定的记录.\n" +
-                        $"若要使用此功能, 请先使用 /arc bind <Usercode> 进行绑定\n" +
-                        $"或者直接使用 /arc b30 [<Usercode>] [-a <API>] 并指定 [<Usercode>].";
+                        $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n" +
+                        $"或者直接使用 /arc b30 [usercode>] [-a <API>] 并指定 [<Usercode>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -243,13 +243,14 @@ namespace ProjektRin.Commands.Modules
         private void OnSongInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
-            var sid = args.FirstOrDefault(defaultValue: "");
-            if (sid == null || sid == "")
+            if (args.Count <= 0)
             {
                 reply = $"错误: 缺少参数: <songName>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
+            var sid = String.Join(' ', args);
+
             HttpResponseMessage response;
             try
             {
@@ -350,8 +351,8 @@ namespace ProjektRin.Commands.Modules
                 {
                     reply =
                         $"错误: 当前QQ号不存在绑定的记录.\n" +
-                        $"若要使用此功能, 请先使用 /arc bind <Usercode> 进行绑定\n" +
-                        $"或者直接使用 /arc b30 [<Usercode>] [-a <API>] 并指定 [<Usercode>].";
+                        $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n" +
+                        $"或者直接使用 /arc b30 [<usercode>] [-a <API>] 并指定 [<Usercode>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }

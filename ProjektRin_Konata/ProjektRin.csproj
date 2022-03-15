@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Konata.Core\Konata.Core.csproj" />
+    <ProjectReference Include="..\Konata.Core\Konata.Core\Konata.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

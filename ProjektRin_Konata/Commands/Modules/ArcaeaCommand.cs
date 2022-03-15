@@ -480,7 +480,7 @@ namespace ProjektRin.Commands.Modules
             }
 
             var result = JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
-            if (result == null)
+            if (result == null || result.status != 0)
             {
                 return (result?.message ?? "数据转换失败.", null);
             }

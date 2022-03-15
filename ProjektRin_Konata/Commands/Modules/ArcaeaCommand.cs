@@ -28,7 +28,7 @@ namespace ProjektRin.Commands.Modules
                 $"/arc      打印帮助信息\n" +
                 $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +
                 $"/arc recent [<usercode>] [-a <api>]    获取最近一次游玩成绩图\n" +
-                $"/arc bind <usercode>      为当前QQ号绑定好友代码\n" +
+                $"/arc bind <name/usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
                 $"/arc song <song>  查询一首歌的信息\n" +
                 $"\n" +
@@ -36,6 +36,7 @@ namespace ProjektRin.Commands.Modules
                 $"              1: ArcaeaUnlimitedAPI   (默认 推荐)\n" +
                 $"              2: redive.estertion.win (很慢 较稳定)\n" +
                 $"\n" +
+                $"  name        Arcaea玩家名字\n" +
                 $"  usercode    Arcaea好友代码 必须是9位纯数字\n" +
                 $"  song        歌曲名字 可以是歌曲全名、内部sid、或者别名";
 
@@ -177,7 +178,7 @@ namespace ProjektRin.Commands.Modules
 
             if (usercode != "")
             {
-                var regex = new Regex(@"[0-9]{9}");
+                var regex = new Regex(@"^[0-9]{9}$");
                 var match = regex.Match(usercode);
                 if (!match.Success)
                 {
@@ -200,7 +201,7 @@ namespace ProjektRin.Commands.Modules
                 }
                 else
                 {
-                    usercode = info.Usercode;
+                    usercode = info.UserCode;
                 }
             }
 
@@ -356,7 +357,7 @@ namespace ProjektRin.Commands.Modules
                 }
                 else
                 {
-                    usercode = info.Usercode;
+                    usercode = info.UserCode;
                 }
             }
 
@@ -464,12 +465,36 @@ namespace ProjektRin.Commands.Modules
             }
         }
 
+        private (string, ArcaeaUserInfo?) GetUserInfo(uint userUin, string nameOrCode)
+        {
+            HttpResponseMessage response;
+            try
+            {
+                response = _httpClient.GetAsync($"http://127.0.0.1:6002/userInfo?user={nameOrCode}").Result;
+            }
+            catch (Exception e) { return (e.Message, null); }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return ("服务器内部错误.", null);
+            }
+
+            var result = JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
+            if (result == null)
+            {
+                return (result?.message ?? "数据转换失败.", null);
+            }
+
+            var info = new ArcaeaUserInfo(userUin, result.code, result.name);
+            return ("", info);
+        }
+
         private void OnBind(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
             if (args.Count == 0)
             {
-                reply = "错误: 缺少参数: <Usercode>.";
+                reply = "错误: 缺少参数: <name/usercode>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -478,32 +503,29 @@ namespace ProjektRin.Commands.Modules
             {
                 reply = "错误: 当前QQ号已存在一个绑定的记录.\n" +
                     "如需更换绑定, 请先使用 /arc unbind 解绑.\n" +
-                    $"U{info.QQUin} => {info.Usercode}.";
+                    $"U{info.QQUin} => {info.UserName}({info.UserCode}).";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
 
-            var usercode = args[0];
+            var user = args[0];
 
-            var regex = new Regex(@"[0-9]{9}");
-            var match = regex.Match(usercode);
-
-            if (match.Success)
+            var (message, newInfo) = GetUserInfo(messageEvent.MemberUin, user);
+            if (newInfo == null)
             {
-                info = new ArcaeaUserInfo(messageEvent.MemberUin, usercode);
-                userInfos.Add(info);
-                SaveUserInfo();
-                reply = $"U{messageEvent.MemberUin} => {usercode}   绑定成功.\n" +
-                    $"现在可以直接使用 /arc b30 来获取成绩图.";
+                reply = $"错误: 未能查找到对应用户信息: {user}.\n" +
+                    $"{message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            else
-            {
-                reply = $"错误: 参数非法: \"{usercode}\" => <Usercode>.";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
+            
+            userInfos.Add(newInfo);
+            SaveUserInfo();
+            reply = $"绑定成功\n" +
+                $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).\n" +
+                $"现在可以直接使用 /arc b30 来获取成绩图.";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            return;
         }
     }
     class ImgResult
@@ -536,15 +558,24 @@ namespace ProjektRin.Commands.Modules
         }
     }
 
+    class UserInfoResult
+    {
+        public int status;
+        public string message;
+        public string name;
+        public string code;
+    }
+
     class ArcaeaUserInfo
     {
         public uint QQUin;
-        public string Usercode;
-
-        public ArcaeaUserInfo(uint qqUin, string usercode)
+        public string UserCode;
+        public string UserName;
+        public ArcaeaUserInfo(uint qqUin, string usercode, string username)
         {
             QQUin = qqUin;
-            Usercode = usercode;
+            UserCode = usercode;
+            UserName = username;
         }
     }
 }

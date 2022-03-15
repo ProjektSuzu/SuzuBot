@@ -337,7 +337,7 @@ namespace ProjektRin.Commands.Modules
             }
             else
             {
-                if (!PermissionManager.Instance.IsOperator(messageEvent.GroupUin, messageEvent.MemberUin) || !PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
+                if (!PermissionManager.Instance.IsOperator(messageEvent.GroupUin, messageEvent.MemberUin) && !PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
                 {
                     reply = $"你没有足够的权限来使用参数\n要求 {PermissionManager.Permission.Operator}.";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));

@@ -34,6 +34,7 @@ jobs:
         command: |
           sudo screen -S rin -X stuff $'\003'
         host: ${{ secrets.host }}
+        port: ${{ secrets.port }}
         username: ${{ secrets.username }}
         password: ${{ secrets.password }}
         
@@ -43,6 +44,7 @@ jobs:
         local: publish
         remote: /home/RinBot_Kotana/publish
         host: ${{ secrets.host }}
+        port: ${{ secrets.port }}
         username: ${{ secrets.username }}
         password: ${{ secrets.password }}
         
@@ -52,6 +54,7 @@ jobs:
         command: |
           screen -S rin -X exec dotnet /home/RinBot_Kotana/publish/ProjektRin.dll
         host: ${{ secrets.host }}
+        port: ${{ secrets.port }}
         username: ${{ secrets.username }}
         password: ${{ secrets.password }}
     

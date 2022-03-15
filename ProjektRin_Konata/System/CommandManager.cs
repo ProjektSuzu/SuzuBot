@@ -149,7 +149,7 @@ namespace ProjektRin.System
                         if (permission < attr.Permission)
                         {
                             Logger.Warn($"G{groupPokeEvent.GroupUin}|U{groupPokeEvent.OperatorUin} => {method.Name} Rejected.");
-                            var reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission}.";
+                            var reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission} 而你当前只有 {permission}.";
                             bot.SendGroupMessage(groupPokeEvent.GroupUin, new MessageBuilder(reply));
                             return;
                         }

@@ -8,14 +8,13 @@ using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Components;
 using ProjektRin.Utils.Database.Tables;
 using System.Text;
-using System.Timers;
 
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("抽奖", "com.akulak.lottery")]
     internal class LotteryCommand : BaseCommand
     {
-        public override string Help => 
+        public override string Help =>
                 $"[抽奖]\n" +
                 $"/slot [<num>]      玩 num 次抽奖机\n" +
                 $"                   默认玩一次\n" +
@@ -104,7 +103,7 @@ namespace ProjektRin.Commands.Modules
                 data = new LotteryData()
                 { Lotteries = new(), PrizePool = 10000, Winners = new(), WinningNumber = new() };
             }
-           
+
 
         }
 
@@ -322,11 +321,11 @@ namespace ProjektRin.Commands.Modules
             var reply = "";
             if (args.Count <= 0)
             {
-                reply = 
+                reply =
                     $"上一期阿塔大乐透的开奖号码为: {String.Join('|', data.WinningNumber)}\n" +
                     $"当前奖池累计: {UserInfoManager.CoinToString(data.PrizePool)}\n" +
                     $"上一期中奖人数: {data.Winners.Count} 人\n" +
-                    $"{(data.Winners.Contains(messageEvent.MemberUin) ? "恭喜你成为中奖人之一 奖金已经自动打入账户中" : "很遗憾 你并不是中奖人之一" )}\n" +
+                    $"{(data.Winners.Contains(messageEvent.MemberUin) ? "恭喜你成为中奖人之一 奖金已经自动打入账户中" : "很遗憾 你并不是中奖人之一")}\n" +
                     $"如想购买大乐透 请使用 /lottery [<number>] 一次性输入3个不同的号码即可\n\n" +
                     $"本奖金由 阿塔w_Official 全额赞助";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -389,7 +388,7 @@ namespace ProjektRin.Commands.Modules
                 data.PrizePool += ticket;
                 UserInfoManager.UpdateUserInfo(info);
 
-                var numbers = new List<int>() { a, b, c};
+                var numbers = new List<int>() { a, b, c };
                 numbers.Sort();
                 var lottery = new Lottery(messageEvent.MemberUin, numbers);
                 data.Lotteries.Add(lottery);

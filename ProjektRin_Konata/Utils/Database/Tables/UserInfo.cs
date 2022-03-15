@@ -15,19 +15,19 @@ namespace ProjektRin.Utils.Database.Tables
         {
             if (coin < 1000)
             {
-                return $"{coin} Byte";
+                return $"{coin} KB";
             }
             else if (coin < 1000000)
             {
-                return $"{(float)coin / 1000:f3} KB";
+                return $"{(float)coin / 1000:f3} MB";
             }
             else if (coin < 1000000000)
             {
-                return $"{(float)coin / 1000000:f3} MB";
+                return $"{(float)coin / 1000000:f3} GB";
             }
             else
             {
-                return $"{(float)coin / 1000000000:f3} GB";
+                return $"{(float)coin / 1000000000:f3} TB";
             }
         }
 

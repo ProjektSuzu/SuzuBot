@@ -1,6 +1,6 @@
 ﻿using Konata.Core.Message;
 using NLog;
-using ProjektRin.System;
+using ProjektRin.Components;
 using ProjektRin.Utils.BuildStamp;
 using ProjektRin.Utils.Database;
 

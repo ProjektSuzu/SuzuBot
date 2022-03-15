@@ -2,16 +2,21 @@
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
+using Newtonsoft.Json;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
+using ProjektRin.Components;
 using ProjektRin.Utils.Database.Tables;
+using System.Text;
+using System.Timers;
 
 namespace ProjektRin.Commands.Modules
 {
     [CommandSet("抽奖", "com.akulak.lottery")]
     internal class LotteryCommand : BaseCommand
     {
-        public override string Help => $"[抽奖]\n" +
+        public override string Help => 
+                $"[抽奖]\n" +
                 $"/slot [<num>]      玩 num 次抽奖机\n" +
                 $"                   默认玩一次\n" +
                 $"/<num>连           玩 num 次抽奖机\n" +
@@ -19,7 +24,14 @@ namespace ProjektRin.Commands.Modules
                 $"  num     游玩次数" +
                 $"\n" +
                 $"快捷名:\n" +
-                $"/抽奖";
+                $"/抽奖\n" +
+                $"\n" +
+                $"/lottery [<number>]   购买和查看大乐透\n" +
+                $"\n" +
+                $"  number  想要购买的号码 只能选择3个 0-9 的不同的数字\n" +
+                $"\n" +
+                $"快捷名:\n" +
+                $"/大乐透";
 
         private static readonly string[] wheel = new[]
         {
@@ -40,8 +52,73 @@ namespace ProjektRin.Commands.Modules
             "⑦"
         };
 
+        private static readonly List<int> lotteryNumber = new()
+        {
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+        };
+
+        private LotteryData data;
+
+        private System.Timers.Timer timer;
+
         public override void OnInit()
         {
+            Load();
+            Save();
+            SetTimer();
+        }
+
+        public void Save()
+        {
+            var json = JsonConvert.SerializeObject(data);
+            File.WriteAllText(BotManager.resourcePath + "/lottery.json", json, Encoding.UTF8);
+        }
+
+        public void Load()
+        {
+            try
+            {
+                var json = File.ReadAllText(BotManager.resourcePath + "/lottery.json");
+                var load = JsonConvert.DeserializeObject<LotteryData>(json);
+                if (load == null)
+                {
+                    data = new LotteryData()
+                    { Lotteries = new(), PrizePool = 10000, Winners = new(), WinningNumber = new() };
+                }
+                else
+                {
+                    data = load;
+                }
+            }
+            catch
+            {
+                data = new LotteryData()
+                { Lotteries = new(), PrizePool = 10000, Winners = new(), WinningNumber = new() };
+            }
+           
+
+        }
+
+        private void SetTimer()
+        {
+            timer = new System.Timers.Timer();
+            var time1 = DateTime.Now;
+            var time2 = DateTime.Now.AddDays(1).Date;
+
+            int sec = (int)time2.Subtract(time1).TotalSeconds + 1;
+            timer.AutoReset = false;
+            timer.Interval = sec;
+            timer.Elapsed += (sender, message) => OnDraw();
+            timer.Start();
         }
 
         [GroupMessageCommand("抽奖", new[] { @"^slot\s?([0-9]+)?", @"^抽奖\s?([0-9]+)?", @"^抽奖([0-9]+)连" })]
@@ -80,7 +157,7 @@ namespace ProjektRin.Commands.Modules
             {
                 reply =
                     $"你的内存不足\n" +
-                    $"抽奖需要 {CoinToString(ticket)}, 而你只有 {CoinToString(info.coin)}.";
+                    $"抽奖需要 {UserInfoManager.CoinToString(ticket)}, 而你只有 {UserInfoManager.CoinToString(info.coin)}.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -153,7 +230,7 @@ namespace ProjektRin.Commands.Modules
                         $"│{result[0]}│{result[1]}│{result[2]}│\n" +
                         $"└─┴─┴─┘\n" +
                         $"{reward}\n" +
-                        $"内存+ {CoinToString(coin)}";
+                        $"内存+ {UserInfoManager.CoinToString(coin)}";
 
                     multiReply.AddMessage(
                         new SourceInfo(bot.Uin, bot.Name),
@@ -166,7 +243,7 @@ namespace ProjektRin.Commands.Modules
 
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
                 reply =
-                        $"{times} 抽完成, 总计: 内存+ {CoinToString(totalCoin)}";
+                        $"{times} 抽完成, 总计: 内存+ {UserInfoManager.CoinToString(totalCoin)}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -230,42 +307,163 @@ namespace ProjektRin.Commands.Modules
                     $"│{result[0]}│{result[1]}│{result[2]}│\n" +
                     $"└─┴─┴─┘\n" +
                     $"{reward}\n" +
-                    $"内存+ {CoinToString(coin)}";
+                    $"内存+ {UserInfoManager.CoinToString(coin)}";
 
                 info.coin += coin;
                 UserInfoManager.UpdateUserInfo(info);
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-
-
         }
 
-        public static string CoinToString(uint coin)
+        [GroupMessageCommand("阿塔大乐透", new[] { @"^lottery\s?([0-9]+)?", @"^大乐透\s?([0-9]+)?" })]
+        public void OnLottery(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            if (coin < 1000)
+            var reply = "";
+            if (args.Count <= 0)
             {
-                return $"{coin} Byte";
-            }
-            else if (coin < 1000000)
-            {
-                return $"{(float)coin / 1000:f3} KB";
-            }
-            else if (coin < 1000000000)
-            {
-                return $"{(float)coin / 1000000:f3} MB";
+                reply = 
+                    $"上一期阿塔大乐透的开奖号码为: {String.Join('|', data.WinningNumber)}\n" +
+                    $"当前奖池累计: {UserInfoManager.CoinToString(data.PrizePool)}\n" +
+                    $"上一期中奖人数: {data.Winners.Count} 人\n" +
+                    $"{(data.Winners.Contains(messageEvent.MemberUin) ? "恭喜你成为中奖人之一 奖金已经自动打入账户中" : "很遗憾 你并不是中奖人之一" )}\n" +
+                    $"如想购买大乐透 请使用 /lottery [<number>] 一次性输入3个不同的号码即可\n\n" +
+                    $"本奖金由 阿塔w_Official 全额赞助";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
             }
             else
             {
-                return $"{(float)coin / 1000000000:f3} GB";
+                if (data.Lotteries.Any(x => x.Uin == messageEvent.MemberUin))
+                {
+                    var l = data.Lotteries.First(x => x.Uin == messageEvent.MemberUin);
+                    reply = "你已经购买过彩票了 不要贪心哦\n" +
+                        $"{String.Join('|', l.Number)}";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+                var number = args[0];
+                if (number.Length != 3)
+                {
+                    reply = "输入非法: 只能选择3个 0-9 的不同的数字";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+                int a, b, c;
+
+                if (!int.TryParse(number[0].ToString(), out a) ||
+                    !int.TryParse(number[1].ToString(), out b) ||
+                    !int.TryParse(number[2].ToString(), out c))
+                {
+                    reply = "输入非法: 只能选择3个 0-9 的不同的数字";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+
+                if (a == b || a == c || b == c)
+                {
+                    reply = "输入非法: 只能选择3个 0-9 的不同的数字";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+
+                if (a < 0 || a > 9 || b < 0 || b > 9 || c < 0 || c > 9)
+                {
+                    reply = "输入非法: 只能选择3个 0-9 的不同的数字";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+
+                uint ticket = 1000;
+                var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
+                if (info.coin < ticket)
+                {
+                    reply =
+                    $"你的内存不足\n" +
+                    $"抽奖需要 {UserInfoManager.CoinToString(ticket)}, 而你只有 {UserInfoManager.CoinToString(info.coin)}.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+
+                info.coin -= ticket;
+                data.PrizePool += ticket;
+                UserInfoManager.UpdateUserInfo(info);
+
+                var numbers = new List<int>() { a, b, c};
+                numbers.Sort();
+                var lottery = new Lottery(messageEvent.MemberUin, numbers);
+                data.Lotteries.Add(lottery);
+                Save();
+                reply =
+                    $"购买成功\n" +
+                    $"{String.Join('|', numbers)}\n" +
+                    $"开奖时间为 {DateTime.Now.AddDays(1).Date:g} 祝您好运.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
             }
         }
 
-        private string RollOnce()
+        [GroupMessageCommand("彩票立即开奖", new[] { @"^draw_now" }, PermissionManager.Permission.Root)]
+        public void OnDrawNow(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            OnDraw();
+        }
+
+        public void OnDraw()
+        {
+            timer.Dispose();
+            var rnd = new Random();
+            data.WinningNumber.Clear();
+            data.WinningNumber = lotteryNumber.OrderBy(x => rnd.Next()).Take(3).ToList();
+            data.WinningNumber.Sort();
+            data.Winners.Clear();
+            foreach (var l in data.Lotteries)
+            {
+                if (l.Number.All(data.WinningNumber.Contains))
+                {
+                    data.Winners.Add(l.Uin);
+                }
+            }
+            data.Lotteries.Clear();
+
+            if (data.Winners.Count > 0)
+            {
+                var prize = data.PrizePool / data.Winners.Count;
+                data.PrizePool = 10000;
+                foreach (var i in data.Winners)
+                {
+                    var info = UserInfoManager.GetUserInfo(i);
+                    info.coin += (uint)prize;
+                    UserInfoManager.UpdateUserInfo(info);
+                }
+            }
+            Save();
+            SetTimer();
+        }
+
+        private static string RollOnce()
         {
             return wheel[new Random().Next(wheel.Length)];
         }
+    }
 
+    class LotteryData
+    {
+        public uint PrizePool;
+        public List<int> WinningNumber;
+        public List<uint> Winners;
+        public List<Lottery> Lotteries;
+    }
 
+    class Lottery
+    {
+        public uint Uin;
+        public List<int> Number;
+
+        public Lottery(uint uin, List<int> number)
+        {
+            this.Uin = uin;
+            this.Number = number;
+        }
     }
 }

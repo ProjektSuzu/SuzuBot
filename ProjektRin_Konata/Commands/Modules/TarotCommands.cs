@@ -5,7 +5,7 @@ using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using ProjektRin.System;
+using ProjektRin.Components;
 
 namespace ProjektRin.Commands.Modules
 {

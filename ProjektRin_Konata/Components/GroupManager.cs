@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 
-namespace ProjektRin.System
+namespace ProjektRin.Components
 {
     public class GroupManager
     {

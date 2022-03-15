@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using static ProjektRin.System.PermissionManager;
+using static ProjektRin.Components.PermissionManager;
 
 namespace ProjektRin.Attributes.Command
 {

@@ -5,7 +5,7 @@ using Konata.Core.Message.Model;
 using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using ProjektRin.System;
+using ProjektRin.Components;
 using ProjektRin.Utils.BuildStamp;
 using ProjektRin.Utils.Database.Tables;
 using System.Diagnostics;

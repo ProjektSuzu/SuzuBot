@@ -4,7 +4,7 @@ using Konata.Core.Events.Model;
 using NLog;
 using System.Text.Json;
 
-namespace ProjektRin.System
+namespace ProjektRin.Components
 {
     public class BotManager
     {

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using ProjektRin.System;
+using ProjektRin.Components;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;

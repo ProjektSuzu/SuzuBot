@@ -8,9 +8,9 @@ using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Commands;
 using ProjektRin.Utils.Database.Tables;
 using System.Reflection;
-using static ProjektRin.System.PermissionManager;
+using static ProjektRin.Components.PermissionManager;
 
-namespace ProjektRin.System
+namespace ProjektRin.Components
 {
     internal class CommandManager
     {

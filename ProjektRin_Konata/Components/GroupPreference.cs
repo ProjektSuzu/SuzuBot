@@ -1,4 +1,4 @@
-﻿namespace ProjektRin.System
+﻿namespace ProjektRin.Components
 {
     internal class GroupPreference
     {

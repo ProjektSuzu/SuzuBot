@@ -1,7 +1,7 @@
 ﻿using Konata.Core.Common;
 using Konata.Core.Events.Model;
 
-namespace ProjektRin.System
+namespace ProjektRin.Components
 {
     public class PermissionManager
     {

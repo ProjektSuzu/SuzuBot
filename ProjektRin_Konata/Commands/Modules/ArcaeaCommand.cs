@@ -58,13 +58,9 @@ namespace ProjektRin.Commands.Modules
             python.StartInfo.FileName = "python3";
             python.StartInfo.Arguments = pythonPath;
 
-            python.StartInfo.RedirectStandardOutput = true;
-            python.OutputDataReceived += new DataReceivedEventHandler((sender, e) => Logger.Info(e.Data));
-
             AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
 #if !DEBUG
             python.Start();
-            python.BeginOutputReadLine();
 #endif
 
             try

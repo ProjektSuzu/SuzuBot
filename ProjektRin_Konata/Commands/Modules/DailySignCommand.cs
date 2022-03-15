@@ -112,7 +112,7 @@ namespace ProjektRin.Commands.Modules
         {
             var seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
             if (seed > int.MaxValue) seed /= 2;
-            var random = new Random((int)seed).Next(0, 4);
+            var random = new Random((int)seed).Next(0, 5);
             var result = "";
             var comment = "";
             switch (random)

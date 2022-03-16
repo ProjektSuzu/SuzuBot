@@ -115,7 +115,7 @@ namespace ProjektRin.Commands.Modules
 
             int sec = (int)time2.Subtract(time1).TotalSeconds + 1;
             timer.AutoReset = false;
-            timer.Interval = sec;
+            timer.Interval = sec * 1000;
             timer.Elapsed += (sender, message) => OnDraw();
             timer.Start();
         }

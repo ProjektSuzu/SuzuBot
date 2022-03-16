@@ -196,14 +196,14 @@ namespace ProjektRin.Commands.Modules
                             case "★":
                                 {
                                     reward = "三星";
-                                    coin += 10000;
+                                    coin += 50000;
                                     break;
                                 }
 
                             case "⑦":
                                 {
                                     reward = "头奖";
-                                    coin += 50000;
+                                    coin += 1000000;
                                     break;
                                 }
                         }
@@ -211,7 +211,7 @@ namespace ProjektRin.Commands.Modules
                     else if (result.Count(x => x == "★") == 2)
                     {
                         reward = "双星";
-                        coin += 5000;
+                        coin += 10000;
                     }
                     else if (result.All(x => x == "♠" || x == "♣") || result.All(x => x == "♥" || x == "♦"))
                     {
@@ -273,14 +273,14 @@ namespace ProjektRin.Commands.Modules
                         case "★":
                             {
                                 reward = "三星";
-                                coin += 10000;
+                                coin += 50000;
                                 break;
                             }
 
                         case "⑦":
                             {
                                 reward = "头奖";
-                                coin += 50000;
+                                coin += 1000000;
                                 break;
                             }
                     }
@@ -288,7 +288,7 @@ namespace ProjektRin.Commands.Modules
                 else if (result.Count(x => x == "★") == 2)
                 {
                     reward = "双星";
-                    coin += 5000;
+                    coin += 10000;
                 }
                 else if (result.All(x => x == "♠" || x == "♣") || result.All(x => x == "♥" || x == "♦"))
                 {

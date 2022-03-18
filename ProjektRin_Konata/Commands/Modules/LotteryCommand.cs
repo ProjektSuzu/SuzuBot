@@ -125,7 +125,7 @@ namespace ProjektRin.Commands.Modules
         {
             var reply = "";
             var uin = messageEvent.MemberUin;
-            var ticket = 500u;
+            var ticket = 1000u;
             var times = 1u;
 
             Console.WriteLine(times);

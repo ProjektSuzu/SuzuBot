@@ -36,11 +36,11 @@ namespace ProjektRin.Commands.Modules
             $"[开发者公告]\n" +
             $"我也不知道我写了个啥玩意\n" +
             $"目前没有写私聊功能, 因为容易被tx封\n" +
-            $"自动入群也没有, 如果, 啊, 想拉到别的群的, 吱我一声就行了\n" +
+            $"自动入群也没有, 如果, 啊, 想拉到别的群的, 吱我一声就行了(1785416538)\n" +
             $"欢迎大家帮我测bug, 滥用的就算了\n" +
-            $"Take care of yourself, and be well." +
-            $"73 TU\n" +
-            $"{DateTime.Now:s}\n";
+            $"Take care of yourself, and be well.\n" +
+            $"DE BG5UZP 73 TU\n" +
+            $"20220318\n";
 
         public override string Help =>
             "[ProjektRin]核心命令\n" +

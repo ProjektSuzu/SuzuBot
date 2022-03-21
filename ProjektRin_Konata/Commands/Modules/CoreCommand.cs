@@ -15,10 +15,10 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("核心功能", "com.akulak.core")]
     internal class CoreCommand : BaseCommand
     {
-        GroupManager groupManager;
-        CommandManager commandManager;
+        private GroupManager groupManager;
+        private CommandManager commandManager;
 
-        private static string TAG = "CORECMD";
+        private static readonly string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public string Introduction =>
@@ -81,10 +81,9 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("帮助", new[] { @"^help\s?([\s\S]+)?", @"^帮助\s?([\s\S]+)?" })]
         public void OnHelp(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var setName = "";
-            var sourceInfo = new SourceInfo(bot.Uin, bot.Name);
-            var multiReply = MultiMsgChain.Create();
+            string? reply = "";
+            string? setName = "";
+            MultiMsgChain? multiReply = MultiMsgChain.Create();
             if (args.Count > 0)
             {
                 setName = args[0];
@@ -92,15 +91,20 @@ namespace ProjektRin.Commands.Modules
 
             if (setName == "")
             {
-                multiReply.AddMessage(sourceInfo, new MessageBuilder(Introduction));
-                multiReply.AddMessage(sourceInfo, new MessageBuilder(Announcement));
-                multiReply.AddMessage(sourceInfo, new MessageBuilder(Help));
-                foreach (var set in commandManager.CmdSets)
+                multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Introduction).Build()));
+                multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Announcement).Build()));
+                multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Help).Build()));
+
+                foreach (KeyValuePair<(CommandSet, BaseCommand), List<(Command handler, System.Reflection.MethodInfo method)>> set in commandManager.CmdSets)
                 {
-                    if (set.Key.Item1.Name == "核心功能") continue;
-                    var help = set.Key.Item2.Help;
-                    var message = new MessageBuilder(help);
-                    multiReply.AddMessage(sourceInfo, message);
+                    if (set.Key.Item1.Name == "核心功能")
+                    {
+                        continue;
+                    }
+
+                    string? help = set.Key.Item2.Help;
+                    MessageBuilder? message = new MessageBuilder(help);
+                    multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, message.Build()));
                 }
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
                 return;
@@ -113,8 +117,8 @@ namespace ProjektRin.Commands.Modules
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
-                var set = commandManager.CmdSets.Where(x => x.Key.Item1.Name == setName).First();
-                var help = set.Key.Item2.Help;
+                KeyValuePair<(CommandSet, BaseCommand), List<(Command handler, System.Reflection.MethodInfo method)>> set = commandManager.CmdSets.Where(x => x.Key.Item1.Name == setName).First();
+                string? help = set.Key.Item2.Help;
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
                 return;
             }
@@ -123,12 +127,10 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("支付", new[] { @"^pay\s?([\s\S]+)?", @"^转账\s?([\s\S]+)?" })]
         public void OnPay(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var uin = messageEvent.MemberUin;
-            var info = UserInfoManager.GetUserInfo(uin);
+            string? reply = "";
+            uint uin = messageEvent.MemberUin;
+            UserInfo? info = UserInfoManager.GetUserInfo(uin);
 
-            var target = 0u;
-            var amount = 0u;
 
             if (args.Count < 2)
             {
@@ -137,9 +139,9 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            if (!uint.TryParse(args[0], out target))
+            if (!uint.TryParse(args[0], out uint target))
             {
-                var atChain = (AtChain?)messageEvent.Message.FirstOrDefault(x => x is AtChain);
+                AtChain? atChain = (AtChain?)messageEvent.Message.Chain.FirstOrDefault(x => x is AtChain);
                 if (atChain == null)
                 {
                     reply = $"错误: 参数错误: {args[0]} => <targetUin>.";
@@ -156,7 +158,7 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            var targetInfo = UserInfoManager.GetUserInfo(target, false);
+            UserInfo? targetInfo = UserInfoManager.GetUserInfo(target, false);
             if (targetInfo == null)
             {
                 reply = $"错误: 目标用户不存在: U{target}.";
@@ -164,7 +166,7 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            if (!uint.TryParse(args[1], out amount))
+            if (!uint.TryParse(args[1], out uint amount))
             {
                 reply = $"错误: 参数错误: {args[1]} => <amount>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -196,11 +198,11 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?", @"^给我\s?([0-9]+)?", @"^v我\s?([0-9]+)?" }, PermissionManager.Permission.Root)]
         public void OnGive(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var uin = messageEvent.MemberUin;
-            var info = UserInfoManager.GetUserInfo(uin);
+            string? reply = "";
+            uint uin = messageEvent.MemberUin;
+            UserInfo? info = UserInfoManager.GetUserInfo(uin);
 
-            var coin = 0u;
+            uint coin = 0u;
             if (args.Count > 0)
             {
                 if (!uint.TryParse(args[0], out coin))
@@ -221,8 +223,8 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("封禁", new[] { @"^ban\s?([\s\S]+)?" })]
         public void OnBan(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var uin = 0u;
+            string? reply = "";
+            uint uin = 0u;
             if (args.Count > 0)
             {
                 if (!uint.TryParse(args[0], out uin))
@@ -255,7 +257,7 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            var info = UserInfoManager.GetUserInfo(uin);
+            UserInfo? info = UserInfoManager.GetUserInfo(uin);
             info.isBanned = !info.isBanned;
             UserInfoManager.UpdateUserInfo(info);
 
@@ -268,9 +270,9 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
         public void OnUserInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var uin = messageEvent.MemberUin;
-            var create = true;
+            string? reply = "";
+            uint uin = messageEvent.MemberUin;
+            bool create = true;
             if (args.Count > 0)
             {
                 if (!uint.TryParse(args[0], out uin))
@@ -281,7 +283,7 @@ namespace ProjektRin.Commands.Modules
                 }
                 create = false;
             }
-            var info = UserInfoManager.GetUserInfo(uin, create);
+            UserInfo? info = UserInfoManager.GetUserInfo(uin, create);
             if (info == null)
             {
                 reply = $"错误: 找不到用户: \"U{uin}\".";
@@ -303,7 +305,7 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?")]
         public void OnCommandControl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var groupUin = messageEvent.GroupUin;
+            uint groupUin = messageEvent.GroupUin;
             bool? action = null;
             bool global = false;
             string help =
@@ -318,15 +320,19 @@ namespace ProjektRin.Commands.Modules
                 $"  enable      启用\n" +
                 $"  disable     禁用";
             string reply = "";
-            var arg = args.FirstOrDefault();
+            string? arg = args.FirstOrDefault();
             if (arg == null)
             {
                 reply = "当前加载的命令集:\n";
-                foreach (var set in commandManager.CmdSets)
+                foreach (KeyValuePair<(CommandSet, BaseCommand), List<(Command handler, System.Reflection.MethodInfo method)>> set in commandManager.CmdSets)
                 {
-                    if (set.Key.Item1.Name == "核心功能") continue;
-                    var name = set.Key.Item1.Name;
-                    var pakname = set.Key.Item1.PackageName;
+                    if (set.Key.Item1.Name == "核心功能")
+                    {
+                        continue;
+                    }
+
+                    string? name = set.Key.Item1.Name;
+                    string? pakname = set.Key.Item1.PackageName;
                     reply +=
                         $"{(groupManager.IsCommandSetDisabled(messageEvent.GroupUin, pakname) ? "◇" : "◆")} {name}\n";
                 }
@@ -369,8 +375,12 @@ namespace ProjektRin.Commands.Modules
 
                     case "-g":
                         {
-                            var group = args.FirstOrDefault();
-                            if (args.Count > 0) args.RemoveAt(0);
+                            string? group = args.FirstOrDefault();
+                            if (args.Count > 0)
+                            {
+                                args.RemoveAt(0);
+                            }
+
                             if (group == null)
                             {
                                 reply = $"错误: 缺少参数: -g <groupUin>.";
@@ -405,14 +415,17 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            var count = 0;
+            int count = 0;
             if (global)
             {
-                foreach (var set in sets)
+                foreach (string? set in sets)
                 {
                     try
                     {
-                        if (commandManager.ToggleCommandSet(set, (bool)action)) count++;
+                        if (commandManager.ToggleCommandSet(set, (bool)action))
+                        {
+                            count++;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -424,11 +437,14 @@ namespace ProjektRin.Commands.Modules
             }
             else
             {
-                foreach (var set in sets)
+                foreach (string? set in sets)
                 {
                     try
                     {
-                        if (groupManager.SetDisabledCommandSet(groupUin, (bool)action, set)) count++;
+                        if (groupManager.SetDisabledCommandSet(groupUin, (bool)action, set))
+                        {
+                            count++;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -454,8 +470,8 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("被动模式", @"^passive\s?([\s\S]+)?", PermissionManager.Permission.Operator)]
         public void OnPassiveMode(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var groupUin = messageEvent.GroupUin;
+            string? reply = "";
+            uint groupUin = messageEvent.GroupUin;
             while (args.Count > 0)
             {
                 if (!PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
@@ -464,16 +480,16 @@ namespace ProjektRin.Commands.Modules
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
-                var arg = args.ElementAt(0);
+                string? arg = args.ElementAt(0);
                 args.RemoveAt(0);
 
-                if (uint.TryParse(arg, out var value))
+                if (uint.TryParse(arg, out uint value))
                 {
                     groupUin = value;
                 }
             }
 
-            var flag = groupManager.TogglePassiveMode(groupUin);
+            bool flag = groupManager.TogglePassiveMode(groupUin);
 
             reply = $"G{groupUin} => 被动模式 {(flag ? "启用" : "禁用")}.";
             Logger.Info($"G{messageEvent.GroupUin}|U{messageEvent.MemberUin} => G{groupUin} => Passive Mode {(flag ? "On" : "Off")}.");
@@ -483,11 +499,11 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("Ping", @"^ping", PermissionManager.Permission.Operator)]
         public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
-            var ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
-            long ticksSend = (long)messageEvent.MessageTime * 1000;
+            long ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
+            long ticksSend = messageEvent.EventTime.Ticks * 1000;
 
-            var test = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(1970, 1, 1), TimeZoneInfo.Local).AddMilliseconds(ticksSend);
-            var reply = $"Pong! ({Math.Abs(ticksNow - ticksSend)}ms)\n" +
+            DateTime test = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(1970, 1, 1), TimeZoneInfo.Local).AddMilliseconds(ticksSend);
+            string? reply = $"Pong! ({Math.Abs(ticksNow - ticksSend)}ms)\n" +
                 $"Receive: {test}";
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -497,7 +513,7 @@ namespace ProjektRin.Commands.Modules
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {
             commandManager.ReloadCommandSet();
-            var reply =
+            string? reply =
                 "所有命令重载成功";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
@@ -505,18 +521,18 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("状态信息", @"^status")]
         public void OnStatus(Bot bot, GroupMessageEvent messageEvent)
         {
-            var osVersion = Environment.OSVersion.Platform;
-            var processorCount = Environment.ProcessorCount;
-            var clrVersion = Environment.Version.ToString();
-            var usedMemoryMB = Environment.WorkingSet / 1024 / 1024;
-            var tickCount = DateTime.Now - Process.GetCurrentProcess().StartTime;
+            PlatformID osVersion = Environment.OSVersion.Platform;
+            int processorCount = Environment.ProcessorCount;
+            string? clrVersion = Environment.Version.ToString();
+            long usedMemoryMB = Environment.WorkingSet / 1024 / 1024;
+            TimeSpan tickCount = DateTime.Now - Process.GetCurrentProcess().StartTime;
 
-            var cmdmgr = CommandManager.Instance;
+            CommandManager? cmdmgr = CommandManager.Instance;
 
-            var groupCount = bot.GetGroupList().Result.Count;
-            var friendCount = bot.GetFriendList().Result.Count;
+            int groupCount = bot.GetGroupList().Result.Count;
+            int friendCount = bot.GetFriendList().Result.Count;
 
-            var reply =
+            string? reply =
                 $"[ProjektRin] {RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}\n" +
                 $"当前系统平台: {osVersion} {processorCount} Thread(s)\n" +
                 $"DotNET CLR版本: {clrVersion}\n" +

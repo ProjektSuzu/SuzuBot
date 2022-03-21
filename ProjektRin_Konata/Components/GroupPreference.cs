@@ -7,6 +7,9 @@
 
         public List<string> DisabledCommandSets = new();
 
-        public GroupPreference(uint groupUin) => GroupUin = groupUin;
+        public GroupPreference(uint groupUin)
+        {
+            GroupUin = groupUin;
+        }
     }
 }

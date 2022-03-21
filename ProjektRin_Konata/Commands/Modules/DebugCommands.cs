@@ -19,23 +19,23 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("Fake", @"^fake\s?([\s\S]+)?")]
         public void OnFake(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var atChain = (AtChain?)messageEvent.Message.FirstOrDefault(x => x is AtChain);
+            AtChain? atChain = (AtChain?)messageEvent.Message.Chain.FirstOrDefault(x => x is AtChain);
             if (atChain == null) { return; }
             args.RemoveAt(0);
-            var member = bot.GetGroupMemberList(messageEvent.GroupUin).Result.FirstOrDefault(x => x.Uin == atChain.AtUin);
+            Konata.Core.Common.BotMember? member = bot.GetGroupMemberList(messageEvent.GroupUin).Result.FirstOrDefault(x => x.Uin == atChain.AtUin);
             if (member == null) { return; }
-            var multiReply = MultiMsgChain.Create();
+            MultiMsgChain? multiReply = MultiMsgChain.Create();
 
-            foreach (var arg in args)
+            foreach (string? arg in args)
             {
                 multiReply.AddMessage(
-                    new SourceInfo(member.Uin, member.NickName), MessageBuilder.Eval(arg)
-                    );
+                    new MessageStruct(member.Uin, member.NickName, MessageBuilder.Eval(arg).Build()
+                    ));
             }
 
             multiReply.AddMessage(
-                new SourceInfo(bot.Uin, bot.Name), new MessageBuilder("这是一条伪造的合并转发信息 请勿相信上述任何人的任何话")
-                );
+                new MessageStruct(bot.Uin, bot.Name, new MessageBuilder("这是一条伪造的合并转发信息 请勿相信上述任何人的任何话").Build()
+                ));
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             return;
@@ -45,7 +45,7 @@ namespace ProjektRin.Commands.Modules
         public void OnTest(Bot bot, GroupMessageEvent messageEvent)
         {
 
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(messageEvent.Message.GetChain<TextChain>()));
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(messageEvent.Message.Chain.GetChain<TextChain>()));
             return;
         }
     }

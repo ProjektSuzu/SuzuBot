@@ -78,7 +78,7 @@ namespace ProjektRin.Commands.Modules
 
         public void Save()
         {
-            var json = JsonConvert.SerializeObject(data);
+            string? json = JsonConvert.SerializeObject(data);
             File.WriteAllText(BotManager.resourcePath + "/lottery.json", json, Encoding.UTF8);
         }
 
@@ -86,8 +86,8 @@ namespace ProjektRin.Commands.Modules
         {
             try
             {
-                var json = File.ReadAllText(BotManager.resourcePath + "/lottery.json");
-                var load = JsonConvert.DeserializeObject<LotteryData>(json);
+                string? json = File.ReadAllText(BotManager.resourcePath + "/lottery.json");
+                LotteryData? load = JsonConvert.DeserializeObject<LotteryData>(json);
                 if (load == null)
                 {
                     data = new LotteryData()
@@ -110,8 +110,8 @@ namespace ProjektRin.Commands.Modules
         private void SetTimer()
         {
             timer = new System.Timers.Timer();
-            var time1 = DateTime.Now;
-            var time2 = DateTime.Now.AddDays(1).Date;
+            DateTime time1 = DateTime.Now;
+            DateTime time2 = DateTime.Now.AddDays(1).Date;
 
             int sec = (int)time2.Subtract(time1).TotalSeconds + 1;
             timer.AutoReset = false;
@@ -123,10 +123,10 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("抽奖", new[] { @"^slot\s?([0-9]+)?", @"^抽奖\s?([0-9]+)?", @"^抽奖([0-9]+)连" })]
         public void OnSlot(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var uin = messageEvent.MemberUin;
-            var ticket = 1000u;
-            var times = 1u;
+            string? reply = "";
+            uint uin = messageEvent.MemberUin;
+            uint ticket = 1000u;
+            uint times = 1u;
 
             Console.WriteLine(times);
 
@@ -137,7 +137,11 @@ namespace ProjektRin.Commands.Modules
 
 
 
-            if (times <= 0) return;
+            if (times <= 0)
+            {
+                return;
+            }
+
             if (times > 100)
             {
                 reply =
@@ -148,9 +152,9 @@ namespace ProjektRin.Commands.Modules
 
             ticket *= times;
 
-            var reward = "";
+            string? reward = "";
 
-            var info = UserInfoManager.GetUserInfo(uin);
+            UserInfo? info = UserInfoManager.GetUserInfo(uin);
 
             if (info.coin < ticket)
             {
@@ -165,19 +169,19 @@ namespace ProjektRin.Commands.Modules
 
             if (times > 1)
             {
-                var totalCoin = 0u;
-                var multiReply = MultiMsgChain.Create();
+                uint totalCoin = 0u;
+                MultiMsgChain? multiReply = MultiMsgChain.Create();
 
                 for (int i = 0; i < times; i++)
                 {
-                    var coin = 0u;
-                    var result = new string[3];
+                    uint coin = 0u;
+                    string[]? result = new string[3];
                     for (int j = 0; j < 3; j++)
                     {
                         result[j] = RollOnce();
                     }
 
-                    var a1 = result[0];
+                    string? a1 = result[0];
 
                     if (result.All(x => x == a1))
                     {
@@ -232,9 +236,9 @@ namespace ProjektRin.Commands.Modules
                         $"内存+ {UserInfoManager.CoinToString(coin)}";
 
                     multiReply.AddMessage(
-                        new SourceInfo(bot.Uin, bot.Name),
-                        new MessageBuilder(reply)
-                        );
+                        new MessageStruct(bot.Uin, bot.Name,
+                        new MessageBuilder(reply).Build()
+                        ));
                     totalCoin += coin;
                 }
                 info.coin += totalCoin;
@@ -248,14 +252,14 @@ namespace ProjektRin.Commands.Modules
             }
             else
             {
-                var coin = 0u;
-                var result = new string[3];
+                uint coin = 0u;
+                string[]? result = new string[3];
                 for (int j = 0; j < 3; j++)
                 {
                     result[j] = RollOnce();
                 }
 
-                var a1 = result[0];
+                string? a1 = result[0];
                 if (result.All(x => x == a1))
                 {
                     switch (a1)
@@ -318,11 +322,11 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("阿塔大乐透", new[] { @"^lottery\s?([0-9]+)?", @"^大乐透\s?([0-9]+)?" })]
         public void OnLottery(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
+            string? reply = "";
             if (args.Count <= 0)
             {
                 reply =
-                    $"上一期阿塔大乐透的开奖号码为: {String.Join('|', data.WinningNumber)}\n" +
+                    $"上一期阿塔大乐透的开奖号码为: {string.Join('|', data.WinningNumber)}\n" +
                     $"当前奖池累计: {UserInfoManager.CoinToString(data.PrizePool)}\n" +
                     $"上一期中奖人数: {data.Winners.Count} 人\n" +
                     $"{(data.Winners.Contains(messageEvent.MemberUin) ? "恭喜你成为中奖人之一 奖金已经自动打入账户中" : "很遗憾 你并不是中奖人之一")}\n" +
@@ -335,24 +339,23 @@ namespace ProjektRin.Commands.Modules
             {
                 if (data.Lotteries.Any(x => x.Uin == messageEvent.MemberUin))
                 {
-                    var l = data.Lotteries.First(x => x.Uin == messageEvent.MemberUin);
+                    Lottery? l = data.Lotteries.First(x => x.Uin == messageEvent.MemberUin);
                     reply = "你已经购买过彩票了 不要贪心哦\n" +
-                        $"{String.Join('|', l.Number)}";
+                        $"{string.Join('|', l.Number)}";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
-                var number = args[0];
+                string? number = args[0];
                 if (number.Length != 3)
                 {
                     reply = "输入非法: 只能选择3个 0-9 的不同的数字";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
-                int a, b, c;
 
-                if (!int.TryParse(number[0].ToString(), out a) ||
-                    !int.TryParse(number[1].ToString(), out b) ||
-                    !int.TryParse(number[2].ToString(), out c))
+                if (!int.TryParse(number[0].ToString(), out int a) ||
+                    !int.TryParse(number[1].ToString(), out int b) ||
+                    !int.TryParse(number[2].ToString(), out int c))
                 {
                     reply = "输入非法: 只能选择3个 0-9 的不同的数字";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -374,7 +377,7 @@ namespace ProjektRin.Commands.Modules
                 }
 
                 uint ticket = 1000;
-                var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
+                UserInfo? info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
                 if (info.coin < ticket)
                 {
                     reply =
@@ -388,14 +391,14 @@ namespace ProjektRin.Commands.Modules
                 data.PrizePool += ticket;
                 UserInfoManager.UpdateUserInfo(info);
 
-                var numbers = new List<int>() { a, b, c };
+                List<int>? numbers = new List<int>() { a, b, c };
                 numbers.Sort();
-                var lottery = new Lottery(messageEvent.MemberUin, numbers);
+                Lottery? lottery = new Lottery(messageEvent.MemberUin, numbers);
                 data.Lotteries.Add(lottery);
                 Save();
                 reply =
                     $"购买成功\n" +
-                    $"{String.Join('|', numbers)}\n" +
+                    $"{string.Join('|', numbers)}\n" +
                     $"开奖时间为 {DateTime.Now.AddDays(1).Date:g} 祝您好运.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
@@ -411,12 +414,12 @@ namespace ProjektRin.Commands.Modules
         public void OnDraw()
         {
             timer.Dispose();
-            var rnd = new Random();
+            Random? rnd = new Random();
             data.WinningNumber.Clear();
             data.WinningNumber = lotteryNumber.OrderBy(x => rnd.Next()).Take(3).ToList();
             data.WinningNumber.Sort();
             data.Winners.Clear();
-            foreach (var l in data.Lotteries)
+            foreach (Lottery? l in data.Lotteries)
             {
                 if (l.Number.All(data.WinningNumber.Contains))
                 {
@@ -427,11 +430,11 @@ namespace ProjektRin.Commands.Modules
 
             if (data.Winners.Count > 0)
             {
-                var prize = data.PrizePool / data.Winners.Count;
+                long prize = data.PrizePool / data.Winners.Count;
                 data.PrizePool = 10000;
-                foreach (var i in data.Winners)
+                foreach (uint i in data.Winners)
                 {
-                    var info = UserInfoManager.GetUserInfo(i);
+                    UserInfo? info = UserInfoManager.GetUserInfo(i);
                     info.coin += (uint)prize;
                     UserInfoManager.UpdateUserInfo(info);
                 }
@@ -446,7 +449,7 @@ namespace ProjektRin.Commands.Modules
         }
     }
 
-    class LotteryData
+    internal class LotteryData
     {
         public uint PrizePool;
         public List<int> WinningNumber;
@@ -454,15 +457,15 @@ namespace ProjektRin.Commands.Modules
         public List<Lottery> Lotteries;
     }
 
-    class Lottery
+    internal class Lottery
     {
         public uint Uin;
         public List<int> Number;
 
         public Lottery(uint uin, List<int> number)
         {
-            this.Uin = uin;
-            this.Number = number;
+            Uin = uin;
+            Number = number;
         }
     }
 }

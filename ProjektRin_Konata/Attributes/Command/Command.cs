@@ -14,8 +14,10 @@ namespace ProjektRin.Attributes.Command
         public Command(string name, string pattern, Permission permission = Permission.User)
         {
             Name = name;
-            Patterns = new List<Regex>();
-            Patterns.Add(new Regex(pattern));
+            Patterns = new List<Regex>
+            {
+                new Regex(pattern)
+            };
             Permission = permission;
         }
 

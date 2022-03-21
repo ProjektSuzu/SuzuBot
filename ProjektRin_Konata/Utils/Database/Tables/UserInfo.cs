@@ -4,7 +4,7 @@ namespace ProjektRin.Utils.Database.Tables
 {
     public static class UserInfoManager
     {
-        private static SQLiteConnection _db = DatabaseManager.Instance.dbConnection;
+        private static readonly SQLiteConnection _db = DatabaseManager.Instance.dbConnection;
 
         public static int LevelToExp(int level)
         {
@@ -33,21 +33,21 @@ namespace ProjektRin.Utils.Database.Tables
 
         public static bool UpdateUserInfo(UserInfo info)
         {
-            var result = _db
+            int result = _db
                 .Update(info);
             return result > 0;
         }
 
         public static UserInfo? GetUserInfo(uint uin, bool create = true)
         {
-            var result = _db
+            List<UserInfo>? result = _db
                 .Table<UserInfo>()
                 .Where(t => t.uin == uin).ToList();
             if (result.Count == 0)
             {
                 if (create)
                 {
-                    var record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime(), isBanned = false };
+                    UserInfo? record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime(), isBanned = false };
                     _db.Insert(record);
                     return GetUserInfo(uin);
                 }

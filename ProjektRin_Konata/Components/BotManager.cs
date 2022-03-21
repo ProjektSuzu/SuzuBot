@@ -8,18 +8,18 @@ namespace ProjektRin.Components
 {
     public class BotManager
     {
-        private static BotManager _instance = new();
+        private static readonly BotManager _instance = new();
         private BotManager() { }
         public static BotManager Instance => _instance;
 
         private Bot _bot;
-        public Bot Bot { get { return _bot; } }
+        public Bot Bot => _bot;
 
         public static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
         public static string resourcePath = Path.Combine(rootPath, "resources");
 
-        private CommandManager _commandManager = CommandManager.Instance;
-        private static string TAG = "Bot";
+        private readonly CommandManager _commandManager = CommandManager.Instance;
+        private static readonly string TAG = "Bot";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public BotConfig GetConfig()
@@ -42,9 +42,9 @@ namespace ProjektRin.Components
             }
             else
             {
-                var _botDevice = BotDevice.Default();
+                BotDevice? _botDevice = BotDevice.Default();
                 {
-                    var deviceJson = JsonSerializer.Serialize(_botDevice,
+                    string? deviceJson = JsonSerializer.Serialize(_botDevice,
                         new JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(Path.Combine(rootPath, "device.json"), deviceJson);
                 }
@@ -65,10 +65,10 @@ namespace ProjektRin.Components
                               "type your account and password.");
 
                 Console.Write("Account: ");
-                var account = Console.ReadLine();
+                string? account = Console.ReadLine();
 
                 Console.Write("Password: ");
-                var password = Console.ReadLine();
+                string? password = Console.ReadLine();
 
                 Console.WriteLine("Keystore Updated.");
                 return UpdateKeyStore(new BotKeyStore(account, password));
@@ -77,7 +77,7 @@ namespace ProjektRin.Components
 
         public BotKeyStore UpdateKeyStore(BotKeyStore botKeyStore)
         {
-            var deviceJson = JsonSerializer.Serialize(botKeyStore,
+            string? deviceJson = JsonSerializer.Serialize(botKeyStore,
                 new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(Path.Combine(rootPath, "keystore.json"), deviceJson);
             return botKeyStore;

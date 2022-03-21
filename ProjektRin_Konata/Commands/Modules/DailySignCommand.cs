@@ -28,10 +28,10 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("签到", new[] { @"^sign", @"^fortune", @"^打卡", @"^签到", @"^(今日)?运势" })]
         public void OnSign(Bot bot, GroupMessageEvent messageEvent)
         {
-            var reply = "";
-            var message = new MessageBuilder();
-            var uin = messageEvent.MemberUin;
-            var info = UserInfoManager.GetUserInfo(uin);
+            string? reply = "";
+            MessageBuilder? message = new MessageBuilder();
+            uint uin = messageEvent.MemberUin;
+            UserInfo? info = UserInfoManager.GetUserInfo(uin);
             //应该不会 但是以防万一
             if (info == null)
             {
@@ -47,7 +47,7 @@ namespace ProjektRin.Commands.Modules
             else
             {
                 uint coin = (uint)new Random().Next(100, 4000);
-                var exp = new Random().Next(5, 15);
+                int exp = new Random().Next(5, 15);
 
                 info.exp += exp;
                 info.coin += coin;
@@ -76,7 +76,7 @@ namespace ProjektRin.Commands.Modules
             message.Text(reply);
             reply = "";
 
-            var (lot, comment) = Lot(uin);
+            (string lot, string comment) = Lot(uin);
 
             reply =
                 $"今天的运势是: {lot}\n" +
@@ -86,11 +86,15 @@ namespace ProjektRin.Commands.Modules
             message.Text(reply);
             reply = "";
 
-            var seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
-            if (seed > int.MaxValue) seed /= 2;
-            var isReversed = new Random((int)seed).Next(0, 2) == 0;
+            long seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
+            if (seed > int.MaxValue)
+            {
+                seed /= 2;
+            }
 
-            var card = TarotCommands.GetCards(1, (int)seed).First();
+            bool isReversed = new Random((int)seed).Next(0, 2) == 0;
+
+            Tarot? card = TarotCommands.GetCards(1, (int)seed).First();
             reply =
                 $"今天的塔罗牌是: {card.title} {(isReversed ? "正位" : "逆位")}\n" +
                 $"{(isReversed ? card.positive : card.negative)}\n" +
@@ -110,11 +114,15 @@ namespace ProjektRin.Commands.Modules
 
         public (string, string) Lot(uint uin)
         {
-            var seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
-            if (seed > int.MaxValue) seed /= 2;
-            var random = new Random((int)seed).Next(0, 5);
-            var result = "";
-            var comment = "";
+            long seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
+            if (seed > int.MaxValue)
+            {
+                seed /= 2;
+            }
+
+            int random = new Random((int)seed).Next(0, 5);
+            string? result = "";
+            string? comment = "";
             switch (random)
             {
                 case 0:
@@ -153,7 +161,7 @@ namespace ProjektRin.Commands.Modules
 
         }
 
-        static class LotComment
+        private static class LotComment
         {
             //别问我为什么要这么命名 就是玩
             public static string[] Miss = {

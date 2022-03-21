@@ -19,15 +19,19 @@ namespace ProjektRin.Commands.Modules
 
         public override void OnInit()
         {
-            var json = File.ReadAllText(BotManager.resourcePath + "/pokeReply.json");
+            string? json = File.ReadAllText(BotManager.resourcePath + "/pokeReply.json");
             replys = JsonConvert.DeserializeObject<List<string>>(json) ?? new();
         }
 
         [GroupPokeCommand("戳一戳")]
         public void OnPoke(Bot bot, GroupPokeEvent pokeEvent)
         {
-            if (pokeEvent.OperatorUin == bot.Uin || pokeEvent.MemberUin != bot.Uin) return;
-            var reply = replys.ElementAt(new Random().Next(replys.Count()));
+            if (pokeEvent.OperatorUin == bot.Uin || pokeEvent.MemberUin != bot.Uin)
+            {
+                return;
+            }
+
+            string? reply = replys.ElementAt(new Random().Next(replys.Count()));
             bot.SendGroupMessage(pokeEvent.GroupUin, new MessageBuilder(reply));
             return;
         }

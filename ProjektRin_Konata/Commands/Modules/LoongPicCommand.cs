@@ -29,17 +29,17 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("发龙图", new[] { @"^loong\s?([\s\S]+)?", @"^龙图\s?([\s\S]+)?" })]
         public void OnSendLoongPic(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
+            string? reply = "";
             if (args.Count == 0)
             {
                 Random random = new Random();
-                var pic = picDir.GetFiles()[random.Next(picDir.GetFiles().Length)];
+                FileInfo? pic = picDir.GetFiles()[random.Next(picDir.GetFiles().Length)];
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                                                         .Image(pic.FullName));
                 return;
             }
 
-            var arg = "";
+            string? arg = "";
             while (args.Count > 0)
             {
                 arg = args[0];
@@ -50,7 +50,7 @@ namespace ProjektRin.Commands.Modules
                     case "-a":
                     case "添加":
                         {
-                            var chain = messageEvent.Message & BaseChain.ChainType.Image;
+                            IEnumerable<BaseChain>? chain = messageEvent.Message.Chain & BaseChain.ChainType.Image;
                             if (chain == null || chain.Count() == 0)
                             {
                                 reply = $"错误: 未找到图片";
@@ -61,8 +61,8 @@ namespace ProjektRin.Commands.Modules
                             HttpClient client = new HttpClient();
                             foreach (ImageChain img in chain)
                             {
-                                var name = img.FileName;
-                                var data = img.FileData;
+                                string? name = img.FileName;
+                                byte[]? data = img.FileData;
                                 FileStream fs = new FileStream(Path.Combine(picDir.FullName, $"/{name}.png"), FileMode.Create);
                                 fs.Write(data, 0, data.Length);
                                 fs.Close();

@@ -7,13 +7,13 @@ namespace ProjektRin.Utils.Database
 {
     internal class DatabaseManager
     {
-        private static DatabaseManager _instance = new();
+        private static readonly DatabaseManager _instance = new();
         private DatabaseManager()
         {
         }
         public static DatabaseManager Instance => _instance;
 
-        private static string dbPath = Path.Combine(BotManager.rootPath, "database/rin.db");
+        private static readonly string dbPath = Path.Combine(BotManager.rootPath, "database/rin.db");
         public SQLiteConnection dbConnection;
 
         private static readonly string TAG = "DBMGR";

@@ -20,8 +20,8 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("随机选择", new[] { @"^random\s?([\s\S]+)?", @"^帮我选\s?([\s\S]+)?" })]
         public void OnRandomChoose(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var random = new Random().Next(99);
+            string? reply = "";
+            int random = new Random().Next(99);
             if (random == 49)
             {
                 reply = "\n铃建议什么都不做呢";

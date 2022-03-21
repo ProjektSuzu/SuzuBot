@@ -8,7 +8,7 @@ namespace ProjektRin;
 
 public static class Program
 {
-    private static string TAG = "Main";
+    private static readonly string TAG = "Main";
     private static readonly Logger Logger = LogManager.GetLogger(TAG);
     public static int Main()
     {
@@ -47,8 +47,8 @@ public static class Program
         CommandManager.Instance.LoadCommandSet();
         Logger.Info("Logging in.");
 
-        var maxAttempt = 5;
-        var attempt = 0;
+        int maxAttempt = 5;
+        int attempt = 0;
 
         for (; attempt < maxAttempt; attempt++)
         {

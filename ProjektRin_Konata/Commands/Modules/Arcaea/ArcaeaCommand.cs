@@ -2,27 +2,19 @@
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Newtonsoft.Json;
-using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Components;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ProjektRin.Commands.Modules
+namespace ProjektRin.Commands.Modules.Arcaea
 {
     [CommandSet("Arcaea", "com.akulak.arcaea")]
     internal class ArcaeaCommand : BaseCommand
     {
-        private string pythonPath;
-        private Process python;
-        private HttpClient _httpClient;
-
         private List<ArcaeaUserInfo> userInfos;
-
-        private static string TAG = "ARCAEA";
-        private static readonly Logger Logger = LogManager.GetLogger(TAG);
+        private readonly ArcaeaUnlimitedAPI aua = ArcaeaUnlimitedAPI.Instance;
 
         public override string Help => $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
@@ -41,30 +33,8 @@ namespace ProjektRin.Commands.Modules
                 $"  usercode    Arcaea好友代码 必须是9位纯数字\n" +
                 $"  song        歌曲名字 可以是歌曲全名、内部sid、或者别名";
 
-        public override void OnDisable()
-        {
-            if (python != null)
-                python.Kill();
-            base.OnDisable();
-        }
         public override void OnInit()
         {
-            _httpClient = new HttpClient();
-            _httpClient.Timeout = new TimeSpan(0, 5, 0);
-
-            pythonPath = Path.Combine(BotManager.resourcePath, "ArcaeaProbe_Rework/main.py");
-
-            python = new Process();
-            python.StartInfo.UseShellExecute = false;
-            python.StartInfo.CreateNoWindow = true;
-            python.StartInfo.FileName = "python3";
-            python.StartInfo.Arguments = pythonPath;
-
-            AppDomain.CurrentDomain.ProcessExit += (s, e) => python.Kill();
-#if !DEBUG
-            python.Start();
-#endif
-
             try
             {
                 LoadUserInfo();
@@ -75,21 +45,21 @@ namespace ProjektRin.Commands.Modules
 
         private void LoadUserInfo()
         {
-            var json = File.ReadAllText(BotManager.resourcePath + "/arcaea.json");
+            string? json = File.ReadAllText(BotManager.resourcePath + "/arcaea.json");
             userInfos = JsonConvert.DeserializeObject<List<ArcaeaUserInfo>>(json) ?? new();
         }
 
         private void SaveUserInfo()
         {
-            var json = JsonConvert.SerializeObject(userInfos);
+            string? json = JsonConvert.SerializeObject(userInfos);
             File.WriteAllText(BotManager.resourcePath + "/arcaea.json", json, Encoding.UTF8);
         }
 
         [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?", @"^a\s?([\s\S]+)?" })]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var funcName = args.FirstOrDefault();
-            var reply = "";
+            string? funcName = args.FirstOrDefault();
+            string? reply = "";
 
             if (funcName == null)
             {
@@ -150,8 +120,8 @@ namespace ProjektRin.Commands.Modules
 
         private void OnRecent(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var usercode = "";
+            string? reply = "";
+            string? usercode = "";
 
             if (args.Count > 0)
             {
@@ -160,8 +130,8 @@ namespace ProjektRin.Commands.Modules
 
             if (usercode != "")
             {
-                var regex = new Regex(@"^[0-9]{9}$");
-                var match = regex.Match(usercode);
+                Regex? regex = new Regex(@"^[0-9]{9}$");
+                Match? match = regex.Match(usercode);
                 if (!match.Success)
                 {
                     reply = $"错误: 参数非法: \"{usercode}\" => [<usercode>].";
@@ -171,13 +141,12 @@ namespace ProjektRin.Commands.Modules
             }
             else
             {
-                var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+                ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
                 if (info == null)
                 {
                     reply =
                         $"错误: 当前QQ号不存在绑定的记录.\n" +
-                        $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n" +
-                        $"或者直接使用 /arc b30 [usercode>] [-a <API>] 并指定 [<Usercode>].";
+                        $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -191,10 +160,22 @@ namespace ProjektRin.Commands.Modules
                 .At(messageEvent.MemberUin)
                 .Text("\n收到, 正在处理成绩图...")
                 );
-            var (message, bytes) = GetRecentGraph(usercode, "1");
-            if (message != "")
+
+            UserInfoResult? result = aua.GetUserInfo(usercode).Result;
+
+            if (result == null)
             {
-                reply = $"错误: {message}";
+                reply = $"错误: 获取失败";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Text(reply)
+                    );
+                return;
+            }
+
+            if (result.status != 0)
+            {
+                reply = $"错误: {result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .At(messageEvent.MemberUin)
                     .Text(reply)
@@ -204,23 +185,23 @@ namespace ProjektRin.Commands.Modules
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .At(messageEvent.MemberUin)
-                    .Image(bytes!)
+                    .Image(GraphGenerator.GeneratePlayResult(result))
                     );
             return;
         }
 
         private void OnSongBest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var usercode = "";
-            var reply = "";
-            var songName = new List<string>();
-            var difficulty = -1;
+            string? usercode = "";
+            string? reply = "";
+            List<string>? songName = new List<string>();
+            int difficulty = -1;
             while (args.Count > 0)
             {
-                var arg = args[0];
+                string? arg = args[0];
                 args.RemoveAt(0);
 
-                var argUpper = arg.ToUpper();
+                string? argUpper = arg.ToUpper();
 
                 switch (argUpper)
                 {
@@ -245,7 +226,7 @@ namespace ProjektRin.Commands.Modules
                         break;
                 }
             }
-            var sid = String.Join(' ', songName);
+            string? sid = string.Join(' ', songName);
 
             if (difficulty == -1)
             {
@@ -261,13 +242,12 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+            ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
             if (info == null)
             {
                 reply =
                     $"错误: 当前QQ号不存在绑定的记录.\n" +
-                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n" +
-                    $"或者直接使用 /arc b30 [usercode>] [-a <API>] 并指定 [<Usercode>].";
+                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -276,14 +256,34 @@ namespace ProjektRin.Commands.Modules
                 usercode = info.UserCode;
             }
 
+            Song? song = ArcSongDB.Instance.TryGetSong(sid);
+            if (song == null)
+            {
+                reply = $"错误: 找不到歌曲: \"{sid}\"";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .At(messageEvent.MemberUin)
                 .Text("\n收到, 正在处理成绩图...")
                 );
-            var (message, bytes) = GetBestGraph(usercode, sid, difficulty);
-            if (message != "")
+
+            BestPlayResult? result = aua.GetUserBest(usercode, song.SongID, (SongResult.Difficulty)difficulty).Result;
+
+            if (result == null)
             {
-                reply = $"错误: {message}";
+                reply = $"错误: 获取失败";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Text(reply)
+                    );
+                return;
+            }
+
+            if (result.status != 0)
+            {
+                reply = $"错误: {result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .At(messageEvent.MemberUin)
                     .Text(reply)
@@ -293,75 +293,49 @@ namespace ProjektRin.Commands.Modules
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .At(messageEvent.MemberUin)
-                    .Image(bytes!)
+                    .Image(GraphGenerator.GeneratePlayResult(result))
                     );
             return;
         }
 
         private void OnSongInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            if (args.Count <= 0)
+            string? reply = "";
+            if (args.Count == 0)
             {
-                reply = $"错误: 缺少参数: <songName>.";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
-            var sid = String.Join(' ', args);
-
-            HttpResponseMessage response;
-            try
-            {
-                response = _httpClient.GetAsync($"http://127.0.0.1:6002/song?sid={sid}").Result;
-            }
-            catch (Exception e)
-            {
-                reply = $"错误: {e.Message}.";
+                reply = $"错误: 缺少参数: <song>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
 
-            if (!response.IsSuccessStatusCode)
+            string? sid = string.Join(' ', args);
+
+            Song? song = ArcSongDB.Instance.TryGetSong(sid);
+            if (song == null)
             {
-                reply = $"错误: 服务器内部错误.";
+                reply = $"错误: 找不到歌曲: \"{sid}\"";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
 
-            var result = JsonConvert.DeserializeObject<SongResult>(response.Content.ReadAsStringAsync().Result);
-            if (result == null)
-            {
-                reply = $"错误: 数据转换失败.";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
+            reply =
+                $"曲名: {song.NameEN}\n" +
+                $"BPM: {song.BPM}\n" +
+                $"  PST/PRS/FTR/BYD\n" +
+                $"定数: {song.RatingPST}/{song.RatingPRS}/{song.RatingFTR}/{song.RatingBYD}\n" +
+                $"物量: {song.NotePST}/{song.NotePRS}/{song.NoteFTR}/{song.NoteBYD}";
 
-            if (result.code != 0)
-            {
-                reply = $"错误: 找不到歌曲 \"{sid}\".";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
-
-            reply = $"曲名: {result.data.song_name}\n" +
-                $"曲师: {result.data.artist}\n" +
-                $"     PST/PRS/FTR/BYD\n" +
-                $"定数:{String.Join('/', result.data.info.OrderBy(x => x.difficulty).Select(x => x.rating == -1 ? "-" : $"{((float)x.rating / 10)}"))}\n" +
-                $"物量:{String.Join('/', result.data.info.OrderBy(x => x.difficulty).Select(x => x.note == -1 ? "-" : x.note.ToString()))}";
-            var img = Convert.FromBase64String(result.data.song_cover);
-
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder().Image(img).Text(reply));
-            return;
-
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Image(GraphGenerator.GetCoverBmp(song.SongID).Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).ToArray())
+                .Text(reply));
         }
 
         private void OnB30(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var usercode = "";
-            var api = "1";
+            string? reply = "";
+            string? usercode = "";
 
-            var arg = "";
+            string? arg = "";
             while (args.Count > 0)
             {
                 arg = args[0];
@@ -369,20 +343,6 @@ namespace ProjektRin.Commands.Modules
 
                 switch (arg)
                 {
-                    case "-a":
-                        {
-                            api = args.FirstOrDefault(defaultValue: "");
-                            if (args.Count > 0) args.RemoveAt(0);
-
-                            if (api == "")
-                            {
-                                reply = $"错误: 缺少参数: -a <api>.";
-                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                                return;
-                            }
-                            break;
-                        }
-
                     default:
                         {
                             usercode = arg;
@@ -393,24 +353,24 @@ namespace ProjektRin.Commands.Modules
 
             if (usercode != "")
             {
-                var regex = new Regex(@"[0-9]{9}");
-                var match = regex.Match(usercode);
+                Regex? regex = new Regex(@"^[0-9]{9}$");
+                Match? match = regex.Match(usercode);
                 if (!match.Success)
                 {
-                    reply = $"错误: 参数非法: \"{usercode}\" => [<Usercode>].";
+                    reply = $"错误: 参数非法: \"{usercode}\" => [<usercode>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
             }
             else
             {
-                var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+                ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
                 if (info == null)
                 {
                     reply =
                         $"错误: 当前QQ号不存在绑定的记录.\n" +
                         $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n" +
-                        $"或者直接使用 /arc b30 [<usercode>] [-a <API>] 并指定 [<Usercode>].";
+                        $"或者直接使用 /arc b30 [<usercode>] 并指定 [<usercode>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -420,28 +380,26 @@ namespace ProjektRin.Commands.Modules
                 }
             }
 
-            switch (api)
-            {
-                case "1": api = "BAA"; break;
-                case "2": api = "esterTion"; break;
-
-                default:
-                    {
-                        reply = $"错误: 参数非法: \"{api}\" => [-a <api>].";
-                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                        return;
-                    }
-            }
-
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .At(messageEvent.MemberUin)
                 .Text("\n收到, 正在处理成绩图...")
                 );
 
-            var (message, bytes) = GetB30Graph(usercode, api);
-            if (message != "")
+            B30Result? result = aua.GetB30(usercode).Result;
+
+            if (result == null)
             {
-                reply = $"错误: {message}";
+                reply = $"错误: 获取失败";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Text(reply)
+                    );
+                return;
+            }
+
+            if (result.status != 0)
+            {
+                reply = $"错误: {result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .At(messageEvent.MemberUin)
                     .Text(reply)
@@ -451,87 +409,15 @@ namespace ProjektRin.Commands.Modules
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .At(messageEvent.MemberUin)
-                    .Image(bytes!)
+                    .Image(GraphGenerator.GenerateBest30(result))
                     );
             return;
         }
 
-        private (string, byte[]?) GetB30Graph(string userCode, string api)
-        {
-            HttpResponseMessage response;
-            try
-            {
-                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getB30?usercode={userCode}&api={api}").Result;
-            }
-            catch (Exception e) { return (e.Message, null); }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return ("服务器内部错误.", null);
-            }
-
-            var result = JsonConvert.DeserializeObject<ImgResult>(response.Content.ReadAsStringAsync().Result);
-            if (result == null || result.code != 0)
-            {
-                return (result?.message ?? "数据转换失败.", null);
-            }
-
-            byte[] bytes = Convert.FromBase64String(result.data.img);
-            return ("", bytes);
-        }
-
-        private (string, byte[]?) GetRecentGraph(string userCode, string api)
-        {
-            HttpResponseMessage response;
-            try
-            {
-                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getRecent?usercode={userCode}&api={api}").Result;
-            }
-            catch (Exception e) { return (e.Message, null); }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return ("服务器内部错误.", null);
-            }
-
-            var result = JsonConvert.DeserializeObject<ImgResult>(response.Content.ReadAsStringAsync().Result);
-            if (result == null || result.code != 0)
-            {
-                return (result?.message ?? "数据转换失败.", null);
-            }
-
-            byte[] bytes = Convert.FromBase64String(result.data.img);
-            return ("", bytes);
-        }
-
-        private (string, byte[]?) GetBestGraph(string userCode, string songName, int difficulty)
-        {
-            HttpResponseMessage response;
-            try
-            {
-                response = _httpClient.GetAsync($"http://127.0.0.1:6002/getBest?usercode={userCode}&sid={songName}&difficulty={difficulty}").Result;
-            }
-            catch (Exception e) { return (e.Message, null); }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return ("服务器内部错误.", null);
-            }
-
-            var result = JsonConvert.DeserializeObject<ImgResult>(response.Content.ReadAsStringAsync().Result);
-            if (result == null || result.code != 0)
-            {
-                return (result?.message ?? "数据转换失败.", null);
-            }
-
-            byte[] bytes = Convert.FromBase64String(result.data.img);
-            return ("", bytes);
-        }
-
         private void OnUnbind(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+            string? reply = "";
+            ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
             if (info == null)
             {
                 reply = "错误: 当前QQ号不存在绑定的记录.";
@@ -548,40 +434,16 @@ namespace ProjektRin.Commands.Modules
             }
         }
 
-        private (string, ArcaeaUserInfo?) GetUserInfo(uint userUin, string nameOrCode)
-        {
-            HttpResponseMessage response;
-            try
-            {
-                response = _httpClient.GetAsync($"http://127.0.0.1:6002/userInfo?user={nameOrCode}").Result;
-            }
-            catch (Exception e) { return (e.Message, null); }
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return ("服务器内部错误.", null);
-            }
-
-            var result = JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
-            if (result == null || result.status != 0)
-            {
-                return (result?.message ?? "数据转换失败.", null);
-            }
-
-            var info = new ArcaeaUserInfo(userUin, result.code, result.name);
-            return ("", info);
-        }
-
         private void OnBind(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
+            string? reply = "";
             if (args.Count == 0)
             {
                 reply = "错误: 缺少参数: <name/usercode>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            var info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+            ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
             if (info != null)
             {
                 reply = "错误: 当前QQ号已存在一个绑定的记录.\n" +
@@ -591,65 +453,55 @@ namespace ProjektRin.Commands.Modules
                 return;
             }
 
-            var user = args[0];
+            string? user = args[0];
 
-            var (message, newInfo) = GetUserInfo(messageEvent.MemberUin, user);
-            if (newInfo == null)
+            UserInfoResult? result = aua.GetUserInfo(user).Result;
+
+            if (result == null)
+            {
+                reply = $"错误: 获取失败";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Text(reply)
+                    );
+                return;
+            }
+
+            if (result.content == null)
+            {
+                result = aua.GetUserInfoByName(user).Result;
+            }
+
+            if (result == null)
+            {
+                reply = $"错误: 获取失败";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .At(messageEvent.MemberUin)
+                    .Text(reply)
+                    );
+                return;
+            }
+
+            if (result.content == null)
             {
                 reply = $"错误: 未能查找到对应用户信息: {user}.\n" +
-                    $"{message}";
+                    $"{result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
 
+            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo(messageEvent.MemberUin, result.content.account_info.code, result.content.account_info.name);
+
             userInfos.Add(newInfo);
             SaveUserInfo();
             reply = $"绑定成功\n" +
-                $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).\n" +
-                $"现在可以直接使用 /arc b30 来获取成绩图.";
+                $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).\n";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
             return;
         }
     }
-    class ImgResult
-    {
-        public int code;
-        public string message;
-        public Data data;
-        public class Data
-        {
-            public string img;
-        }
-    }
 
-    class SongResult
-    {
-        public int code;
-        public Data data;
-        public class Data
-        {
-            public string song_name;
-            public string song_cover;
-            public string artist;
-            public List<Info> info;
-            public class Info
-            {
-                public int difficulty;
-                public int note;
-                public int rating;
-            }
-        }
-    }
-
-    class UserInfoResult
-    {
-        public int status;
-        public string message;
-        public string name;
-        public string code;
-    }
-
-    class ArcaeaUserInfo
+    internal class ArcaeaUserInfo
     {
         public uint QQUin;
         public string UserCode;

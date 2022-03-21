@@ -5,13 +5,13 @@ namespace ProjektRin.Components
 {
     public class PermissionManager
     {
-        private static PermissionManager _instance = new PermissionManager();
+        private static readonly PermissionManager _instance = new PermissionManager();
 
         private PermissionManager() { }
 
         public static PermissionManager Instance => _instance;
 
-        private List<uint> admins = new()
+        private readonly List<uint> admins = new()
         {
             1785416538,
             1156933758,

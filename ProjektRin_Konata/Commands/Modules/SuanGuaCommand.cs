@@ -30,8 +30,7 @@ namespace ProjektRin.Commands.Modules
             "仙人亦有两般话，道不虚传只在人。";
 
         private string jsonPath;
-
-        JObject json64Gua;
+        private JObject json64Gua;
 
         public override void OnInit()
         {
@@ -42,13 +41,12 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("算卦", new[] { @"^suan-gua\s?([\s\S]+)?", @"^算卦\s?([\s\S]+)?" })]
         public void OnSuanGua(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var multiReply = MultiMsgChain.Create();
-            var sourceInfo = new SourceInfo(bot.Uin, bot.Name);
+            string? reply = "";
+            MultiMsgChain? multiReply = MultiMsgChain.Create();
             uint 先, 后;
 
             //先念诗
-            multiReply.AddMessage(sourceInfo, new MessageBuilder(念诗));
+            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(念诗).Build()));
 
             先 = (uint)(DateTime.Now.Year +
                 DateTime.Now.Month +
@@ -59,46 +57,49 @@ namespace ProjektRin.Commands.Modules
 
             后 = messageEvent.MemberUin;
 
-            var thing = "";
+            string? thing = "";
             if (args.Count > 0)
             {
-                thing = String.Join(" ", args);
-                var hash = thing.First().GetHashCode();
+                thing = string.Join(" ", args);
+                int hash = thing.First().GetHashCode();
                 while (后 + (uint)hash > uint.MaxValue)
+                {
                     hash /= 2;
+                }
+
                 后 += (uint)hash;
             }
 
             reply = $"{messageEvent.MemberCard} {(args.Count > 0 ? $"的\"{thing}\"" : "")} 占卜结果:\n";
             卦象 本卦 = 卦象.起卦(先, 后);
-            var (name1, desc1) = Get(((卦象.八卦)本卦.上卦).ToString() + ((卦象.八卦)本卦.下卦).ToString());
+            (string name1, string desc1) = Get(((卦象.八卦)本卦.上卦).ToString() + ((卦象.八卦)本卦.下卦).ToString());
             reply += $"本卦: {本卦} 上{(卦象.八卦)本卦.上卦}下{(卦象.八卦)本卦.下卦} {本卦.解卦()}  {name1}\n";
             卦象 互卦 = 本卦.互卦();
-            var (name2, desc2) = Get(((卦象.八卦)互卦.上卦).ToString() + ((卦象.八卦)互卦.下卦).ToString());
+            (string name2, string desc2) = Get(((卦象.八卦)互卦.上卦).ToString() + ((卦象.八卦)互卦.下卦).ToString());
             reply += $"互卦: {互卦} 上{(卦象.八卦)互卦.上卦}下{(卦象.八卦)互卦.下卦} {互卦.解卦()}  {name2}\n";
             卦象 变卦 = 本卦.变卦();
-            var (name3, desc3) = Get(((卦象.八卦)变卦.上卦).ToString() + ((卦象.八卦)变卦.下卦).ToString());
+            (string name3, string desc3) = Get(((卦象.八卦)变卦.上卦).ToString() + ((卦象.八卦)变卦.下卦).ToString());
             reply += $"变卦: {变卦} 上{(卦象.八卦)变卦.上卦}下{(卦象.八卦)变卦.下卦} {变卦.解卦()}  {name3}\n";
-            multiReply.AddMessage(sourceInfo, new MessageBuilder(reply));
+            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(reply).Build()));
 
             reply = "";
             reply += $"卦解(以求事为例):\n";
             reply += $"开端: {分类占断.占断(本卦, 分类占断.求谋)}\n";
             reply += $"过程: {分类占断.占断(互卦, 分类占断.求谋)}\n";
             reply += $"结局: {分类占断.占断(变卦, 分类占断.求谋)}\n";
-            multiReply.AddMessage(sourceInfo, new MessageBuilder(reply));
+            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(reply).Build()));
 
             reply = "";
             reply += $"开端: {name1}\n{desc1}";
-            multiReply.AddMessage(sourceInfo, new MessageBuilder(reply));
+            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(reply).Build()));
 
             reply = "";
             reply += $"过程: {name2}\n{desc2}";
-            multiReply.AddMessage(sourceInfo, new MessageBuilder(reply));
+            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(reply).Build()));
 
             reply = "";
             reply += $"结局: {name3}\n{desc3}";
-            multiReply.AddMessage(sourceInfo, new MessageBuilder(reply));
+            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(reply).Build()));
 
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
@@ -107,13 +108,13 @@ namespace ProjektRin.Commands.Modules
 
         public (string, string) Get(string name)
         {
-            var a = (JObject)json64Gua[name[0].ToString()];
-            var b = (JObject)a[name[1].ToString()];
+            JObject? a = (JObject)json64Gua[name[0].ToString()];
+            JObject? b = (JObject)a[name[1].ToString()];
             return (b.Value<string>("name"), b.Value<string>("description"));
         }
     }
 
-    class 分类占断
+    internal class 分类占断
     {
         public static readonly List<string> 求谋 = new()
         {
@@ -130,7 +131,7 @@ namespace ProjektRin.Commands.Modules
         }
     }
 
-    class 卦象
+    internal class 卦象
     {
         public byte 上卦;
         public byte 下卦;
@@ -168,7 +169,7 @@ namespace ProjektRin.Commands.Modules
 
         private 卦象() { }
 
-        private 卦象(byte 卦) { this.上卦 = (byte)(卦 >> 3); this.下卦 = (byte)(卦 & 0b000111); }
+        private 卦象(byte 卦) { 上卦 = (byte)(卦 >> 3); 下卦 = (byte)(卦 & 0b000111); }
 
         public static 卦象 起卦(uint 先, uint 后)
         {
@@ -188,14 +189,14 @@ namespace ProjektRin.Commands.Modules
 
         public 卦象 变卦()
         {
-            var mask = 1 << 动爻;
+            int mask = 1 << 动爻;
             return new((byte)((this & (byte)(~mask)) | (this ^ (byte)mask)));
         }
 
         public 卦解 解卦()
         {
-            var 先 = 获取五行(上卦);
-            var 后 = 获取五行(下卦);
+            五行 先 = 获取五行(上卦);
+            五行 后 = 获取五行(下卦);
             if (相生(先, 后))
             {
                 return 卦解.体生用;

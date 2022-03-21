@@ -12,7 +12,7 @@ namespace ProjektRin.Commands.Modules
     [CommandSet("色图", "com.akulak.setu")]
     internal class SetuCommand : BaseCommand
     {
-        private static string api = @"https://api.lolicon.app/setu/v2";
+        private static readonly string api = @"https://api.lolicon.app/setu/v2";
         public override string Help => $"[色图]\n" +
                 $"/setu [-r18] [-n <Num>] [<tag>...]      获取色图\n" +
                 $"\n" +
@@ -30,16 +30,16 @@ namespace ProjektRin.Commands.Modules
         private SetuResult GetSetu(List<string> tags, int r18 = 0, int num = 1)
         {
             HttpClient _httpClient = new HttpClient();
-            var json = JsonConvert.SerializeObject(new SetuPost(r18, tags, num));
+            string? json = JsonConvert.SerializeObject(new SetuPost(r18, tags, num));
             HttpContent content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            var response = _httpClient.PostAsync(api, content).Result;
+            HttpResponseMessage? response = _httpClient.PostAsync(api, content).Result;
             if (!response.IsSuccessStatusCode)
             {
                 throw new Exception("服务器连接失败.");
             }
 
-            var result = JsonConvert.DeserializeObject<SetuResult>(response.Content.ReadAsStringAsync().Result);
+            SetuResult? result = JsonConvert.DeserializeObject<SetuResult>(response.Content.ReadAsStringAsync().Result);
             if (result == null)
             {
                 throw new Exception("数据转换失败.");
@@ -51,12 +51,12 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("色图", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
+            string? reply = "";
             int r18 = 0;
             int num = 1;
             List<string> tags = new();
 
-            var arg = "";
+            string? arg = "";
             while (args.Count > 0)
             {
                 arg = args[0];
@@ -73,7 +73,11 @@ namespace ProjektRin.Commands.Modules
                     case "-n":
                         {
                             arg = args.FirstOrDefault(defaultValue: "");
-                            if (args.Count > 0) args.RemoveAt(0);
+                            if (args.Count > 0)
+                            {
+                                args.RemoveAt(0);
+                            }
+
                             if (!int.TryParse(arg, out num) || num < 1)
                             {
                                 reply = $"错误: 参数非法: \"{arg}\" => -n <num>";
@@ -115,11 +119,11 @@ namespace ProjektRin.Commands.Modules
 
             if (result.data.Count == 0)
             {
-                reply = $"找不到符合要求的色图: {String.Join(' ', tags)}";
+                reply = $"找不到符合要求的色图: {string.Join(' ', tags)}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            var multiReply = MultiMsgChain.Create();
+            MultiMsgChain? multiReply = MultiMsgChain.Create();
 
             List<Task> tasks = new List<Task>();
 
@@ -131,15 +135,15 @@ namespace ProjektRin.Commands.Modules
                 {
                     bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     reply = $"错误: 下载图片时发生错误.";
-                    var errorMessage = new MessageBuilder(reply);
+                    MessageBuilder? errorMessage = new MessageBuilder(reply);
                     multiReply
                     .AddMessage(
-                    new SourceInfo(bot.Uin, bot.Name),
-                    errorMessage
-                    );
+                    new MessageStruct(bot.Uin, bot.Name,
+                    errorMessage.Build()
+                    ));
                     return;
                 }
                 reply =
@@ -147,21 +151,21 @@ namespace ProjektRin.Commands.Modules
                 $"标题: {data.title}\n" +
                 $"作者: {data.author}\n" +
                 $"PID: {data.pid}\n" +
-                $"标签: {String.Join(' ', data.tags)}\n" +
+                $"标签: {string.Join(' ', data.tags)}\n" +
                 $"\n";
-                var message = new MessageBuilder(reply);
+                MessageBuilder? message = new MessageBuilder(reply);
                 message.Image(bytes);
 
                 multiReply
                     .AddMessage(
-                    new SourceInfo(bot.Uin, bot.Name),
-                    message
-                    );
+                    new MessageStruct(bot.Uin, bot.Name,
+                    message.Build()
+                    ));
             }
 
-            foreach (var data in result.data)
+            foreach (SetuResult.Data? data in result.data)
             {
-                var task = new Task(() => DownloadPic(data));
+                Task? task = new Task(() => DownloadPic(data));
                 task.Start();
                 tasks.Add(task);
             }
@@ -172,7 +176,8 @@ namespace ProjektRin.Commands.Modules
             return;
         }
     }
-    class SetuPost
+
+    internal class SetuPost
     {
         public int r18;
         public List<string> tag;
@@ -188,7 +193,7 @@ namespace ProjektRin.Commands.Modules
 
     }
 
-    class SetuResult
+    internal class SetuResult
     {
         public string error;
         public List<Data> data;

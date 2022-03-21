@@ -319,8 +319,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 $"曲名: {song.NameEN}\n" +
                 $"BPM: {song.BPM}\n" +
                 $"  PST/PRS/FTR/BYD\n" +
-                $"定数: {song.RatingPST}/{song.RatingPRS}/{song.RatingFTR}/{song.RatingBYD}\n" +
-                $"物量: {song.NotePST}/{song.NotePRS}/{song.NoteFTR}/{song.NoteBYD}";
+                $"定数: {(float)song.RatingPST / 10:0.0}/{(float)song.RatingPRS / 10:0.0}/{(float)song.RatingFTR / 10:0.0}/{(song.RatingBYD < 0 ? "-" : ((float)song.RatingBYD / 10).ToString("0.0"))}\n" +
+                $"物量: {song.NotePST}/{song.NotePRS}/{song.NoteFTR}/{(song.NoteBYD < 0 ? "-" : song.NoteBYD.ToString())}\n";
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Image(GraphGenerator.GetCoverBmp(song.SongID).Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).ToArray())

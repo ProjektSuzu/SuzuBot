@@ -120,13 +120,13 @@ namespace ProjektRin.Commands.Modules.Arcaea
         [Column("notes_pst")]
         public int NotePST { get; set; }
 
-        [Column("rating_prs")]
+        [Column("notes_prs")]
         public int NotePRS { get; set; }
 
-        [Column("rating_ftr")]
+        [Column("notes_ftr")]
         public int NoteFTR { get; set; }
 
-        [Column("rating_byn")]
+        [Column("notes_byn")]
         public int NoteBYD { get; set; }
 
         public int GetTheoreticalValue(Difficulty difficulty)

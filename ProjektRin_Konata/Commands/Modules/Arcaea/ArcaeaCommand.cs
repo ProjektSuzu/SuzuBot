@@ -18,16 +18,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public override string Help => $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
-                $"/arc b30 [<usercode>] [-a <api>]       获取b30成绩图\n" +
+                $"/arc b30 [<usercode>]       获取b30成绩图\n" +
                 $"/arc recent [<usercode>]          获取最近一次游玩成绩图\n" +
                 $"/arc best <song> <PST/PRS/FTR/BYD>    获取一首歌的最佳游玩记录\n" +
                 $"/arc bind <name/usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
                 $"/arc info <song>  查询一首歌的信息\n" +
-                $"\n" +
-                $"  -a <api>    指定使用的API\n" +
-                $"              1: ArcaeaUnlimitedAPI   (默认 推荐)\n" +
-                $"              2: redive.estertion.win (很慢 较稳定)\n" +
                 $"\n" +
                 $"  name        Arcaea玩家名字\n" +
                 $"  usercode    Arcaea好友代码 必须是9位纯数字\n" +
@@ -101,6 +97,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                         break;
                     }
 
+                case "r":
                 case "recent":
                     {
                         OnRecent(bot, messageEvent, args);
@@ -495,7 +492,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             userInfos.Add(newInfo);
             SaveUserInfo();
             reply = $"绑定成功\n" +
-                $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).\n";
+                $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
             return;
         }

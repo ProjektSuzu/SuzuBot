@@ -32,7 +32,7 @@ namespace ProjektRin.Commands.Modules
             $"目前铃还有很多需要完善的地方, 如果有好的建议可以和开发者说\n" +
             $"期待今后和你们共度的时光 ☆ ～('▽^人)";
 
-        public string Announcement =>
+        public string Announcement =
             $"[开发者公告]\n" +
             $"我也不知道我写了个啥玩意\n" +
             $"目前没有写私聊功能, 因为容易被tx封\n" +
@@ -122,6 +122,42 @@ namespace ProjektRin.Commands.Modules
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(help));
                 return;
             }
+        }
+
+        [GroupMessageCommand("公告", new[] { @"^announce\s?([\s\S]+)?", @"^公告\s?([\s\S]+)?" }, PermissionManager.Permission.Root)]
+        public void OnAnnouncement(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var content = 
+                $"  [开发者公告]\n" +
+                $"{String.Join(" ", args)}\n\n" +
+                $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+            Announcement = content;
+
+            foreach (var group in bot.GetGroupList().Result)
+            {
+                if (GroupManager.Instance.IsPassiveMode(group.Uin))
+                    continue;
+                bot.SendGroupMessage(group.Uin, new MessageBuilder(content));
+            }
+
+            return;
+        }
+
+        [GroupMessageCommand("反馈", new[] { @"^feedback\s?([\s\S]+)?", @"^反馈\s?([\s\S]+)?" })]
+        public void OnFeedback(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var content =
+                $"[反馈]\n" +
+                $"来自 G{messageEvent.GroupUin}:U{messageEvent.MemberUin}\n\n" +
+                $"{String.Join(" ", args)}\n\n" +
+                $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}";
+
+            
+            bot.SendGroupMessage(644504300, new MessageBuilder(content));
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("已收到你的反馈"));
+
+            return;
         }
 
         [GroupMessageCommand("支付", new[] { @"^pay\s?([\s\S]+)?", @"^转账\s?([\s\S]+)?" })]

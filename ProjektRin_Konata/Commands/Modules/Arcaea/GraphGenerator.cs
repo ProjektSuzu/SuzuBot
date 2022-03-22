@@ -908,7 +908,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 mainCanvas.DrawRoundRect(progressBarRoundBack, bgPaint);
 
                 bgPaint.Color = progressColors[progress];
-                SKRect progressBarFront = new SKRect(670, 500, 670 + 660 * percentage, 550);
+                SKRect progressBarFront = new SKRect(670, 500, 670 + 600 * (1f - percentage), 550);
                 SKRoundRect progressBarRoundFront = new SKRoundRect(progressBarFront, 25);
                 mainCanvas.DrawRoundRect(progressBarRoundFront, bgPaint);
 

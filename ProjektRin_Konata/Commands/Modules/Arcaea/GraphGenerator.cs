@@ -255,7 +255,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
                 fontPaint.Color = SKColors.Violet;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                string maxPureText = $"[{songResult.perfect_count}]";
+                string maxPureText = $"[{songResult.shiny_perfect_count}]";
                 mainCanvas.DrawText(maxPureText, 620 + pureTextOffset / 2, 400, fontPaint);
 
                 //Far
@@ -988,7 +988,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
                 fontPaint.Color = SKColors.Violet;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                string maxPureText = $"[{songResult.perfect_count}]";
+                string maxPureText = $"[{songResult.shiny_perfect_count}]";
                 mainCanvas.DrawText(maxPureText, 670 + pureTextOffset / 2, 780, fontPaint);
 
                 //Far

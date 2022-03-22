@@ -117,7 +117,7 @@ namespace ProjektRin.Components
                             break;
                     }
                 };
-                _bot.OnGroupMessage += _commandManager.GroupMessageEventHandler;
+                _bot.OnGroupMessage += _commandManager.GroupCommandHandler;
                 _bot.OnGroupPoke += _commandManager.GroupPokeEventHandler;
             }
             return _bot;

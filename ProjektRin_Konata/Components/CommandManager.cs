@@ -8,6 +8,7 @@ using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Commands;
 using ProjektRin.Utils.Database.Tables;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using static ProjektRin.Components.PermissionManager;
 
 namespace ProjektRin.Components
@@ -184,7 +185,7 @@ namespace ProjektRin.Components
             }
         }
 
-        public void GroupMessageEventHandler(object sender, GroupMessageEvent groupMessageEvent)
+        public void GroupCommandHandler(object sender, GroupMessageEvent groupMessageEvent)
         {
             Bot bot = (Bot)sender;
             //排除自己发送的消息
@@ -205,13 +206,6 @@ namespace ProjektRin.Components
                 return;
             }
 
-            if (!ShouldProcess(bot, groupMessageEvent))
-            {
-                return;
-            }
-
-            message = RemoveCommandIndicator(bot, groupMessageEvent.Message.Chain);
-
             foreach (KeyValuePair<(CommandSet, BaseCommand), List<(Command handler, MethodInfo method)>> set in _cmdSets)
             {
                 foreach ((Command attr, MethodInfo method) in set.Value)
@@ -222,8 +216,28 @@ namespace ProjektRin.Components
 
                         foreach (System.Text.RegularExpressions.Regex? pattern in patterns)
                         {
-                            if (pattern.Match(message).Success)
+                            bool isMatch;
+                            
+                            if (attr.IsRaw)
                             {
+                                if (_groupManager.IsPassiveMode(groupMessageEvent.GroupUin))
+                                    continue;
+                                isMatch = pattern.IsMatch(message);
+                            }
+                            else
+                            {
+                                if (!HasCommandPrefix(bot, groupMessageEvent))
+                                    continue;
+                                isMatch = pattern.IsMatch(RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain)); 
+                            }
+                            
+                            if (isMatch)
+                            {
+                                if (attr.IsRaw)
+                                    message = groupMessageEvent.Message.Chain.ToString().Trim();
+                                else
+                                    message = RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain);
+                                
                                 if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.PackageName))
                                 {
                                     Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.GroupUin} => {set.Key.Item1.Name} Rejected.");
@@ -249,6 +263,8 @@ namespace ProjektRin.Components
                                     bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
                                     return;
                                 }
+                                
+                                Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
 
                                 bool methodReturn = true;
                                 if (method.GetParameters().Count() == 2)
@@ -271,7 +287,6 @@ namespace ProjektRin.Components
                                     continue;
                                 }
 
-                                Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
 
                                 if (methodReturn)
                                 {
@@ -289,7 +304,7 @@ namespace ProjektRin.Components
 
         }
 
-        private bool ShouldProcess(Bot bot, GroupMessageEvent groupMessageEvent)
+        private bool HasCommandPrefix(Bot bot, GroupMessageEvent groupMessageEvent)
         {
             MessageChain? messageChain = groupMessageEvent.Message.Chain;
             string? message = messageChain.ToString().Trim();
@@ -306,19 +321,21 @@ namespace ProjektRin.Components
             return false;
         }
 
-        private string RemoveCommandIndicator(Bot bot, MessageChain messageChain)
+        private string RemoveCommandPrefix(Bot bot, MessageChain messageChain)
         {
             string? message = messageChain.ToString().Trim();
             AtChain? atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain && (x as AtChain).AtUin == bot.Uin);
 
-            message = message.Replace("铃酱", "");
-            if (atChain != null)
-            {
-                message = message.Replace(atChain.ToString(), "");
-            }
+            //message = message.Replace("铃酱", "");
+            //if (atChain != null)
+            //{
+            //    message = message.Replace(atChain.ToString(), "");
+            //}
 
-            message = message.Split('/', 2).Last();
-
+            //message = message.Split('/', 2).Last();
+            var regex = new Regex($"(/|铃酱|\\[KQ:at,qq={bot.Uin}\\])([\\s\\S]*)");
+            var match = regex.Match(message);
+            message = match.Groups[2].Value;
             return message.Trim();
         }
 

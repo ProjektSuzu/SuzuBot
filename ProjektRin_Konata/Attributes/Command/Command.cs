@@ -10,8 +10,9 @@ namespace ProjektRin.Attributes.Command
         public string Name { get; }
         public List<Regex>? Patterns;
         public Permission Permission;
+        public bool IsRaw;
 
-        public Command(string name, string pattern, Permission permission = Permission.User)
+        public Command(string name, string pattern, Permission permission = Permission.User, bool isRaw = false)
         {
             Name = name;
             Patterns = new List<Regex>
@@ -19,20 +20,24 @@ namespace ProjektRin.Attributes.Command
                 new Regex(pattern)
             };
             Permission = permission;
+            IsRaw = isRaw;
+
         }
 
-        public Command(string name, string[] patterns, Permission permission = Permission.User)
+        public Command(string name, string[] patterns, Permission permission = Permission.User, bool isRaw = false)
         {
             Name = name;
             Patterns = patterns.Select(x => new Regex(x)).ToList();
             Permission = permission;
+            IsRaw = isRaw;
         }
 
-        public Command(string name, Permission permission = Permission.User)
+        public Command(string name, Permission permission = Permission.User, bool isRaw = false)
         {
             Name = name;
             Patterns = null;
             Permission = permission;
+            IsRaw = isRaw;
         }
     }
 }

@@ -394,32 +394,46 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 fontPaint.TextSize = 128;
                 fontPaint.IsAntialias = true;
-                fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-SemiBold.ttf"));
+                
 
-                string pttInt = (playerInfo.rating / 100).ToString() + ".";
-                string pttDec = (playerInfo.rating % 100).ToString().PadRight(2, '0');
+                if (playerInfo.rating < 0)
+                {
+                    string pttStr = "您";
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKsc-Regular.otf"));
+                    fontPaint.TextAlign = SKTextAlign.Center;
+                    fontPaint.Color = new SKColor(80, 73, 89);
+                    fontPaint.Style = SKPaintStyle.Stroke;
+                    fontPaint.StrokeWidth = 16;
+                    mainCanvas.DrawText(pttStr, 410, 410, fontPaint);
+                    fontPaint.Color = SKColors.White;
+                    fontPaint.Style = SKPaintStyle.Fill;
+                    mainCanvas.DrawText(pttStr, 410, 410, fontPaint);
+                }
+                else
+                {
+                    string pttInt = (playerInfo.rating / 100).ToString() + ".";
+                    string pttDec = (playerInfo.rating % 100).ToString().PadRight(2, '0');
 
-                fontPaint.Color = new SKColor(80, 73, 89);
-                fontPaint.Style = SKPaintStyle.Stroke;
-                fontPaint.StrokeWidth = 16;
-                mainCanvas.DrawText(pttInt, 430, 420, fontPaint);
-                fontPaint.Color = SKColors.White;
-                fontPaint.Style = SKPaintStyle.Fill;
-                mainCanvas.DrawText(pttInt, 430, 420, fontPaint);
+                    fontPaint.TextAlign = SKTextAlign.Right;
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-SemiBold.ttf"));
+                    fontPaint.Color = new SKColor(80, 73, 89);
+                    fontPaint.Style = SKPaintStyle.Stroke;
+                    fontPaint.StrokeWidth = 16;
+                    mainCanvas.DrawText(pttInt, 430, 420, fontPaint);
+                    fontPaint.Color = SKColors.White;
+                    fontPaint.Style = SKPaintStyle.Fill;
+                    mainCanvas.DrawText(pttInt, 430, 420, fontPaint);
 
-                fontPaint.Color = new SKColor(80, 73, 89);
-                fontPaint.TextSize = 84;
-                fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Style = SKPaintStyle.Stroke;
-                fontPaint.StrokeWidth = 16;
-                mainCanvas.DrawText(pttDec, 430, 420, fontPaint);
-                fontPaint.Color = SKColors.White;
-                fontPaint.Style = SKPaintStyle.Fill;
-                mainCanvas.DrawText(pttDec, 430, 420, fontPaint);
-
-
-
+                    fontPaint.Color = new SKColor(80, 73, 89);
+                    fontPaint.TextSize = 84;
+                    fontPaint.TextAlign = SKTextAlign.Left;
+                    fontPaint.Style = SKPaintStyle.Stroke;
+                    fontPaint.StrokeWidth = 16;
+                    mainCanvas.DrawText(pttDec, 430, 420, fontPaint);
+                    fontPaint.Color = SKColors.White;
+                    fontPaint.Style = SKPaintStyle.Fill;
+                    mainCanvas.DrawText(pttDec, 430, 420, fontPaint);
+                }
             }
             #endregion
 
@@ -709,7 +723,6 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #region 根据平均色决定文字颜色
             SKColor textColor = SKColors.White;
             int Luminance = (int)(0.2126 * averageColor.Red + 0.7152 * averageColor.Green + 0.0722 * averageColor.Blue);
-            Console.WriteLine(songResult.song_id + " " + Luminance);
             if (Luminance > 128)
             {
                 textColor = SKColors.Black;
@@ -1044,29 +1057,45 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 fontPaint.TextSize = 84;
                 fontPaint.IsAntialias = true;
-                fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-SemiBold.ttf"));
 
-                string pttInt = (accountInfo.rating / 100).ToString() + ".";
-                string pttDec = (accountInfo.rating % 100).ToString().PadRight(2, '0');
+                if (accountInfo.rating < 0)
+                {
+                    string pttStr = "您";
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKsc-Regular.otf"));
+                    fontPaint.TextAlign = SKTextAlign.Center;
+                    fontPaint.Color = new SKColor(80, 73, 89);
+                    fontPaint.Style = SKPaintStyle.Stroke;
+                    fontPaint.StrokeWidth = 12;
+                    mainCanvas.DrawText(pttStr, 130, 165, fontPaint);
+                    fontPaint.Color = SKColors.White;
+                    fontPaint.Style = SKPaintStyle.Fill;
+                    mainCanvas.DrawText(pttStr, 130, 165, fontPaint);
+                }
+                else
+                {
+                    string pttInt = (accountInfo.rating / 100).ToString() + ".";
+                    string pttDec = (accountInfo.rating % 100).ToString().PadRight(2, '0');
 
-                fontPaint.Color = new SKColor(80, 73, 89);
-                fontPaint.Style = SKPaintStyle.Stroke;
-                fontPaint.StrokeWidth = 12;
-                mainCanvas.DrawText(pttInt, 140, 160, fontPaint);
-                fontPaint.Color = SKColors.White;
-                fontPaint.Style = SKPaintStyle.Fill;
-                mainCanvas.DrawText(pttInt, 140, 160, fontPaint);
+                    fontPaint.TextAlign = SKTextAlign.Right;
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-SemiBold.ttf"));
+                    fontPaint.Color = new SKColor(80, 73, 89);
+                    fontPaint.Style = SKPaintStyle.Stroke;
+                    fontPaint.StrokeWidth = 12;
+                    mainCanvas.DrawText(pttInt, 140, 160, fontPaint);
+                    fontPaint.Color = SKColors.White;
+                    fontPaint.Style = SKPaintStyle.Fill;
+                    mainCanvas.DrawText(pttInt, 140, 160, fontPaint);
 
-                fontPaint.Color = new SKColor(80, 73, 89);
-                fontPaint.TextSize = 56;
-                fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Style = SKPaintStyle.Stroke;
-                fontPaint.StrokeWidth = 12;
-                mainCanvas.DrawText(pttDec, 140, 160, fontPaint);
-                fontPaint.Color = SKColors.White;
-                fontPaint.Style = SKPaintStyle.Fill;
-                mainCanvas.DrawText(pttDec, 140, 160, fontPaint);
+                    fontPaint.Color = new SKColor(80, 73, 89);
+                    fontPaint.TextSize = 56;
+                    fontPaint.TextAlign = SKTextAlign.Left;
+                    fontPaint.Style = SKPaintStyle.Stroke;
+                    fontPaint.StrokeWidth = 12;
+                    mainCanvas.DrawText(pttDec, 140, 160, fontPaint);
+                    fontPaint.Color = SKColors.White;
+                    fontPaint.Style = SKPaintStyle.Fill;
+                    mainCanvas.DrawText(pttDec, 140, 160, fontPaint);
+                }
             }
             #endregion
 

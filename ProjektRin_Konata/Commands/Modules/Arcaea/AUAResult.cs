@@ -117,7 +117,7 @@
 
         public int GetPlayerPTTType()
         {
-            if (rating >= 1250)
+            if (rating >= 1250 || rating < 0)
             {
                 return 6;
             }

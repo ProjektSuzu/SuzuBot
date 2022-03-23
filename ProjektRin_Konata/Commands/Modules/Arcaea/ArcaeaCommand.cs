@@ -1,6 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Message;
+using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
@@ -13,8 +14,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
     [CommandSet("Arcaea", "com.akulak.arcaea")]
     internal class ArcaeaCommand : BaseCommand
     {
-        private List<ArcaeaUserInfo> userInfos;
         private readonly ArcaeaUnlimitedAPI aua = ArcaeaUnlimitedAPI.Instance;
+        private readonly ArcUserInfoDB arcUserDB = ArcUserInfoDB.Instance;
 
         public override string Help => $"[Arcaea]\n" +
                 $"/arc      打印帮助信息\n" +
@@ -31,24 +32,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public override void OnInit()
         {
-            try
-            {
-                LoadUserInfo();
-            }
-            catch { }
-            finally { SaveUserInfo(); }
-        }
 
-        private void LoadUserInfo()
-        {
-            string? json = File.ReadAllText(BotManager.resourcePath + "/arcaea.json");
-            userInfos = JsonConvert.DeserializeObject<List<ArcaeaUserInfo>>(json) ?? new();
-        }
-
-        private void SaveUserInfo()
-        {
-            string? json = JsonConvert.SerializeObject(userInfos);
-            File.WriteAllText(BotManager.resourcePath + "/arcaea.json", json, Encoding.UTF8);
         }
 
         [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?", @"^a\s?([\s\S]+)?" })]
@@ -97,6 +81,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
                         break;
                     }
 
+                case "suggest":
+                    {
+                        OnSongSuggest(bot, messageEvent, args);
+                        break;
+                    }
+
                 case "r":
                 case "recent":
                     {
@@ -138,7 +128,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
             else
             {
-                ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+                ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
                 if (info == null)
                 {
                     reply =
@@ -154,7 +144,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                .At(messageEvent.MemberUin)
+                .Add(ReplyChain.Create(messageEvent.Message))
                 .Text("\n收到, 正在处理成绩图...")
                 );
 
@@ -164,7 +154,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: 获取失败";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
@@ -174,18 +164,19 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: {result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
             }
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Image(GraphGenerator.GeneratePlayResult(result))
                     );
             return;
         }
+
 
         private void OnSongBest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
@@ -239,7 +230,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 return;
             }
 
-            ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
             if (info == null)
             {
                 reply =
@@ -262,7 +253,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                .At(messageEvent.MemberUin)
+                .Add(ReplyChain.Create(messageEvent.Message))
                 .Text("\n收到, 正在处理成绩图...")
                 );
 
@@ -272,7 +263,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: 获取失败";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
@@ -282,16 +273,68 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: {result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
             }
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Image(GraphGenerator.GeneratePlayResult(result))
                     );
+            return;
+        }
+
+        private void OnSongSuggest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            var usercode = "";
+
+            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
+            if (info == null)
+            {
+                reply =
+                    $"错误: 当前QQ号不存在绑定的记录.\n" +
+                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+            else
+            {
+                usercode = info.UserCode;
+            }
+
+            var json = info.B30Json;
+            if (json == null || json == "")
+            {
+                reply =
+                    $"错误: 找不到存储的B30数据.\n" +
+                    $"若要使用此功能, 请先使用 /arc b30 获取一次B30成绩图\n";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            var b30 = JsonConvert.DeserializeObject<B30Result>(json);
+            reply =
+                    $"收到, 正在处理..";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Text(reply));
+
+            var result = SongSuggester.Suggest(b30);
+            reply =
+                    $"推荐歌曲: {result.Song.NameEN}\n" +
+                    $"该歌曲 {result.Difficulty} 难度定数为 {SongSuggester.GetRating(result.Song, result.Difficulty)}\n" +
+                    $"若你将其 {result.Difficulty} 难度推至 {result.ClearType}\n" +
+                    $"预计B30平均值将增加 {result.B30Delta:0.0000}\n" +
+                    $"{(result.IsOverRank ? "警告: 有越级风险\n" : "")}" +
+                    $"\n" +
+                    $"B30数据更新时间: {info.LastUpdate:G}";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Image(GraphGenerator.GetCoverBmp(result.Song.SongID, result.Difficulty == SongResult.Difficulty.Beyond).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray())
+                .Text(reply));
             return;
         }
 
@@ -323,6 +366,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 $"物量: {song.NotePST}/{song.NotePRS}/{song.NoteFTR}/{(song.NoteBYD < 0 ? "-" : song.NoteBYD.ToString())}\n";
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
                 .Image(GraphGenerator.GetCoverBmp(song.SongID).Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).ToArray())
                 .Text(reply));
         }
@@ -361,7 +405,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
             else
             {
-                ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+                ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
                 if (info == null)
                 {
                     reply =
@@ -378,7 +422,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                .At(messageEvent.MemberUin)
+                .Add(ReplyChain.Create(messageEvent.Message))
                 .Text("\n收到, 正在处理成绩图...")
                 );
 
@@ -388,7 +432,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: 获取失败";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
@@ -398,14 +442,14 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: {result.message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
             }
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Image(GraphGenerator.GenerateBest30(result))
                     );
             return;
@@ -414,7 +458,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
         private void OnUnbind(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? reply = "";
-            ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
             if (info == null)
             {
                 reply = "错误: 当前QQ号不存在绑定的记录.";
@@ -423,10 +467,9 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
             else
             {
-                userInfos.Remove(info);
-                SaveUserInfo();
+                arcUserDB.Remove(messageEvent.MemberUin);
                 reply = $"U{messageEvent.MemberUin} => ∅    解绑成功.\n";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }
         }
@@ -440,13 +483,13 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            ArcaeaUserInfo? info = userInfos.FirstOrDefault(x => x.QQUin == messageEvent.MemberUin);
+            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
             if (info != null)
             {
                 reply = "错误: 当前QQ号已存在一个绑定的记录.\n" +
                     "如需更换绑定, 请先使用 /arc unbind 解绑.\n" +
-                    $"U{info.QQUin} => {info.UserName}({info.UserCode}).";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    $"U{info.Uin} => {info.UserName}({info.UserCode}).";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }
 
@@ -458,7 +501,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: 获取失败";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
@@ -473,7 +516,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: 获取失败";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .At(messageEvent.MemberUin)
+                    .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)
                     );
                 return;
@@ -483,31 +526,17 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 reply = $"错误: 未能查找到对应用户信息: {user}.\n" +
                     $"{result.message}";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }
 
-            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo(messageEvent.MemberUin, result.content.account_info.code, result.content.account_info.name);
+            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() { Uin = messageEvent.MemberUin, UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = ""};
 
-            userInfos.Add(newInfo);
-            SaveUserInfo();
+            arcUserDB.Insert(newInfo);
             reply = $"绑定成功\n" +
                 $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).";
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
             return;
-        }
-    }
-
-    internal class ArcaeaUserInfo
-    {
-        public uint QQUin;
-        public string UserCode;
-        public string UserName;
-        public ArcaeaUserInfo(uint qqUin, string usercode, string username)
-        {
-            QQUin = qqUin;
-            UserCode = usercode;
-            UserName = username;
         }
     }
 }

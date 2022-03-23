@@ -292,7 +292,7 @@ namespace ProjektRin.Components
                                 }
                                 catch (Exception e)
                                 {
-                                    Logger.Error($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Error.", e);
+                                    Logger.Error($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Error.");
                                     string? reply = $"命令执行出错: {attr.Name}\n请联系管理员或开发者.";
                                     bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
                                     reply = $"命令执行出错: {attr.Name}\n来自: G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin}\n错误信息: {e.Message}\n堆栈信息: {e.StackTrace}";

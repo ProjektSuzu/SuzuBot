@@ -316,7 +316,30 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 return;
             }
 
-            var b30 = JsonConvert.DeserializeObject<B30Result>(json);
+            B30Result b30;
+
+            try
+            {
+                b30 = JsonConvert.DeserializeObject<B30Result>(json);
+                if (b30 == null)
+                {
+                    reply =
+                        $"错误: 找不到存储的B30数据.\n" +
+                        $"若要使用此功能, 请先使用 /arc b30 获取一次B30成绩图\n";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+            catch
+            {
+                reply =
+                        $"错误: 找不到存储的B30数据.\n" +
+                        $"若要使用此功能, 请先使用 /arc b30 获取一次B30成绩图\n";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+            
+            
             reply =
                     $"收到, 正在处理..";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
@@ -324,6 +347,16 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 .Text(reply));
 
             var result = SongSuggester.Suggest(b30);
+
+            if (result == null)
+            {
+                reply =
+                    $"没有找到适合你的歌曲...";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text(reply));
+            }
+
             reply =
                     $"推荐歌曲: {result.Song.NameEN}\n" +
                     $"该歌曲 {result.Difficulty} 难度定数为 {SongSuggester.GetRating(result.Song, result.Difficulty)}\n" +

@@ -412,7 +412,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 else
                 {
                     string pttInt = (playerInfo.rating / 100).ToString() + ".";
-                    string pttDec = (playerInfo.rating % 100).ToString().PadRight(2, '0');
+                    string pttDec = (playerInfo.rating % 100).ToString().PadLeft(2, '0');
 
                     fontPaint.TextAlign = SKTextAlign.Right;
                     fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-SemiBold.ttf"));
@@ -1074,7 +1074,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 else
                 {
                     string pttInt = (accountInfo.rating / 100).ToString() + ".";
-                    string pttDec = (accountInfo.rating % 100).ToString().PadRight(2, '0');
+                    string pttDec = (accountInfo.rating % 100).ToString().PadLeft(2, '0');
 
                     fontPaint.TextAlign = SKTextAlign.Right;
                     fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-SemiBold.ttf"));

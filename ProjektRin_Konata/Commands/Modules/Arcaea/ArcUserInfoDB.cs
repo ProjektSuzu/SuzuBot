@@ -6,7 +6,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
     internal class ArcUserInfoDB
     {
         private static readonly string dbPath = Path.Combine(BotManager.resourcePath, "arcaea.db");
-        public SQLiteConnection dbConnection = new(dbPath);
+        public static SQLiteConnection dbConnection = new(dbPath);
 
         #region 单例模式
         private static ArcUserInfoDB instance;
@@ -18,6 +18,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 if (instance == null)
                 {
                     instance = new ArcUserInfoDB();
+                    dbConnection.CreateTable<ArcaeaUserInfo>();
                 }
                 return instance;
             }
@@ -26,7 +27,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public ArcaeaUserInfo GetByUin(uint uin)
         {
-            return dbConnection.Table<ArcaeaUserInfo>().FirstOrDefault(x => x.Uin == (int)uin);
+            return dbConnection.Table<ArcaeaUserInfo>().FirstOrDefault(x => x.Uin == uin);
         }
 
         public ArcaeaUserInfo GetByUserCode(string usercode)

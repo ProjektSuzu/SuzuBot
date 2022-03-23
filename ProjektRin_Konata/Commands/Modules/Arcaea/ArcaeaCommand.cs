@@ -24,6 +24,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 $"/arc best <song> <PST/PRS/FTR/BYD>    获取一首歌的最佳游玩记录\n" +
                 $"/arc bind <name/usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
+                $"/arc suggest      根据当前B30结果来推荐能推分的歌曲\n" +
                 $"/arc info <song>  查询一首歌的信息\n" +
                 $"\n" +
                 $"  name        Arcaea玩家名字\n" +
@@ -82,6 +83,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     }
 
                 case "suggest":
+                case "推荐":
+                case "推分":
                     {
                         OnSongSuggest(bot, messageEvent, args);
                         break;

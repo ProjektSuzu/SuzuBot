@@ -5,8 +5,6 @@ using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using ProjektRin.Components;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace ProjektRin.Commands.Modules.Arcaea
@@ -533,7 +531,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 return;
             }
 
-            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() { Uin = messageEvent.MemberUin, UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = ""};
+            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() { Uin = messageEvent.MemberUin, UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = "" };
 
             arcUserDB.Insert(newInfo);
             reply = $"绑定成功\n" +

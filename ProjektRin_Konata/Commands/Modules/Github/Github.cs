@@ -4,12 +4,7 @@ using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using static Konata.Core.Message.BaseChain;
 
 namespace ProjektRin.Commands.Modules.Github

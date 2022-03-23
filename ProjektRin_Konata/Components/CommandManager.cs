@@ -217,7 +217,7 @@ namespace ProjektRin.Components
                         foreach (System.Text.RegularExpressions.Regex? pattern in patterns)
                         {
                             bool isMatch;
-                            
+
                             if (attr.IsRaw)
                             {
                                 if (_groupManager.IsPassiveMode(groupMessageEvent.GroupUin))
@@ -228,16 +228,16 @@ namespace ProjektRin.Components
                             {
                                 if (!HasCommandPrefix(bot, groupMessageEvent))
                                     continue;
-                                isMatch = pattern.IsMatch(RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain)); 
+                                isMatch = pattern.IsMatch(RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain));
                             }
-                            
+
                             if (isMatch)
                             {
                                 if (attr.IsRaw)
                                     message = groupMessageEvent.Message.Chain.ToString().Trim();
                                 else
                                     message = RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain);
-                                
+
                                 if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.PackageName))
                                 {
                                     Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.GroupUin} => {set.Key.Item1.Name} Rejected.");
@@ -263,7 +263,7 @@ namespace ProjektRin.Components
                                     bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
                                     return;
                                 }
-                                
+
                                 Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
 
                                 bool methodReturn = true;

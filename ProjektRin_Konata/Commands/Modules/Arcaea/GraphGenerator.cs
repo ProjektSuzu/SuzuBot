@@ -394,7 +394,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             {
                 fontPaint.TextSize = 128;
                 fontPaint.IsAntialias = true;
-                
+
 
                 if (playerInfo.rating < 0)
                 {

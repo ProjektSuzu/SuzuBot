@@ -128,7 +128,7 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("公告", new[] { @"^announce\s?([\s\S]+)?", @"^公告\s?([\s\S]+)?" }, PermissionManager.Permission.Root)]
         public void OnAnnouncement(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var content = 
+            var content =
                 $"  [开发者公告]\n" +
                 $"{String.Join(" ", args)}\n\n" +
                 $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}";
@@ -154,7 +154,7 @@ namespace ProjektRin.Commands.Modules
                 $"{String.Join(" ", args)}\n\n" +
                 $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}";
 
-            
+
             bot.SendGroupMessage(644504300, new MessageBuilder(content));
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder("已收到你的反馈"));
 

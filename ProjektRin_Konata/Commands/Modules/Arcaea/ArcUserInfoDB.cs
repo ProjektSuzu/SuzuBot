@@ -1,10 +1,5 @@
 ﻿using ProjektRin.Components;
 using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProjektRin.Commands.Modules.Arcaea
 {
@@ -12,7 +7,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
     {
         private static readonly string dbPath = Path.Combine(BotManager.resourcePath, "arcaea.db");
         public SQLiteConnection dbConnection = new(dbPath);
-        
+
         #region 单例模式
         private static ArcUserInfoDB instance;
         private ArcUserInfoDB() { }

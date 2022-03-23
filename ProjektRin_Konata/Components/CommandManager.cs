@@ -267,24 +267,37 @@ namespace ProjektRin.Components
                                 Logger.Info($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Invoked.");
 
                                 bool methodReturn = true;
-                                if (method.GetParameters().Count() == 2)
-                                {
-                                    methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;
-                                }
-                                else if (method.GetParameters().Count() == 3)
-                                {
-                                    List<string>? args = pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList().FirstOrDefault(defaultValue: "").Split(' ').ToList();
-                                    args.RemoveAll(x => x.Trim() == "");
-                                    if (args.All(x => x == ""))
-                                    {
-                                        args = new List<string>();
-                                    }
 
-                                    methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, args }) ?? true;
-                                }
-                                else
+                                try
                                 {
-                                    continue;
+                                    if (method.GetParameters().Count() == 2)
+                                    {
+                                        methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent }) ?? true;
+                                    }
+                                    else if (method.GetParameters().Count() == 3)
+                                    {
+                                        List<string>? args = pattern.Match(message).Groups.Values.Select(x => x.Value).Skip(1).ToList().FirstOrDefault(defaultValue: "").Split(' ').ToList();
+                                        args.RemoveAll(x => x.Trim() == "");
+                                        if (args.All(x => x == ""))
+                                        {
+                                            args = new List<string>();
+                                        }
+
+                                        methodReturn = (bool?)method.Invoke(set.Key.Item2, new object[] { bot, groupMessageEvent, args }) ?? true;
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Error($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Error.", e);
+                                    string? reply = $"命令执行出错: {attr.Name}\n请联系管理员或开发者.";
+                                    bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
+                                    reply = $"命令执行出错: {attr.Name}\n来自: G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin}\n错误信息: {e.Message}\n堆栈信息: {e.StackTrace}";
+                                    bot.SendGroupMessage(644504300, new MessageBuilder(reply));
+                                    return;
                                 }
 
 

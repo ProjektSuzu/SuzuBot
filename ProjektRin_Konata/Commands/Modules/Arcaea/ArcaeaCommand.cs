@@ -318,6 +318,15 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 if (json == null || json == "")
                 {
                     b30 = aua.GetB30(usercode).Result;
+                    if (b30 == null || b30.status != 0)
+                    {
+                        reply = $"错误: {b30.message}";
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text(reply)
+                            );
+                        return;
+                    }
                 }
                 else
                 {

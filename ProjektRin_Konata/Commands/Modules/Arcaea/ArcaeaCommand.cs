@@ -287,7 +287,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return;
         }
 
-        private void OnSongSuggest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        private async void OnSongSuggest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var reply = "";
             var usercode = "";
@@ -306,45 +306,42 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 usercode = info.UserCode;
             }
 
-            var json = info.B30Json;
-            if (json == null || json == "")
-            {
-                reply =
-                    $"错误: 找不到存储的B30数据.\n" +
-                    $"若要使用此功能, 请先使用 /arc b30 获取一次B30成绩图\n";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
-
             B30Result b30;
+
+            reply =
+                        $"=处理中 请稍候..";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
 
             try
             {
-                b30 = JsonConvert.DeserializeObject<B30Result>(json);
-                if (b30 == null)
+                var json = info.B30Json;
+                if (json == null || json == "")
                 {
-                    reply =
-                        $"错误: 找不到存储的B30数据.\n" +
-                        $"若要使用此功能, 请先使用 /arc b30 获取一次B30成绩图\n";
-                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                    return;
+                    b30 = aua.GetB30(usercode).Result;
+                }
+                else
+                {
+                    b30 = JsonConvert.DeserializeObject<B30Result>(json);
+                    if (b30 == null || b30.status != 0)
+                    {
+                        reply = $"错误: {b30.message}";
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text(reply)
+                            );
+                        return;
+                    }
                 }
             }
             catch
             {
-                reply =
-                        $"错误: 找不到存储的B30数据.\n" +
-                        $"若要使用此功能, 请先使用 /arc b30 获取一次B30成绩图\n";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                reply = $"错误: 获取失败";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text(reply)
+                    );
                 return;
             }
-            
-            
-            reply =
-                    $"收到, 正在处理..";
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                .Add(ReplyChain.Create(messageEvent.Message))
-                .Text(reply));
 
             var result = SongSuggester.Suggest(b30);
 

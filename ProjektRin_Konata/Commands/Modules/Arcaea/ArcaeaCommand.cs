@@ -352,6 +352,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 return;
             }
 
+            info = arcUserDB.GetByUin(messageEvent.MemberUin);
             var result = SongSuggester.Suggest(b30);
 
             if (result == null)
@@ -491,7 +492,13 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 .Text("收到, 正在处理成绩图...")
                 );
 
-            B30Result? result = aua.GetB30(usercode).Result;
+            B30Result? result = null;
+
+            var retry = 3;
+            for (int i = 0; i < retry && result == null; i++)
+            {
+                result = aua.GetB30(usercode).Result;
+            }
 
             if (result == null)
             {

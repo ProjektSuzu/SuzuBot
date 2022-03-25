@@ -40,7 +40,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
         public async Task<B30Result?> GetB30(string usercode)
         {
             HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
+            client.Timeout = new TimeSpan(0, 0, 10);
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             Logger.Info($"B30 Querying: {usercode}");
             try

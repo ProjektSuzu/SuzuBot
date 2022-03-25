@@ -24,7 +24,7 @@ jobs:
     - name: Build
       run: |
         dotnet build --no-restore
-        dotnet publish -c Release -o publish
+        dotnet publish -c Release --no-self-contained -f net60 -o publish
     - name: Test
       run: dotnet test --no-build --verbosity normal
       

@@ -33,9 +33,17 @@ namespace ProjektRin.Commands.Modules
 
             string? reply = replys.ElementAt(new Random().Next(replys.Count()));
             try
-            { 
-                var message = MessageBuilder.Eval(reply);
-                bot.SendGroupMessage(pokeEvent.GroupUin, message);
+            {
+                if (reply.StartsWith("img://"))
+                {
+                    reply = reply.Substring(6);
+                    reply = Path.Combine(BotManager.resourcePath, reply);
+                    bot.SendGroupMessage(pokeEvent.GroupUin, new MessageBuilder().Image(reply));
+                }
+                else
+                {
+                    bot.SendGroupMessage(pokeEvent.GroupUin, new MessageBuilder(reply));
+                }
             }
             catch
             {

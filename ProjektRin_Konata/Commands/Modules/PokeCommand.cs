@@ -32,7 +32,15 @@ namespace ProjektRin.Commands.Modules
             }
 
             string? reply = replys.ElementAt(new Random().Next(replys.Count()));
-            bot.SendGroupMessage(pokeEvent.GroupUin, new MessageBuilder(reply));
+            try
+            { 
+                var message = MessageBuilder.Eval(reply);
+                bot.SendGroupMessage(pokeEvent.GroupUin, message);
+            }
+            catch
+            {
+                
+            }
             return;
         }
 

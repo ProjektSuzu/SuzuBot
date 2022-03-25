@@ -309,7 +309,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             B30Result b30;
 
             reply =
-                        $"=处理中 请稍候..";
+                $"处理中 请稍候..";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
 
             try
@@ -363,12 +363,37 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     .Text(reply));
             }
 
+            string GetScore(SongSuggester.TargetScore score)
+            {
+                switch (score)
+                {
+                    case SongSuggester.TargetScore.S950W:
+                        return "950W";
+                        
+                    case SongSuggester.TargetScore.S980W:
+                        return "980W";
+
+                    case SongSuggester.TargetScore.S990W:
+                        return "990W";
+
+                    case SongSuggester.TargetScore.S995W:
+                        return "995W";
+
+                    case SongSuggester.TargetScore.S1000W:
+                        return "1000W";
+
+                    default:
+                        return "PM";
+                }
+            }
+
             reply =
                     $"推荐歌曲: {result.Song.NameEN}\n" +
                     $"该歌曲 {result.Difficulty} 难度定数为 {SongSuggester.GetRating(result.Song, result.Difficulty)}\n" +
-                    $"若你将其 {result.Difficulty} 难度推至 {result.ClearType}\n" +
+                    $"若你将其推至 {GetScore(result.TargetScore)} 分\n" +
                     $"预计B30平均值将增加 {result.B30Delta:0.0000}\n" +
-                    $"{(result.IsOverRank ? "警告: 有越级风险\n" : "")}" +
+                    $"" +
+                    $"{(result.IsOverRank ? "\n⚠警告: 该曲对你当前PTT有越级风险⚠\n" : "")}" +
                     $"\n" +
                     $"B30数据更新时间: {info.LastUpdate:G}";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
@@ -463,7 +488,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Text("\n收到, 正在处理成绩图...")
+                .Text("收到, 正在处理成绩图...")
                 );
 
             B30Result? result = aua.GetB30(usercode).Result;

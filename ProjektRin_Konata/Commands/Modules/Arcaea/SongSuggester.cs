@@ -6,11 +6,39 @@ namespace ProjektRin.Commands.Modules.Arcaea
     {
         static ArcSongDB songDB = ArcSongDB.Instance;
 
+        public enum TargetScore
+        {
+            S950W,
+            S980W,
+            S990W,
+            S995W,
+            S1000W,
+        }
+
+        public static int GetTargetScore(TargetScore score)
+        {
+            switch (score)
+            {
+                case TargetScore.S950W:
+                    return 09_500_000;
+                case TargetScore.S980W:
+                    return 09_800_000;
+                case TargetScore.S990W:
+                    return 09_900_000;
+                case TargetScore.S995W:
+                    return 09_950_000;
+                case TargetScore.S1000W:
+                    return 10_000_000;
+                default:
+                    return 0;
+            }
+        }
+
         public class SuggestResult
         {
             public Song Song;
             public Difficulty Difficulty;
-            public ClearType ClearType;
+            public TargetScore TargetScore;
             public float B30Delta;
             public bool IsOverRank;
         }
@@ -69,7 +97,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
 
 
-            (Difficulty, ClearType) Calculate(Song s)
+            (Difficulty, TargetScore) Calculate(Song s)
             {
                 for (int i = 0; i < 4; i++)
                 {
@@ -86,19 +114,19 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     rating = rating / 10;
 
                     int j = 0;
-                    for (; j < 4; j++)
+                    for (; j < 5; j++)
                     {
-                        if (j == 4) break;
-                        var clearType = ClearType.AA + j;
-                        if (CalculatePTT(rating, clearType) > b30Floor)
+                        if (j == 5) break;
+                        var targetScore = TargetScore.S950W + j;
+                        if (CalculatePTT(rating, targetScore) > b30Floor)
                             break;
                     }
 
                     if (j > 3) continue;
 
-                    return ((Difficulty)i, ClearType.AA + j);
+                    return ((Difficulty)i, TargetScore.S950W + j);
                 }
-                return (Difficulty.Beyond, ClearType.PM);
+                return (Difficulty.Beyond, TargetScore.S1000W);
             }
 
             //foreach (var s in suggestSong)
@@ -112,7 +140,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 var song = suggestSong.ElementAt(new Random().Next(suggestSong.Count));
                 suggestSong.Remove(song);
 
-                var (difficulty, clearType) = Calculate(song);
+                var (difficulty, targetScore) = Calculate(song);
                 List<SongResult> tempB30 = new List<SongResult>();
                 //Deepcopy
                 foreach (var s in b30)
@@ -129,14 +157,14 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 if (songResult != null)
                 {
                     var playType = songResult.GetClearType();
-                    if (playType >= clearType)
+                    if (songResult.score >= GetTargetScore(targetScore))
                         if (playType != ClearType.PM)
-                            clearType = playType + 1;
+                            targetScore++;
                         else
                             continue;
 
                     tempB30.Remove(songResult);
-                    songResult.rating = CalculatePTT(song, difficulty, clearType);
+                    songResult.rating = CalculatePTT(song, difficulty, targetScore);
                     tempB30.Add(songResult);
                     b30Sum = (float)tempB30.Select(s => s.rating).Sum();
                 }
@@ -144,7 +172,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 {
                     tempB30.RemoveAt(tempB30.Count - 1);
                     b30Sum = (float)tempB30.Select(s => s.rating).Sum();
-                    b30Sum += CalculatePTT(song, difficulty, clearType);
+                    b30Sum += CalculatePTT(song, difficulty, targetScore);
                 }
 
                 var newB30AVG = b30Sum / 30;
@@ -160,7 +188,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 {
                     Song = song,
                     Difficulty = difficulty,
-                    ClearType = clearType,
+                    TargetScore = targetScore,
                     B30Delta = (float)(newB30AVG - oldB30AVG),
                     IsOverRank = isOverRank
                 };
@@ -183,27 +211,30 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return rating / 10;
         }
 
-        static float CalculatePTT(Song s, Difficulty difficulty, ClearType type)
+        static float CalculatePTT(Song s, Difficulty difficulty, TargetScore score)
         {
-            return CalculatePTT(GetRating(s, difficulty), type);
+            return CalculatePTT(GetRating(s, difficulty), score);
         }
 
-        static float CalculatePTT(float rating, ClearType type)
+        static float CalculatePTT(float rating, TargetScore score)
         {
-            //因为只用到AA即以上的 就没多写
-            switch (type)
+            //因为只用到AA及以上的 就没多写
+            switch (score)
             {
-                case ClearType.AA:
+                case TargetScore.S950W:
                     return rating;
 
-                case ClearType.EX:
-                    return rating + 1;
+                case TargetScore.S980W:
+                    return rating + 1f;
 
-                case ClearType.EXPlus:
+                case TargetScore.S990W:
                     return rating + 1.5f;
 
-                case ClearType.PM:
-                    return rating + 2;
+                case TargetScore.S995W:
+                    return rating + 1.75f;
+
+                case TargetScore.S1000W:
+                    return rating + 2f;
 
                 default:
                     return -1;

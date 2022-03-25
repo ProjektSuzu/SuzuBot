@@ -495,9 +495,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
             B30Result? result = null;
 
             var retry = 3;
-            for (int i = 0; i < retry && result == null; i++)
+            for (int i = 0; i < retry; i++)
             {
                 result = aua.GetB30(usercode).Result;
+                if (result != null) break;
             }
 
             if (result == null)

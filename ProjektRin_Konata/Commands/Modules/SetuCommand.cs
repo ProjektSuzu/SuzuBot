@@ -3,6 +3,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using Newtonsoft.Json;
+using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using System.Net.Http.Headers;
@@ -13,6 +14,10 @@ namespace ProjektRin.Commands.Modules
     internal class SetuCommand : BaseCommand
     {
         private static readonly string api = @"https://api.lolicon.app/setu/v2";
+
+        private static readonly string TAG = "SETU";
+        private static readonly Logger Logger = LogManager.GetLogger(TAG);
+
         public override string Help => $"[色图]\n" +
                 $"/setu [-r18] [-n <Num>] [<tag>...]      获取色图\n" +
                 $"\n" +
@@ -123,7 +128,7 @@ namespace ProjektRin.Commands.Modules
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            MultiMsgChain? multiReply = MultiMsgChain.Create();
+            MultiMsgChain multiReply = MultiMsgChain.Create();
 
             List<Task> tasks = new List<Task>();
 
@@ -147,14 +152,13 @@ namespace ProjektRin.Commands.Modules
                     return;
                 }
                 reply =
-                $"es ein Bild für dich (º﹃º )\n" +
+                $"色图来了(º﹃º )\n" +
                 $"标题: {data.title}\n" +
                 $"作者: {data.author}\n" +
                 $"PID: {data.pid}\n" +
                 $"标签: {string.Join(' ', data.tags)}\n" +
                 $"\n";
-                MessageBuilder? message = new MessageBuilder(reply);
-                message.Image(bytes);
+                MessageBuilder message = new MessageBuilder(reply).Image(bytes);
 
                 multiReply
                     .AddMessage(
@@ -172,7 +176,8 @@ namespace ProjektRin.Commands.Modules
 
             Task.WaitAll(tasks.ToArray());
 
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
+            var success = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
+            Logger.Info($"Setu send: {success.Result}");
             return;
         }
     }

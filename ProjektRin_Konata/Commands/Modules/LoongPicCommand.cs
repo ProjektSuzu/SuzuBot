@@ -61,12 +61,18 @@ namespace ProjektRin.Commands.Modules
                             HttpClient client = new HttpClient();
                             foreach (ImageChain img in chain)
                             {
-                                string? name = img.FileName;
-                                byte[]? data = img.FileData;
-                                FileStream fs = new FileStream(Path.Combine(picDir.FullName, $"/{name}.png"), FileMode.Create);
-                                fs.Write(data, 0, data.Length);
-                                fs.Close();
-                                count++;
+                                try
+                                {
+                                    var url = $"https://gchat.qpic.cn/gchatpic_new/0/0-0-{img.FileHash}/0";
+                                    string? name = img.FileName;
+                                    byte[]? data = client.GetAsync(url).Result.Content.ReadAsByteArrayAsync().Result;
+                                    File.WriteAllBytesAsync(Path.Combine(picDir.FullName, $"{name}.png"), data);
+                                    count++;
+                                }
+                                catch
+                                {
+                                    continue;
+                                }
                             }
 
                             reply = $"成功添加了 {count} 张图片";

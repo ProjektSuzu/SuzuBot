@@ -858,8 +858,16 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 case SongResult.ClearType.PM:
                     progress = 3;
                     diff = theoretical - songResult.score;
-                    percentage = (float)diff / (theoretical - 10_000_000);
-                    progressStr = $"TV  -{FormatScore(diff)}";
+                    if (diff != 0)
+                    {
+                        percentage = (float)diff / (theoretical - 10_000_000);
+                        progressStr = $"TV  -{FormatScore(diff)}";
+                    }
+                    else
+                    {
+                        percentage = 1;
+                        progressStr = "MAX";
+                    }
                     break;
 
                 case SongResult.ClearType.EXPlus:
@@ -905,10 +913,9 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     break;
 
                 default:
-                    progress = 1;
-                    diff = 08_600_000 - songResult.score;
-                    percentage = (float)diff / 00_300_000;
-                    progressStr = $"C  -{FormatScore(diff)}";
+                    progress = 0;
+                    percentage = 0;
+                    progressStr = "";
                     break;
             }
 

@@ -351,7 +351,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     );
                 return;
             }
-            
+
             var result = SongSuggester.Suggest(b30);
 
             if (result == null)
@@ -370,7 +370,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 {
                     case SongSuggester.TargetScore.S950W:
                         return "950W";
-                        
+
                     case SongSuggester.TargetScore.S980W:
                         return "980W";
 

@@ -47,7 +47,7 @@ namespace ProjektRin.Commands.Modules
             }
             catch
             {
-                
+
             }
             return;
         }

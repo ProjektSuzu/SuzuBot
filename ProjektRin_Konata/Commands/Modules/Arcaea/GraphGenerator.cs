@@ -913,9 +913,9 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     break;
 
                 default:
-                    progress = 0;
+                    progress = 1;
                     percentage = 0;
-                    progressStr = "";
+                    progressStr = "D";
                     break;
             }
 

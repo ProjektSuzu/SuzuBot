@@ -212,9 +212,9 @@ namespace ProjektRin.Components
                 {
                     if (attr is GroupMessageCommand)
                     {
-                        List<System.Text.RegularExpressions.Regex>? patterns = attr.Patterns;
+                        List<Regex>? patterns = attr.Patterns;
 
-                        foreach (System.Text.RegularExpressions.Regex? pattern in patterns)
+                        foreach (Regex? pattern in patterns)
                         {
                             bool isMatch;
 
@@ -290,9 +290,18 @@ namespace ProjektRin.Components
                                         continue;
                                     }
                                 }
+                                catch (TargetInvocationException e)
+                                {
+                                    Logger.Error($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Throw {e.ToString()}.");
+                                    string? reply = $"命令执行出错: {attr.Name}\n请联系管理员或开发者.";
+                                    bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
+                                    reply = $"命令执行出错: {attr.Name}\n来自: G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin}\n错误信息: {e.ToString()}\n";
+                                    bot.SendGroupMessage(644504300, new MessageBuilder(reply));
+                                    return;
+                                }
                                 catch (Exception e)
                                 {
-                                    Logger.Error($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Error.");
+                                    Logger.Error($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Throw {e.ToString()}.");
                                     string? reply = $"命令执行出错: {attr.Name}\n请联系管理员或开发者.";
                                     bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
                                     reply = $"命令执行出错: {attr.Name}\n来自: G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin}\n错误信息: {e.Message}\n堆栈信息: {e.StackTrace}";

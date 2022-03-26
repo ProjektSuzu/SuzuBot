@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using NLog;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
+using System.Net;
 using System.Net.Http.Headers;
 
 namespace ProjektRin.Commands.Modules

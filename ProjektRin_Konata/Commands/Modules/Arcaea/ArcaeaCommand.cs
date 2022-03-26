@@ -351,8 +351,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     );
                 return;
             }
-
-            info = arcUserDB.GetByUin(messageEvent.MemberUin);
+            
             var result = SongSuggester.Suggest(b30);
 
             if (result == null)
@@ -362,6 +361,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply));
+                return;
             }
 
             string GetScore(SongSuggester.TargetScore score)

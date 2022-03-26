@@ -4,7 +4,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 {
     internal static class SongSuggester
     {
-        static ArcSongDB songDB = ArcSongDB.Instance;
+        private static readonly ArcSongDB songDB = ArcSongDB.Instance;
 
         public enum TargetScore
         {
@@ -55,40 +55,60 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 pttIndicator /= 2;
             }
             //Console.WriteLine(pttIndicator);
-            var b30 = b30Result.content.best30_list;
-            var oldB30AVG = b30Result.content.best30_avg;
-            var b30Top = b30.First().rating;
-            var b30Floor = b30.Last().rating;
+            List<SongResult>? b30 = b30Result.content.best30_list;
+            double oldB30AVG = b30Result.content.best30_avg;
+            double b30Top = b30.First().rating;
+            double b30Floor = b30.Last().rating;
 
             bool FloorLimit(Song s)
             {
                 if ((float)s.RatingPST / 10 + 2 > b30Floor)
+                {
                     return true;
+                }
                 else if ((float)s.RatingPRS / 10 + 2 > b30Floor)
+                {
                     return true;
+                }
                 else if ((float)s.RatingFTR / 10 + 2 > b30Floor)
+                {
                     return true;
+                }
                 else if (s.RatingBYD > 0 && (float)s.RatingBYD / 10 + 2 > b30Floor)
+                {
                     return true;
+                }
                 else
+                {
                     return false;
+                }
             }
 
             bool TopLimit(Song s)
             {
                 if ((float)s.RatingPST / 10 >= b30Top)
+                {
                     return false;
+                }
                 else if ((float)s.RatingPRS / 10 >= b30Top)
+                {
                     return false;
+                }
                 else if ((float)s.RatingFTR / 10 >= b30Top)
+                {
                     return false;
+                }
                 else if (s.RatingBYD > 0 && (float)s.RatingBYD / 10 >= b30Top)
+                {
                     return false;
+                }
                 else
+                {
                     return true;
+                }
             }
 
-            var suggestSong = songDB
+            List<Song>? suggestSong = songDB
                 .dbConnection
                 .Table<Song>()
                 .Where(FloorLimit)
@@ -98,12 +118,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
             List<SuggestResult> results = new();
 
 
-            foreach (var song in suggestSong)
+            foreach (Song? song in suggestSong)
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    var difficulty = (Difficulty)j;
-                    var playResult = b30.FirstOrDefault(x => x.song_id == song.SongID && x.difficulty == difficulty);
+                    Difficulty difficulty = (Difficulty)j;
+                    SongResult? playResult = b30.FirstOrDefault(x => x.song_id == song.SongID && x.difficulty == difficulty);
 
                     float rating = 0f;
                     switch (j)
@@ -128,23 +148,28 @@ namespace ProjektRin.Commands.Modules.Arcaea
                             break;
                     }
 
-                    if (rating < 0) break;
+                    if (rating < 0)
+                    {
+                        break;
+                    }
 
                     for (int k = 0; k < 5; k++)
                     {
-                        var tempB30 = new List<SongResult>();
+                        List<SongResult>? tempB30 = new List<SongResult>();
                         b30.ForEach(x => tempB30.Add(new SongResult() { song_id = x.song_id, difficulty = x.difficulty, score = x.score, rating = x.rating }));
                         tempB30.Sort((a, b) => a.score.CompareTo(b.score));
 
-                        var targetScore = (TargetScore)k;
+                        TargetScore targetScore = (TargetScore)k;
                         if (CalculatePTT(song, difficulty, targetScore) <= b30Floor)
+                        {
                             continue;
+                        }
                         else
                         {
                             if (playResult == null)
                             {
                                 tempB30.RemoveAt(tempB30.Count - 1);
-                                var newResult = new SongResult()
+                                SongResult? newResult = new SongResult()
                                 {
                                     rating = CalculatePTT(song, difficulty, targetScore)
                                 };
@@ -153,18 +178,20 @@ namespace ProjektRin.Commands.Modules.Arcaea
                             else
                             {
                                 tempB30.RemoveAll(x => x.song_id == playResult.song_id && x.difficulty == playResult.difficulty);
-                                var newResult = new SongResult()
+                                SongResult? newResult = new SongResult()
                                 {
                                     rating = CalculatePTT(song, difficulty, targetScore)
                                 };
                                 tempB30.Add(newResult);
                             }
 
-                            var newB30AVG = tempB30.Sum(x => x.rating) / tempB30.Count;
+                            double newB30AVG = tempB30.Sum(x => x.rating) / tempB30.Count;
 
                             float delta = (float)(newB30AVG - oldB30AVG);
                             if (delta < minDelta)
+                            {
                                 continue;
+                            }
 
                             SuggestResult suggest = new()
                             {
@@ -188,9 +215,13 @@ namespace ProjektRin.Commands.Modules.Arcaea
             //}
 
             if (results.Count > 0)
+            {
                 return results.ElementAt(new Random().Next(results.Count));
+            }
             else
+            {
                 return null;
+            }
         }
 
         public static float GetRating(Song s, Difficulty difficulty)
@@ -207,12 +238,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return rating / 10;
         }
 
-        static float CalculatePTT(Song s, Difficulty difficulty, TargetScore score)
+        private static float CalculatePTT(Song s, Difficulty difficulty, TargetScore score)
         {
             return CalculatePTT(GetRating(s, difficulty), score);
         }
 
-        static float CalculatePTT(float rating, TargetScore score)
+        private static float CalculatePTT(float rating, TargetScore score)
         {
             //因为只用到AA及以上的 就没多写
             switch (score)

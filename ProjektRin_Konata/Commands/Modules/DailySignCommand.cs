@@ -46,8 +46,8 @@ namespace ProjektRin.Commands.Modules
             }
             else
             {
-                uint coin = (uint)new Random().Next(100, 4000);
-                int exp = new Random().Next(5, 15);
+                uint coin = (uint)new Random().Next(1000, 10001);
+                int exp = new Random().Next(5, 51);
 
                 info.exp += exp;
                 info.coin += coin;
@@ -76,7 +76,16 @@ namespace ProjektRin.Commands.Modules
             message.Text(reply);
             reply = "";
 
-            (string lot, string comment) = Lot(uin);
+            long seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
+            while (seed > int.MaxValue)
+            {
+                seed /= 2;
+            }
+
+            Random random = new Random((int)seed);
+
+
+            (string lot, string comment) = Lot(random);
 
             reply =
                 $"今天的运势是: {lot}\n" +
@@ -84,46 +93,28 @@ namespace ProjektRin.Commands.Modules
                 $"\n";
 
             message.Text(reply);
-            reply = "";
+            bool isReversed = random.Next(0, 2) == 0;
 
-            long seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
-            if (seed > int.MaxValue)
-            {
-                seed /= 2;
-            }
-
-            bool isReversed = new Random((int)seed).Next(0, 2) == 0;
-
-            Tarot? card = TarotCommands.GetCards(1, (int)seed).First();
+            Tarot? card = TarotCommands.GetCards(1, random).First();
             reply =
                 $"今天的塔罗牌是: {card.title} {(isReversed ? "正位" : "逆位")}\n" +
                 $"{(isReversed ? card.positive : card.negative)}\n" +
                 $"\n";
 
             message.Image(TarotCommands.GetCardCoverPath(card.title)).Text(reply);
-            reply = "";
-
             reply = "\n结果仅供参考, 自己的命运要自己把握哦(ﾉﾟ▽ﾟ)ﾉ";
 
             message.Text(reply);
-            reply = "";
-
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder().At(uin).Add(message.Build()));
             return;
         }
 
-        public (string, string) Lot(uint uin)
+        public (string, string) Lot(Random random)
         {
-            long seed = int.Parse(DateTime.Today.ToString("yyyymmdd")) + uin;
-            if (seed > int.MaxValue)
-            {
-                seed /= 2;
-            }
-
-            int random = new Random((int)seed).Next(0, 5);
+            int rnd = random.Next(0, 5);
             string? result = "";
             string? comment = "";
-            switch (random)
+            switch (rnd)
             {
                 case 0:
                     {

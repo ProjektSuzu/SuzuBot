@@ -42,7 +42,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             public float B30Delta;
             public bool IsOverRank;
         }
-        public static SuggestResult? Suggest(B30Result b30Result)
+        public static SuggestResult? Suggest(B30Result b30Result, float minDelta = 0.001f)
         {
             float pttIndicator = b30Result.content.account_Info.rating;
             if (pttIndicator < 0)
@@ -54,7 +54,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 pttIndicator = (float)pttIndicator / 100 + (float)b30Result.content.best30_avg;
                 pttIndicator /= 2;
             }
-            Console.WriteLine(pttIndicator);
+            //Console.WriteLine(pttIndicator);
             var b30 = b30Result.content.best30_list;
             var oldB30AVG = b30Result.content.best30_avg;
             var b30Top = b30.First().rating;
@@ -95,106 +95,102 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 .Where(TopLimit)
                 .ToList();
 
+            List<SuggestResult> results = new();
 
 
-            (Difficulty, TargetScore) Calculate(Song s)
+            foreach (var song in suggestSong)
             {
-                for (int i = 0; i < 4; i++)
+                for (int j = 0; j < 4; j++)
                 {
-                    float rating;
-                    switch (i)
-                    {
-                        case 0: rating = s.RatingPST; break;
-                        case 1: rating = s.RatingPRS; break;
-                        case 2: rating = s.RatingFTR; break;
-                        case 3: rating = s.RatingBYD; break;
-                        default: rating = 0; break;
-                    }
+                    var difficulty = (Difficulty)j;
+                    var playResult = b30.FirstOrDefault(x => x.song_id == song.SongID && x.difficulty == difficulty);
 
-                    rating = rating / 10;
-
-                    int j = 0;
-                    for (; j < 5; j++)
+                    float rating = 0f;
+                    switch (j)
                     {
-                        if (j == 5) break;
-                        var targetScore = TargetScore.S950W + j;
-                        if (CalculatePTT(rating, targetScore) > b30Floor)
+                        case 0:
+                            rating = (float)song.RatingPST / 10;
+                            break;
+
+                        case 1:
+                            rating = (float)song.RatingPRS / 10;
+                            break;
+
+                        case 2:
+                            rating = (float)song.RatingFTR / 10;
+                            break;
+
+                        case 3:
+                            rating = (float)song.RatingBYD / 10;
+                            break;
+
+                        default:
                             break;
                     }
 
-                    if (j > 3) continue;
+                    if (rating < 0) break;
 
-                    return ((Difficulty)i, TargetScore.S950W + j);
+                    for (int k = 0; k < 5; k++)
+                    {
+                        var tempB30 = new List<SongResult>();
+                        b30.ForEach(x => tempB30.Add(new SongResult() { song_id = x.song_id, difficulty = x.difficulty, score = x.score, rating = x.rating }));
+                        tempB30.Sort((a, b) => a.score.CompareTo(b.score));
+
+                        var targetScore = (TargetScore)k;
+                        if (CalculatePTT(song, difficulty, targetScore) <= b30Floor)
+                            continue;
+                        else
+                        {
+                            if (playResult == null)
+                            {
+                                tempB30.RemoveAt(tempB30.Count - 1);
+                                var newResult = new SongResult()
+                                {
+                                    rating = CalculatePTT(song, difficulty, targetScore)
+                                };
+                                tempB30.Add(newResult);
+                            }
+                            else
+                            {
+                                tempB30.RemoveAll(x => x.song_id == playResult.song_id && x.difficulty == playResult.difficulty);
+                                var newResult = new SongResult()
+                                {
+                                    rating = CalculatePTT(song, difficulty, targetScore)
+                                };
+                                tempB30.Add(newResult);
+                            }
+
+                            var newB30AVG = tempB30.Sum(x => x.rating) / tempB30.Count;
+
+                            float delta = (float)(newB30AVG - oldB30AVG);
+                            if (delta < minDelta)
+                                continue;
+
+                            SuggestResult suggest = new()
+                            {
+                                Song = song,
+                                Difficulty = difficulty,
+                                TargetScore = targetScore,
+                                IsOverRank = (GetRating(song, difficulty) > pttIndicator - 1),
+                                B30Delta = delta
+                            };
+
+                            results.Add(suggest);
+                            break;
+                        }
+                    }
                 }
-                return (Difficulty.Beyond, TargetScore.S1000W);
             }
 
-            //foreach (var s in suggestSong)
+            //foreach (var suggest in results)
             //{
-            //    var (difficulty, clearType) = Calculate(s);
-            //    Console.WriteLine($"{s.SongID}\t\t\t{difficulty}\t\t\t{clearType}\t\t\t{CalculatePTT(s, difficulty, clearType)}");
+            //    Console.WriteLine($"{suggest.Song.NameEN, -64}{suggest.Difficulty, -8}{suggest.TargetScore, -8}");
             //}
 
-            while (suggestSong.Count > 0)
-            {
-                var song = suggestSong.ElementAt(new Random().Next(suggestSong.Count));
-                suggestSong.Remove(song);
-
-                var (difficulty, targetScore) = Calculate(song);
-                List<SongResult> tempB30 = new List<SongResult>();
-                //Deepcopy
-                foreach (var s in b30)
-                {
-                    tempB30.Add(new SongResult() { song_id = s.song_id, rating = s.rating, difficulty = s.difficulty });
-                }
-                tempB30.Sort((a, b) => b.rating.CompareTo(a.rating));
-
-                //Console.WriteLine(tempB30.Select(s => s.rating).Sum());
-
-                float b30Sum;
-
-                var songResult = tempB30.FirstOrDefault(s => s.song_id == song.SongID);
-                if (songResult != null)
-                {
-                    var playType = songResult.GetClearType();
-                    if (songResult.score >= GetTargetScore(targetScore))
-                        if (playType != ClearType.PM)
-                            targetScore++;
-                        else
-                            continue;
-
-                    tempB30.Remove(songResult);
-                    songResult.rating = CalculatePTT(song, difficulty, targetScore);
-                    tempB30.Add(songResult);
-                    b30Sum = (float)tempB30.Select(s => s.rating).Sum();
-                }
-                else
-                {
-                    tempB30.RemoveAt(tempB30.Count - 1);
-                    b30Sum = (float)tempB30.Select(s => s.rating).Sum();
-                    b30Sum += CalculatePTT(song, difficulty, targetScore);
-                }
-
-                var newB30AVG = b30Sum / 30;
-
-                var diff = newB30AVG - oldB30AVG;
-                if (diff < 0.01)
-                    continue;
-
-                var isOverRank = GetRating(song, difficulty) >= pttIndicator - 1;
-                //Console.WriteLine($"{song.SongID,-32}{difficulty,-8}{clearType,-8}{CalculatePTT(song, difficulty, clearType),-8:0.00}{newB30AVG - oldB30AVG,-8:0.00}{(GetRating(song, difficulty) < ptt - 1 ? "" : "越级风险".PadLeft(4))}");
-                suggestSong.Remove(song);
-                return new SuggestResult()
-                {
-                    Song = song,
-                    Difficulty = difficulty,
-                    TargetScore = targetScore,
-                    B30Delta = (float)(newB30AVG - oldB30AVG),
-                    IsOverRank = isOverRank
-                };
-                //break;
-            }
-            return null;
+            if (results.Count > 0)
+                return results.ElementAt(new Random().Next(results.Count));
+            else
+                return null;
         }
 
         public static float GetRating(Song s, Difficulty difficulty)

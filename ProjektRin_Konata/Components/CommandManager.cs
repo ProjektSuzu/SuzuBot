@@ -221,22 +221,32 @@ namespace ProjektRin.Components
                             if (attr.IsRaw)
                             {
                                 if (_groupManager.IsPassiveMode(groupMessageEvent.GroupUin))
+                                {
                                     continue;
+                                }
+
                                 isMatch = pattern.IsMatch(message);
                             }
                             else
                             {
                                 if (!HasCommandPrefix(bot, groupMessageEvent))
+                                {
                                     continue;
+                                }
+
                                 isMatch = pattern.IsMatch(RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain));
                             }
 
                             if (isMatch)
                             {
                                 if (attr.IsRaw)
+                                {
                                     message = groupMessageEvent.Message.Chain.ToString().Trim();
+                                }
                                 else
+                                {
                                     message = RemoveCommandPrefix(bot, groupMessageEvent.Message.Chain);
+                                }
 
                                 if (!set.Key.Item2.IsEnabled || _groupManager.IsCommandSetDisabled(groupMessageEvent.GroupUin, set.Key.Item1.PackageName))
                                 {
@@ -355,8 +365,8 @@ namespace ProjektRin.Components
             //}
 
             //message = message.Split('/', 2).Last();
-            var regex = new Regex($"(/|铃酱|\\[KQ:at,qq={bot.Uin}\\])([\\s\\S]*)");
-            var match = regex.Match(message);
+            Regex? regex = new Regex($"(/|铃酱|\\[KQ:at,qq={bot.Uin}\\])([\\s\\S]*)");
+            Match? match = regex.Match(message);
             message = match.Groups[2].Value;
             return message.Trim();
         }

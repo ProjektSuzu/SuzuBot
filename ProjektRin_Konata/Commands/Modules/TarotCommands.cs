@@ -55,12 +55,12 @@ namespace ProjektRin.Commands.Modules
                 DateTime.Now.Second +
                 messageEvent.MemberUin);
 
-            if (seed > int.MaxValue)
+            while (seed > int.MaxValue)
             {
                 seed /= 2;
             }
 
-            List<Tarot>? pickedCards = GetCards(3, (int)seed);
+            List<Tarot>? pickedCards = GetCards(3, new Random((int)seed));
 
             //为了避免在循环里上传图片的时候每次都要等待 异步方法顺序又会乱 只能用这种铸币办法了
 
@@ -108,10 +108,9 @@ namespace ProjektRin.Commands.Modules
             return;
         }
 
-        public static List<Tarot> GetCards(int num, int seed)
+        public static List<Tarot> GetCards(int num, Random random)
         {
-            Random? rnd = new Random(seed);
-            return tarots.OrderBy(x => rnd.Next()).Take(num).ToList();
+            return tarots.OrderBy(x => random.Next()).Take(num).ToList();
         }
 
         public static string GetCardCoverPath(string title)

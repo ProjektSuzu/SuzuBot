@@ -53,8 +53,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 else
                 {
                     Logger.Info($"Query Success: {usercode}");
-                    var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
-                    var info = ArcUserInfoDB.Instance.GetByUserCode(usercode);
+                    B30Result? result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
+                    ArcaeaUserInfo? info = ArcUserInfoDB.Instance.GetByUserCode(usercode);
                     info.B30Json = response.Content.ReadAsStringAsync().Result;
                     info.LastUpdate = DateTime.Now;
                     ArcUserInfoDB.Instance.Update(info);

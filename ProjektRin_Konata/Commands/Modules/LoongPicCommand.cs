@@ -63,7 +63,7 @@ namespace ProjektRin.Commands.Modules
                             {
                                 try
                                 {
-                                    var url = $"https://gchat.qpic.cn/gchatpic_new/0/0-0-{img.FileHash}/0";
+                                    string? url = $"https://gchat.qpic.cn/gchatpic_new/0/0-0-{img.FileHash}/0";
                                     string? name = img.FileName;
                                     byte[]? data = client.GetAsync(url).Result.Content.ReadAsByteArrayAsync().Result;
                                     File.WriteAllBytesAsync(Path.Combine(picDir.FullName, $"{name}.png"), data);

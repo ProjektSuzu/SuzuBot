@@ -22,12 +22,13 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 $"/arc best <song> <PST/PRS/FTR/BYD>    获取一首歌的最佳游玩记录\n" +
                 $"/arc bind <name/usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
-                $"/arc suggest      根据当前B30结果来推荐能推分的歌曲\n" +
+                $"/arc suggest [<min>]      根据当前B30结果来推荐能推分的歌曲\n" +
                 $"/arc info <song>  查询一首歌的信息\n" +
                 $"\n" +
                 $"  name        Arcaea玩家名字\n" +
                 $"  usercode    Arcaea好友代码 必须是9位纯数字\n" +
-                $"  song        歌曲名字 可以是歌曲全名、内部sid、或者别名";
+                $"  song        歌曲名字 可以是歌曲全名、内部sid、或者别名\n" +
+                $"  min         推荐歌曲的最小推分值 例如 0.01\n";
 
         public override void OnInit()
         {
@@ -289,8 +290,19 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         private async void OnSongSuggest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var reply = "";
-            var usercode = "";
+            string? reply = "";
+            string? usercode = "";
+            float min = 0.001f;
+
+            if (args.Count > 0)
+            {
+                if (!float.TryParse(args[0], out min))
+                {
+                    reply = $"错误: 参数非法: \"{args[0]}\" [<min>].";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
 
             ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
             if (info == null)
@@ -314,7 +326,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             try
             {
-                var json = info.B30Json;
+                string? json = info.B30Json;
                 if (json == null || json == "")
                 {
                     b30 = aua.GetB30(usercode).Result;
@@ -352,7 +364,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 return;
             }
 
-            var result = SongSuggester.Suggest(b30);
+            SongSuggester.SuggestResult? result = SongSuggester.Suggest(b30, min);
 
             if (result == null)
             {
@@ -464,7 +476,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 Match? match = regex.Match(usercode);
                 if (!match.Success)
                 {
-                    reply = $"错误: 参数非法: \"{usercode}\" => [<usercode>].";
+                    reply = $"错误: 参数非法: \"{usercode}\" => [<usercode>].\n" +
+                        $"请检查是否意外的添加了空格和括号.";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -494,11 +507,14 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             B30Result? result = null;
 
-            var retry = 3;
+            int retry = 3;
             for (int i = 0; i < retry; i++)
             {
                 result = aua.GetB30(usercode).Result;
-                if (result != null) break;
+                if (result != null)
+                {
+                    break;
+                }
             }
 
             if (result == null)
@@ -598,7 +614,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
             if (result.content == null)
             {
                 reply = $"错误: 未能查找到对应用户信息: {user}.\n" +
-                    $"{result.message}";
+                    $"{result.message}.\n" +
+                    $"请检查是否意外的添加了空格和括号.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }

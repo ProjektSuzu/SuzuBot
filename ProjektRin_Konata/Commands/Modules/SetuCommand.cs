@@ -176,7 +176,7 @@ namespace ProjektRin.Commands.Modules
 
             Task.WaitAll(tasks.ToArray());
 
-            var success = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
+            Task<bool>? success = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             Logger.Info($"Setu send: {success.Result}");
             return;
         }

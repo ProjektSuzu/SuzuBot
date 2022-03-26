@@ -128,17 +128,20 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("公告", new[] { @"^announce\s?([\s\S]+)?", @"^公告\s?([\s\S]+)?" }, PermissionManager.Permission.Root)]
         public void OnAnnouncement(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var content =
+            string? content =
                 $"  [开发者公告]\n" +
-                $"{String.Join(" ", args)}\n\n" +
+                $"{string.Join(" ", args)}\n\n" +
                 $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}";
 
             Announcement = content;
 
-            foreach (var group in bot.GetGroupList().Result)
+            foreach (Konata.Core.Common.BotGroup? group in bot.GetGroupList().Result)
             {
                 if (GroupManager.Instance.IsPassiveMode(group.Uin))
+                {
                     continue;
+                }
+
                 bot.SendGroupMessage(group.Uin, new MessageBuilder(content));
             }
 
@@ -148,10 +151,10 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("反馈", new[] { @"^feedback\s?([\s\S]+)?", @"^反馈\s?([\s\S]+)?" })]
         public void OnFeedback(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var content =
+            string? content =
                 $"[反馈]\n" +
                 $"来自 G{messageEvent.GroupUin}:U{messageEvent.MemberUin}\n\n" +
-                $"{String.Join(" ", args)}\n\n" +
+                $"{string.Join(" ", args)}\n\n" +
                 $"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}";
 
 

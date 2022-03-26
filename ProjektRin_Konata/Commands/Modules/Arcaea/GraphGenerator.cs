@@ -324,6 +324,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             SKImage image = surface.Snapshot();
             SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
             //File.WriteAllBytes("resources/test.png", data.ToArray());
+            GC.Collect();
             return data.ToArray();
             #endregion
         }
@@ -668,6 +669,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             image.ScalePixels(scaledImage, SKFilterQuality.Medium);
             SKData data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 80);
             //File.WriteAllBytes("resources/test.jpg", data.ToArray());
+            GC.Collect();
             return data.ToArray();
         }
 
@@ -1163,6 +1165,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             SKImage image = surface.Snapshot();
             SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 80);
+            GC.Collect();
             return data.ToArray();
         }
 

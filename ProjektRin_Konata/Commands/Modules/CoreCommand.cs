@@ -536,13 +536,7 @@ namespace ProjektRin.Commands.Modules
         [GroupMessageCommand("Ping", @"^ping", PermissionManager.Permission.Operator)]
         public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
-            long ticksNow = (DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000;
-            long ticksSend = messageEvent.EventTime.Ticks * 1000;
-
-            DateTime test = TimeZoneInfo.ConvertTimeFromUtc(new DateTime(1970, 1, 1), TimeZoneInfo.Local).AddMilliseconds(ticksSend);
-            string? reply = $"Pong! ({Math.Abs(ticksNow - ticksSend)}ms)\n" +
-                $"Receive: {test}";
-
+            string reply = $"Pong!";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 

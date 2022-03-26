@@ -543,6 +543,16 @@ namespace ProjektRin.Commands.Modules
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 
+        [GroupMessageCommand("GarbageCollect", @"^gc", PermissionManager.Permission.Root)]
+        public void OnGC(Bot bot, GroupMessageEvent messageEvent)
+        {
+            string before = $"{Environment.WorkingSet / 1024 / 1024} MB";
+            GC.Collect();
+            string after = $"{Environment.WorkingSet / 1024 / 1024} MB";
+            string reply = $"Collected. ({before} => {after})";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+        }
+
         [GroupMessageCommand("命令集重载", @"^reload", PermissionManager.Permission.Root)]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {

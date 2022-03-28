@@ -1,5 +1,6 @@
 ﻿using Konata.Core;
 using Konata.Core.Common;
+using Konata.Core.Events;
 using Konata.Core.Events.Model;
 using NLog;
 using System.Text.Json;

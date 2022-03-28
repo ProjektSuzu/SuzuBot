@@ -64,25 +64,25 @@ public static class Program
             return -1;
         }
 
+        Logger.Info("Bot started.");
 
 #if DEBUG
         uint devGroupUin = 644504300;
-        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]DEBUG" + "\n" +
+        BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]DEBUG" + "\n" +
             $"UTC {DateTime.UtcNow:s}" + "\n" +
             "RinBot启动成功" + "\n\n" +
             $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
             $"构建时间: UTC {RinBuildStamp.BuildTime}"));
 #else
         uint devGroupUin = 644504300;
-        _ = BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]" + "\n" +
+        BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]Release" + "\n" +
             $"UTC {DateTime.UtcNow:s}" + "\n" +
-            "Github Actions 自动构建任务成功" + "\n" +
             "RinBot启动成功" + "\n\n" +
             $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
             $"构建时间: UTC {RinBuildStamp.BuildTime}"));
 #endif
-
-        Logger.Info("Bot started.");
+        
+        Logger.Info("Bot online message send.");
         return 0;
     }
 

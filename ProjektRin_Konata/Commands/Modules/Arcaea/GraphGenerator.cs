@@ -3,9 +3,27 @@ using SkiaSharp;
 
 namespace ProjektRin.Commands.Modules.Arcaea
 {
-    internal static class GraphGenerator
+    internal class GraphGenerator
     {
         private static readonly string resourcePath = Path.Combine(BotManager.resourcePath, "ArcaeaProbe_Skia");
+
+        //单例模式
+        private static GraphGenerator instance;
+        public static GraphGenerator Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new GraphGenerator();
+                }
+                return instance;
+            }
+        }
+        private GraphGenerator()
+        {
+            
+        }
 
         private static readonly List<SKColor> difficultyColors = new()
         {
@@ -29,7 +47,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             SKColors.Firebrick,
         };
 
-        public static byte[] GenerateSingleSong(SongResult songResult, int id = 1)
+        public byte[] GenerateSingleSong(SongResult songResult, int id = 1)
         {
             //准备工作
             SKImageInfo imageInfo = new(1360, 600);
@@ -324,12 +342,11 @@ namespace ProjektRin.Commands.Modules.Arcaea
             SKImage image = surface.Snapshot();
             SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
             //File.WriteAllBytes("resources/test.png", data.ToArray());
-            GC.Collect();
             return data.ToArray();
             #endregion
         }
 
-        public static byte[] GenerateBest30(B30Result b30Result)
+        public byte[] GenerateBest30(B30Result b30Result)
         {
             //准备工作
             SKImageInfo imageInfo = new SKImageInfo(2400, 5000);
@@ -669,11 +686,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
             image.ScalePixels(scaledImage, SKFilterQuality.Medium);
             SKData data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 80);
             //File.WriteAllBytes("resources/test.jpg", data.ToArray());
-            GC.Collect();
             return data.ToArray();
         }
 
-        public static byte[] GeneratePlayResult(PlayResult playResult)
+        public byte[] GeneratePlayResult(PlayResult playResult)
         {
             //准备工作
             SKImageInfo imageInfo = new SKImageInfo(1800, 1000);
@@ -1165,16 +1181,15 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             SKImage image = surface.Snapshot();
             SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 80);
-            GC.Collect();
             return data.ToArray();
         }
 
-        private static string FormatScore(int score)
+        private string FormatScore(int score)
         {
             return score.ToString().PadLeft(8, '0').Insert(5, "\'").Insert(2, "\'");
         }
 
-        public static SKBitmap GetCoverBmp(string sid, bool beyond = false)
+        public SKBitmap GetCoverBmp(string sid, bool beyond = false)
         {
             string path = Path.Combine(resourcePath, $"covers/{sid}{(beyond ? " byd" : "")}.jpg");
             if (!File.Exists(path))
@@ -1185,7 +1200,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return SKBitmap.Decode(path);
         }
 
-        private static SKBitmap GetCharaImg(uint chara, bool isUncapped = false)
+        private SKBitmap GetCharaImg(uint chara, bool isUncapped = false)
         {
             if (!File.Exists(Path.Combine(resourcePath, $"charas/{chara}{(isUncapped ? "u" : "")}.png")))
             {
@@ -1195,7 +1210,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return SKBitmap.Decode(Path.Combine(resourcePath, $"charas/{chara}{(isUncapped ? "u" : "")}.png"));
         }
 
-        private static SKBitmap GetCharaIcon(uint chara, bool isUncapped = false)
+        private SKBitmap GetCharaIcon(uint chara, bool isUncapped = false)
         {
             if (!File.Exists(Path.Combine(resourcePath, $"charas/{chara}{(isUncapped ? "u" : "")}_icon.png")))
             {
@@ -1205,7 +1220,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return SKBitmap.Decode(Path.Combine(resourcePath, $"charas/{chara}{(isUncapped ? "u" : "")}_icon.png"));
         }
 
-        private static SKColor GetAverageColor(SKBitmap bitmap)
+        private SKColor GetAverageColor(SKBitmap bitmap)
         {
             int width = bitmap.Width;
             int height = bitmap.Height;

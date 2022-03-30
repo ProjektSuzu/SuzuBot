@@ -1,5 +1,6 @@
 ﻿using Konata.Core.Common;
 using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
 
 namespace ProjektRin.Components
 {

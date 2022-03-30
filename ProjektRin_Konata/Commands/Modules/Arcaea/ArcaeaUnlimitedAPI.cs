@@ -10,6 +10,11 @@ namespace ProjektRin.Commands.Modules.Arcaea
     {
         private static readonly string configPath = Path.Combine(BotManager.resourcePath, "ArcaeaProbe_Skia/config.json");
 
+        private HttpClient httpClient = new HttpClient()
+        {
+            Timeout = new TimeSpan(0, 0, 10)
+        };
+
         private readonly AUAConfig config;
 
         private static readonly string TAG = "AUA";
@@ -39,13 +44,11 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<B30Result?> GetB30(string usercode)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 10);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             Logger.Info($"B30 Querying: {usercode}");
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/user/best30?usercode={usercode}&overflow=3&withsonginfo=false").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/best30?usercode={usercode}&overflow=3&withsonginfo=false").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
@@ -69,13 +72,11 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<BestPlayResult?> GetUserBest(string usercode, string sid, Difficulty difficulty)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             Logger.Info($"Best Querying: {usercode}");
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/user/best?usercode={usercode}&songid={sid}&difficulty={(int)difficulty}&withsonginfo=false").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/best?usercode={usercode}&songid={sid}&difficulty={(int)difficulty}&withsonginfo=false").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
@@ -94,14 +95,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<UserInfoResult?> GetUserInfo(string usercode)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
 
             Logger.Info($"Info Querying: {usercode}");
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/user/info?usercode={usercode}&withsonginfo=false").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/info?usercode={usercode}&withsonginfo=false").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
@@ -120,14 +119,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<UserInfoResult?> GetUserInfoByName(string user)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
 
             Logger.Info($"Info Querying: {user}");
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/user/info?user={user}&withsonginfo=false").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/info?user={user}&withsonginfo=false").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
@@ -146,12 +143,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<byte[]?> GetCharaImg(uint chara, bool isUncapped = false)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/assets/char?partner={chara}&awakened={isUncapped}").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/char?partner={chara}&awakened={isUncapped}").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
@@ -169,12 +164,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<byte[]?> GetCharaIcon(uint chara, bool isUncapped = false)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/assets/icon?partner={chara}&awakened={isUncapped}").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/icon?partner={chara}&awakened={isUncapped}").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;
@@ -192,12 +185,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public async Task<byte[]?> GetSongCover(string sid, bool beyond = false)
         {
-            HttpClient client = new();
-            client.Timeout = new TimeSpan(0, 0, 30);
-            client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             try
             {
-                HttpResponseMessage? response = client.GetAsync($"{config.API}/assets/song?songid={sid}{(beyond ? "&difficulty=byn" : "")}").Result;
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/song?songid={sid}{(beyond ? "&difficulty=byn" : "")}").Result;
                 if (!response.IsSuccessStatusCode)
                 {
                     return null;

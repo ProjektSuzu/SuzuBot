@@ -1,4 +1,5 @@
-﻿using Konata.Core.Message;
+﻿using Konata.Core.Interfaces.Api;
+using Konata.Core.Message;
 using NLog;
 using ProjektRin.Components;
 using ProjektRin.Utils.BuildStamp;

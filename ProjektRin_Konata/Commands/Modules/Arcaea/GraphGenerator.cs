@@ -339,7 +339,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion
 
             SKImage image = surface.Snapshot();
-            byte[] data = image.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            byte[] data = image.Encode(SKEncodedImageFormat.Png, 80).ToArray();
             surface.Dispose();
             image.Dispose();
             return data;

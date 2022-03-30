@@ -1,5 +1,6 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;

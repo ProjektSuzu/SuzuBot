@@ -1,6 +1,7 @@
 ﻿#if DEBUG
 using Konata.Core;
 using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using ProjektRin.Attributes.Command;

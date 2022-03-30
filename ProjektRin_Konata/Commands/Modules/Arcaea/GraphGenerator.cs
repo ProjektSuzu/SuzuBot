@@ -338,12 +338,11 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
             #endregion
 
-            #region 导出图片字节
             SKImage image = surface.Snapshot();
-            SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-            //File.WriteAllBytes("resources/test.png", data.ToArray());
-            return data.ToArray();
-            #endregion
+            byte[] data = image.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            surface.Dispose();
+            image.Dispose();
+            return data;
         }
 
         public byte[] GenerateBest30(B30Result b30Result)
@@ -684,9 +683,11 @@ namespace ProjektRin.Commands.Modules.Arcaea
             SKBitmap image = SKBitmap.FromImage(surface.Snapshot());
             SKBitmap scaledImage = new SKBitmap((int)(image.Width * 0.75), (int)(image.Height * 0.75));
             image.ScalePixels(scaledImage, SKFilterQuality.Medium);
-            SKData data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 80);
-            //File.WriteAllBytes("resources/test.jpg", data.ToArray());
-            return data.ToArray();
+            byte[] data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            surface.Dispose();
+            scaledImage.Dispose();
+            image.Dispose();
+            return data;
         }
 
         public byte[] GeneratePlayResult(PlayResult playResult)
@@ -1180,8 +1181,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion
 
             SKImage image = surface.Snapshot();
-            SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 80);
-            return data.ToArray();
+            byte[] data = image.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            surface.Dispose();
+            image.Dispose();
+            return data;
         }
 
         private string FormatScore(int score)

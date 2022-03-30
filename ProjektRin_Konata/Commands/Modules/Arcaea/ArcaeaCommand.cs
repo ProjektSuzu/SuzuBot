@@ -147,7 +147,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Text("\n收到, 正在处理成绩图...")
+                .Text("收到, 正在处理成绩图...")
                 );
 
             UserInfoResult? result = aua.GetUserInfo(usercode).Result;
@@ -519,7 +519,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             if (result == null)
             {
-                reply = $"错误: 获取失败";
+                reply = $"错误: 获取失败\n" +
+                    $"如果你是第一次获取B30成绩图 请等几分钟后再试.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .Add(ReplyChain.Create(messageEvent.Message))
                     .Text(reply)

@@ -105,7 +105,7 @@ namespace ProjektRin.Components
                 {
                     switch (e.Type)
                     {
-                        case CaptchaEvent.CaptchaType.SMS:
+                        case CaptchaEvent.CaptchaType.Sms:
                             Logger.Info(e.Phone);
                             ((Bot)s)!.SubmitSmsCode(Console.ReadLine());
                             break;

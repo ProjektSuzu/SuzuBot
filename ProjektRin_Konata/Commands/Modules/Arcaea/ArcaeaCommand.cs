@@ -69,13 +69,13 @@ namespace ProjektRin.Commands.Modules.Arcaea
                         break;
                     }
 
-                case "song":
                 case "best":
                     {
                         OnSongBest(bot, messageEvent, args);
                         break;
                     }
-
+                    
+                case "song":
                 case "info":
                     {
                         OnSongInfo(bot, messageEvent, args);

@@ -297,7 +297,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             if (args.Count > 0)
             {
-                if (!float.TryParse(args[0], out min))
+                if (!float.TryParse(args[0], out min) || min < 0)
                 {
                     reply = $"错误: 参数非法: \"{args[0]}\" [<min>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));

@@ -11,7 +11,7 @@ namespace ProjektRin.Commands.Modules
 {
 
     [CommandSet("Debug", "com.akulak.debug")]
-    internal class DebugCommands : BaseCommand
+    internal class DebugCommand : BaseCommand
     {
         public override void OnInit() { }
 

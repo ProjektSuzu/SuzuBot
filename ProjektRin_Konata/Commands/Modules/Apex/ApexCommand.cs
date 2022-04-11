@@ -31,7 +31,7 @@ namespace ProjektRin.Commands.Modules.Apex
         {
         }
 
-        [GroupMessageCommand("Apex", @"^apex\s([\s\S]+)?")]
+        [GroupMessageCommand("Apex", @"^apex\s?([\s\S]+)?")]
         public void OnApex(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string userId;

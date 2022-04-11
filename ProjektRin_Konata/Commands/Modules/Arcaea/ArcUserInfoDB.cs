@@ -5,7 +5,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 {
     internal class ArcUserInfoDB
     {
-        private static readonly string dbPath = Path.Combine(BotManager.resourcePath, "arcaea.db");
+        private static readonly string dbPath = Path.Combine(BotManager.rootPath, "database/arcaea.db");
         public static SQLiteConnection dbConnection = new(dbPath);
 
         #region 单例模式

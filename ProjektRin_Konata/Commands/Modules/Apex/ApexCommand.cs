@@ -61,14 +61,15 @@ namespace ProjektRin.Commands.Modules.Apex
 
             if (result.errors != null && result.errors.Count > 0)
             {
-                var message = result.errors.First().message;
-                switch (message)
+                var code = result.errors.First().code;
+                switch (code)
                 {
                     case "CollectorResultStatus::NotFound":
                     {
                         bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"获取时发生错误: 找不到用户 {userId}")
+                            .Text($"获取时发生错误: 找不到用户 {userId}\n" +
+                                  $"目前只支持查询Origin平台的用户名 请确认输入的是Origin平台的用户名")
                         );
                         return;
                     }

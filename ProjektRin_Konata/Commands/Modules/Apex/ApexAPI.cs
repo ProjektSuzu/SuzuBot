@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NLog;
 using ProjektRin.Components;
 
@@ -38,26 +31,39 @@ namespace ProjektRin.Commands.Modules.Apex
         }
         #endregion
 
-        private static readonly string api =
-            @"https://public-api.tracker.gg/v2/apex/standard/profile/{platform}/{platformUserIdentifier}";
+        private static readonly string statsApi =
+            @"https://api.mozambiquehe.re/bridge?version=5&platform=PC&player={player}&auth={token}";
+        private static readonly string N2UApi =
+            @"https://api.mozambiquehe.re/nametouid?player={player}&platform=PC&auth={token}";        
 
         private static readonly string TAG = "APEX";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
-        public async Task<StatsProfile?> GetPlayerStats(string userId, string platform = "origin")
+        public async Task<PlayerStats?> GetPlayerStats(string userId)
         {
             HttpClient httpClient = new HttpClient()
             {
                 Timeout = new TimeSpan(0, 0, 15)
             };
+            var url = statsApi.Replace("{player}", userId).Replace("{token}", config.Token);
+            var response = httpClient.GetAsync(url).Result;
+            var responseString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<PlayerStats>(responseString);
 
-            httpClient.DefaultRequestHeaders.Add("TRN-Api-Key", config.Token);
-            var url = api.Replace("{platform}", platform).Replace("{platformUserIdentifier}", userId);
-            var response = await httpClient.GetAsync(url);
-            Logger.Info($"Response: {response.StatusCode}");
-            return JsonConvert.DeserializeObject<StatsProfile>(response.Content.ReadAsStringAsync().Result);
         }
 
+        public async Task<UidInfo> GetPlayerUid(string userName)
+        {
+            HttpClient httpClient = new HttpClient()
+            {
+                Timeout = new TimeSpan(0, 0, 15)
+            };
+            var url = N2UApi.Replace("{player}", userName).Replace("{token}", config.Token);
+            var response = httpClient.GetAsync(url).Result;
+            var responseString = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<UidInfo>(responseString);
+        }
+        
         private class ApexConfig
         {
             [JsonProperty("token")]
@@ -65,50 +71,68 @@ namespace ProjektRin.Commands.Modules.Apex
         }
     }
 
-    public class StatsProfile
+    public class UidInfo
     {
-        public Data data;
-        public List<Error> errors;
-        public class Data
+        public string Error;
+        public string name;
+        public string uid;
+    }
+
+    public class PlayerStats
+    {
+        public Global global;
+        public Realtime realtime;
+        public Legend legends;
+        public string? Error;
+
+
+        public class Global
         {
-            public PlatformInfo platformInfo;
-            public List<Segment> segments;
-            public class PlatformInfo
+            public string name;
+            public uint level;
+            public Ban bans;
+            public Rank rank;
+            public Rank arena;
+
+
+            public class Ban
             {
-                public string platformSlug;
-                public string platformUserIdentifier;
+                public bool isActive;
             }
 
-            public class Segment
+            public class Rank
             {
-                public string type;
-                public Metadata metadata;
-                public Dictionary<string, Stat> stats;
-
-                public class Metadata
-                {
-                    public string name;
-                    public bool isActive;
-                }
-
-                public class Stat
-                {
-                    public string displayName;
-                    public Metadata metadata;
-                    public string displayValue;
-
-                    public class Metadata
-                    {
-                        public string rankName;
-                    }
-                }
+                public int rankScore;
+                public string rankName;
+                public int rankDiv;
             }
         }
 
-        public class Error
+        public class Realtime
         {
-            public string code;
-            public string message;
+            public int isOnline;
+            public int isInGame;
+        }
+
+        public class Legend
+        {
+            public Selected selected;
+            public Dictionary<string, LegendInfo> all;
+
+            public class Selected
+            {
+                public string LegendName;
+            }
+
+            public class LegendInfo
+            {
+                public List<Data> data;
+                public class Data
+                {
+                    public string name;
+                    public uint value;
+                }
+            }
         }
     }
 

@@ -121,8 +121,24 @@ namespace ProjektRin.Components
                 };
                 _bot.OnGroupMessage += _commandManager.GroupCommandHandler;
                 _bot.OnGroupPoke += _commandManager.GroupPokeEventHandler;
+                _bot.OnBotOffline += RelayLogin;
             }
             return _bot;
+        }
+
+        public void RelayLogin(object sender, BotOfflineEvent args)
+        {
+            if (args.Type == BotOfflineEvent.OfflineType.ServerKickOff)
+            {
+                Logger.Info("User logged out.\n" +
+                            "Sleep 30s before relogin.");
+                Thread.Sleep(30000);
+                (sender as Bot).Login();
+            }
+            else
+            {
+                (sender as Bot).Login();
+            }
         }
 
         public bool LoginBot()

@@ -242,13 +242,17 @@ namespace ProjektRin.Commands.Modules.Apex
                 $"当前竞技场段位: {GetRankName(result.global.arena.rankName)} {result.global.arena.rankDiv}\n" +
                 $"当前竞技场积分: {result.global.arena.rankScore} AP\n" +
                 $"================\n" +
-                $"当前选择传奇: {legendName}\n" +
-                $"追踪器:\n";
+                $"当前选择传奇: {legendName}";
 
-            foreach (var data in selectedLegend.data)
+            if (selectedLegend.data != null)
             {
-                reply += $"{data.name}: {data.value}\n";
+                reply += "\n追踪器:\n";
+                foreach (var data in selectedLegend.data)
+                {
+                    reply += $"{data.name}: {data.value}\n";
+                }
             }
+            
 
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()

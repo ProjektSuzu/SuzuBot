@@ -74,7 +74,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                         OnSongBest(bot, messageEvent, args);
                         break;
                     }
-                    
+
                 case "song":
                 case "info":
                     {

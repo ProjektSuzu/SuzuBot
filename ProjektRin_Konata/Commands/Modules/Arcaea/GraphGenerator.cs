@@ -22,7 +22,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
         }
         private GraphGenerator()
         {
-            
+
         }
 
         private static readonly List<SKColor> difficultyColors = new()

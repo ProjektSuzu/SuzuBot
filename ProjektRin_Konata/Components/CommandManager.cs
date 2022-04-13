@@ -358,7 +358,6 @@ namespace ProjektRin.Components
         {
             string? message = messageChain.ToString().Trim();
             AtChain? atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain && (x as AtChain).AtUin == bot.Uin);
-
             //message = message.Replace("铃酱", "");
             //if (atChain != null)
             //{

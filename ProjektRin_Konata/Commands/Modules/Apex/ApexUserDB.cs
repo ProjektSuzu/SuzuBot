@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ProjektRin.Components;
+﻿using ProjektRin.Components;
 using SQLite;
 
 namespace ProjektRin.Commands.Modules.Apex
@@ -12,7 +7,7 @@ namespace ProjektRin.Commands.Modules.Apex
     {
         private static readonly string dbPath = Path.Combine(BotManager.rootPath, "database/apexUser.db");
         public static SQLiteConnection dbConnection = new(dbPath);
-        
+
         #region 单例模式
         private static ApexUserDB instance;
         public static ApexUserDB Instance

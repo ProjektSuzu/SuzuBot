@@ -82,7 +82,7 @@ public static class Program
             $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
             $"构建时间: UTC {RinBuildStamp.BuildTime}"));
 #endif
-        
+
         Logger.Info("Bot online message send.");
         return 0;
     }

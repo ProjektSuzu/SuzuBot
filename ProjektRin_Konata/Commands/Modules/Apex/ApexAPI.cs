@@ -34,7 +34,7 @@ namespace ProjektRin.Commands.Modules.Apex
         private static readonly string statsApi =
             @"https://api.mozambiquehe.re/bridge?version=5&platform=PC&player={player}&auth={token}";
         private static readonly string N2UApi =
-            @"https://api.mozambiquehe.re/nametouid?player={player}&platform=PC&auth={token}";        
+            @"https://api.mozambiquehe.re/nametouid?player={player}&platform=PC&auth={token}";
 
         private static readonly string TAG = "APEX";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
@@ -63,7 +63,7 @@ namespace ProjektRin.Commands.Modules.Apex
             var responseString = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<UidInfo>(responseString);
         }
-        
+
         private class ApexConfig
         {
             [JsonProperty("token")]
@@ -136,5 +136,5 @@ namespace ProjektRin.Commands.Modules.Apex
         }
     }
 
-    
+
 }

@@ -2,7 +2,6 @@
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
-using Konata.Core.Message;
 using NLog;
 using System.Text.Json;
 
@@ -86,7 +85,7 @@ namespace ProjektRin.Components
             return botKeyStore;
         }
 
-        //参考Kagami的写法
+        //参考Kagami的写法   
         public Bot InitBot()
         {
             BotConfig _botConfig = GetConfig();

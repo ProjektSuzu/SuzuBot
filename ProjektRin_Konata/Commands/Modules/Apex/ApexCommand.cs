@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Konata.Core;
+﻿using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
@@ -13,6 +7,7 @@ using Newtonsoft.Json;
 using ProjektRin.Attributes.Command;
 using ProjektRin.Attributes.CommandSet;
 using ProjektRin.Components;
+using System.Diagnostics;
 
 namespace ProjektRin.Commands.Modules.Apex
 {
@@ -42,7 +37,7 @@ namespace ProjektRin.Commands.Modules.Apex
 
         private ApexAPI api = ApexAPI.Instance;
         private ApexUserDB db = ApexUserDB.Instance;
-        
+
         public override void OnInit()
         {
         }
@@ -206,7 +201,7 @@ namespace ProjektRin.Commands.Modules.Apex
                               $"如果你是第一次使用, 请使用/apex help 查看帮助信息")
                     );
                     return;
-                }                
+                }
             }
 
             var result = api.GetPlayerStats(userId).Result;
@@ -252,7 +247,7 @@ namespace ProjektRin.Commands.Modules.Apex
                     reply += $"{data.name}: {data.value}\n";
                 }
             }
-            
+
 
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()

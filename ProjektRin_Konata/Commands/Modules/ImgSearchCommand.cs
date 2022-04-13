@@ -1,6 +1,4 @@
-﻿using ProjektRin.Attributes.CommandSet;
-
-namespace ProjektRin.Commands.Modules
+﻿namespace ProjektRin.Commands.Modules
 {
     //[CommandSet("以图搜图", "com.akulak.imgSearch")]
     internal class ImgSearchCommand : BaseCommand

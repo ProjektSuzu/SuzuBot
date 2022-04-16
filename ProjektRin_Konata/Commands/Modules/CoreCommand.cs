@@ -549,6 +549,7 @@ namespace ProjektRin.Commands.Modules
         {
             string before = $"{Environment.WorkingSet / 1024 / 1024} MB";
             GC.Collect();
+            GC.WaitForPendingFinalizers();
             string after = $"{Environment.WorkingSet / 1024 / 1024} MB";
             string reply = $"Collected. ({before} => {after})";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));

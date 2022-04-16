@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ProjektRin": {
+      "commandName": "Project",
+      "remoteDebugEnabled": false
+    }
+  }
+}

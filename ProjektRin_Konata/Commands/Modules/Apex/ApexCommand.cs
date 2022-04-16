@@ -15,7 +15,7 @@ namespace ProjektRin.Commands.Modules.Apex
     internal class ApexCommand : BaseCommand
     {
         public override string Help =>
-            $"[Apex]测试版\n" +
+            $"[Apex]\n" +
             $"/apex help\n" +
             $"  打印帮助信息\n" +
             $"/apex [<userId>]\n" +
@@ -97,7 +97,7 @@ namespace ProjektRin.Commands.Modules.Apex
             var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(result);
 
             var reply =
-                $"[APEX查分器]测试版\n" +
+                $"[APEX查分器]\n" +
                 $"当前排位最低冲猎分数: {json["BR"]} RP\n" +
                 $"当前竞技场最低冲猎分数: {json["Arena"]} AP";
 
@@ -227,7 +227,7 @@ namespace ProjektRin.Commands.Modules.Apex
             var legendName = result.legends.selected.LegendName;
             var selectedLegend = result.legends.all.FirstOrDefault(x => x.Key == legendName).Value;
 
-            var reply = "[APEX查分器]测试版\n";
+            var reply = "[APEX查分器]\n";
             reply +=
                 $"用户名: {result.global.name}\n" +
                 $"等级: {result.global.level}\n" +

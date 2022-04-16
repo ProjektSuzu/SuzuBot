@@ -82,6 +82,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             #region 获取封面图片的平均色
             SKColor averageColor = GetAverageColor(bitmap);
+            bitmap.Dispose();
             #endregion
 
             #region 根据平均色决定文字颜色
@@ -314,6 +315,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
             coverCanvas.DrawImage(cover, 0, 0);
 
             coverSurface.Draw(mainCanvas, 10, 10, null);
+            scaledBitmap.Dispose();
+            coverSurface.Dispose();
+            coverCanvas.Dispose();
+            cover.Dispose();
             #endregion
 
             #region 绘制游玩时间和序号
@@ -549,6 +554,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 int col = id % 3;
 
                 mainCanvas.DrawBitmap(bitmap, 1200 - 340 + (col - 1) * 770, row * 380 + 700);
+                bitmap.Dispose();
             }
             for (int i = 0; i < b30Result.content.best30_list.Count; i++)
             {
@@ -558,12 +564,15 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     SKBitmap singleSongBmp = SKBitmap.Decode(GenerateSingleSong(b30Result.content.best30_list[id], id + 1));
                     SKBitmap scaledBitmap = new SKBitmap(680, 300);
                     singleSongBmp.ScalePixels(scaledBitmap, SKFilterQuality.Medium);
+                    singleSongBmp.Dispose();
                     GenerateCallback(scaledBitmap, id);
+                    scaledBitmap.Dispose();
                 });
                 tasks.Add(task);
                 task.Start();
             }
             Task.WaitAll(tasks.ToArray());
+            tasks.Clear();
             #endregion
 
             #region 绘制分割线
@@ -614,6 +623,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     int col = i % 3;
 
                     mainCanvas.DrawBitmap(scaledBitmap, 1200 - 340 + (col - 1) * 770, 4640);
+                    scaledBitmap.Dispose();
+                    singleSongBmp.Dispose();
                 }
             }
             else

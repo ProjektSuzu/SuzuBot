@@ -1,4 +1,5 @@
-﻿using Konata.Core;
+﻿using System.Collections;
+using Konata.Core;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
@@ -10,6 +11,7 @@ using ProjektRin.Components;
 using ProjektRin.Utils.BuildStamp;
 using ProjektRin.Utils.Database.Tables;
 using System.Diagnostics;
+using SkiaSharp;
 
 namespace ProjektRin.Commands.Modules
 {
@@ -548,10 +550,29 @@ namespace ProjektRin.Commands.Modules
         public void OnGC(Bot bot, GroupMessageEvent messageEvent)
         {
             string before = $"{Environment.WorkingSet / 1024 / 1024} MB";
-            GC.Collect();
+            GC.Collect(2, GCCollectionMode.Forced, true);
             GC.WaitForPendingFinalizers();
             string after = $"{Environment.WorkingSet / 1024 / 1024} MB";
             string reply = $"Collected. ({before} => {after})";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+        }
+
+        [GroupMessageCommand("AddMemoryPressure", @"^amp", PermissionManager.Permission.Root)]
+        public void OnAMP(Bot bot, GroupMessageEvent messageEvent)
+        {
+            string before = $"{Environment.WorkingSet / 1024 / 1024} MB";
+            FileStream fs = new FileStream("test.png", FileMode.Open);
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < 1000; i++)
+            {
+                var bytes = new byte[fs.Length];
+                Logger.Info($"Iter {i}: {Environment.WorkingSet / 1024 / 1024} MB");
+                fs.Read(bytes, 0, bytes.Length);
+                list.Add(bytes);
+            }
+            fs.Close();
+            string after = $"{Environment.WorkingSet / 1024 / 1024} MB";
+            string reply = $"Pressed. ({before} => {after})";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
         }
 

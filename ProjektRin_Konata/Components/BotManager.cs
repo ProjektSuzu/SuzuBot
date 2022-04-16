@@ -4,6 +4,7 @@ using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using NLog;
 using System.Text.Json;
+using Konata.Core.Interfaces;
 
 
 namespace ProjektRin.Components
@@ -92,11 +93,16 @@ namespace ProjektRin.Components
             BotDevice _botDevice = GetDevice();
             BotKeyStore _botKeyStore = GetKeyStore();
 
-            _bot = new Bot(
+            //_bot = new Bot(
+            //    _botConfig,
+            //    _botDevice,
+            //    _botKeyStore
+            //    );
+            _bot = BotFather.Create(
                 _botConfig,
                 _botDevice,
                 _botKeyStore
-                );
+            );
             {
                 _bot.OnLog += (s, e) => { Logger.Trace(e.EventMessage); };
                 _bot.OnCaptcha += (s, e)
@@ -122,7 +128,8 @@ namespace ProjektRin.Components
                 _bot.OnGroupMessage += _commandManager.GroupCommandHandler;
                 _bot.OnGroupPoke += _commandManager.GroupPokeEventHandler;
                 _bot.OnBotOffline += RelayLogin;
-                _bot.OnFriendRequest += (sender, args) => sender.ApproveFriendRequest(args.ReqUin, args.Token);
+                _bot.OnFriendRequest += (sender, args) => 
+                    sender.ApproveFriendRequest(args.ReqUin, args.Token);
                 _bot.OnGroupInvite += (sender, args) =>
                     sender.ApproveGroupInvitation(args.GroupUin, args.InviterUin, args.Token);
             }
@@ -133,7 +140,7 @@ namespace ProjektRin.Components
         {
             if (args.Type == BotOfflineEvent.OfflineType.ServerKickOff)
             {
-                Logger.Info("User logged out.\n" +
+                Logger.Info("Admin logged in.\n" +
                             "Sleep 30s before relogin.");
                 Thread.Sleep(30000);
                 (sender as Bot).Login();

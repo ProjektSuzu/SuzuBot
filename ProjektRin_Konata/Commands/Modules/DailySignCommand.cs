@@ -100,7 +100,7 @@ namespace ProjektRin.Commands.Modules
             Tarot? card = TarotCommands.GetCards(1, random).First();
             reply =
                 $"今天的塔罗牌是: {card.title} {(!isReversed ? "正位" : "逆位")}\n" +
-                $"{(isReversed ? card.positive : card.negative)}\n" +
+                $"{(!isReversed ? card.positive : card.negative)}\n" +
                 $"\n";
 
             SKBitmap tarotImg = SKBitmap.Decode(TarotCommands.GetCardCoverPath(card.title));
@@ -108,7 +108,7 @@ namespace ProjektRin.Commands.Modules
             {
                 SKBitmap flipImg = new SKBitmap(tarotImg.Width, tarotImg.Height);
                 SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(1, -1, 0, tarotImg.Height / 2);
+                canvas.Scale(-1, -1, tarotImg.Width / 2, tarotImg.Height / 2);
                 canvas.DrawBitmap(tarotImg, 0, 0);
                 tarotImg = flipImg.Copy();
                 flipImg.Dispose();

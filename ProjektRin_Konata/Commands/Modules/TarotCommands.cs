@@ -73,21 +73,21 @@ namespace ProjektRin.Commands.Modules
             string? reply1 = "";
             string? title1 = card1.title;
             bool IsReversed1 = new Random().Next(2) == 0;
-            string? description1 = IsReversed1 ? card1.positive : card1.negative;
+            string? description1 = !IsReversed1 ? card1.positive : card1.negative;
             string? coverPath1 = coverDir.GetFiles().First(x => x.Name.StartsWith(title1)).FullName;
             reply1 = $"\n开端 {title1}: {(!IsReversed1 ? "正位" : "逆位")}\n{description1}";
 
             string? reply2 = "";
             string? title2 = card2.title;
             bool IsReversed2 = new Random().Next(2) == 0;
-            string? description2 = IsReversed2 ? card2.positive : card2.negative;
+            string? description2 = !IsReversed2 ? card2.positive : card2.negative;
             string? coverPath2 = coverDir.GetFiles().First(x => x.Name.StartsWith(title2)).FullName;
             reply2 = $"\n过程 {title2}: {(!IsReversed2 ? "正位" : "逆位")}\n{description2}";
 
             string? reply3 = "";
             string? title3 = card3.title;
             bool IsReversed3 = new Random().Next(2) == 0;
-            string? description3 = IsReversed3 ? card3.positive : card3.negative;
+            string? description3 = !IsReversed3 ? card3.positive : card3.negative;
             string? coverPath3 = coverDir.GetFiles().First(x => x.Name.StartsWith(title3)).FullName;
             reply3 = $"\n结局 {title3}: {(!IsReversed3 ? "正位" : "逆位")}\n{description3}";
 
@@ -96,7 +96,7 @@ namespace ProjektRin.Commands.Modules
             {
                 SKBitmap flipImg = new SKBitmap(tarotImg1.Width, tarotImg1.Height);
                 SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(1, -1, 0, tarotImg1.Height / 2);
+                canvas.Scale(-1, -1, tarotImg1.Width / 2, tarotImg1.Height / 2);
                 canvas.DrawBitmap(tarotImg1, 0, 0);
                 tarotImg1 = flipImg.Copy();
                 flipImg.Dispose();
@@ -108,7 +108,7 @@ namespace ProjektRin.Commands.Modules
             {
                 SKBitmap flipImg = new SKBitmap(tarotImg2.Width, tarotImg2.Height);
                 SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(1, -1, 0, tarotImg2.Height / 2);
+                canvas.Scale(-1, -1, tarotImg2.Width / 2, tarotImg2.Height / 2);
                 canvas.DrawBitmap(tarotImg2, 0, 0);
                 tarotImg2 = flipImg.Copy();
                 flipImg.Dispose();
@@ -120,7 +120,7 @@ namespace ProjektRin.Commands.Modules
             {
                 SKBitmap flipImg = new SKBitmap(tarotImg3.Width, tarotImg3.Height);
                 SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(1, -1, 0, tarotImg3.Height / 2);
+                canvas.Scale(-1, -1, tarotImg3.Width / 2, tarotImg3.Height / 2);
                 canvas.DrawBitmap(tarotImg3, 0, 0);
                 tarotImg3 = flipImg.Copy();
                 flipImg.Dispose();

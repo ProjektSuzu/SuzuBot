@@ -346,6 +346,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             SKImage image = surface.Snapshot();
             byte[] data = image.Encode(SKEncodedImageFormat.Png, 80).ToArray();
             surface.Dispose();
+            mainCanvas.Dispose();
             image.Dispose();
             return data;
         }
@@ -529,7 +530,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 bitmap.ScalePixels(scaledBitmap, SKFilterQuality.Medium);
 
                 mainCanvas.DrawBitmap(scaledBitmap, 1200 - scaledBitmap.Width / 2, 525);
-
+                bitmap.Dispose();
+                scaledBitmap.Dispose();
 
                 fontPaint.TextSize = 96;
                 fontPaint.IsAntialias = true;
@@ -593,7 +595,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 bitmap.ScalePixels(scaledBitmap, SKFilterQuality.Medium);
 
                 mainCanvas.DrawBitmap(scaledBitmap, 1200 - scaledBitmap.Width / 2, 4475);
-
+                bitmap.Dispose();
+                scaledBitmap.Dispose();
 
                 fontPaint.TextSize = 96;
                 fontPaint.IsAntialias = true;
@@ -659,6 +662,9 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 infoBorad.ScalePixels(scaledBitmap, SKFilterQuality.None);
                 mainCanvas.DrawBitmap(scaledBitmap, 2400 - scaledBitmap.Width, 0);
 
+                infoBorad.Dispose();
+                scaledBitmap.Dispose();
+
                 fontPaint.Color = SKColors.White;
                 fontPaint.TextSize = 84;
                 fontPaint.IsAntialias = true;
@@ -696,6 +702,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             image.ScalePixels(scaledImage, SKFilterQuality.Medium);
             byte[] data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
             surface.Dispose();
+            mainCanvas.Dispose();
             scaledImage.Dispose();
             image.Dispose();
             return data;
@@ -733,6 +740,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 bgPaint.IsAntialias = true;
                 mainCanvas.DrawBitmap(background, 0, 0, bgPaint);
 
+                background.Dispose();
+
                 bgPaint.ImageFilter = null;
                 bgPaint.Color = new SKColor(0, 0, 0, 64);
                 SKRect rect = new SKRect(0, 0, 1800, 1000);
@@ -748,6 +757,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             #region 获取封面图片的平均色
             SKColor averageColor = GetAverageColor(bitmap);
+            bitmap.Dispose();
             #endregion
 
             #region 根据平均色决定文字颜色
@@ -805,6 +815,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 chara.ScalePixels(scaledCharaBitmap, SKFilterQuality.Low);
 
                 mainCanvas.DrawBitmap(scaledCharaBitmap, 800, 0);
+                scaledCharaBitmap.Dispose();
             }
             #endregion
 
@@ -839,6 +850,10 @@ namespace ProjektRin.Commands.Modules.Arcaea
             coverCanvas.DrawImage(cover, 0, 0);
 
             coverSurface.Draw(mainCanvas, 70, 380, null);
+            cover.Dispose();
+            coverSurface.Dispose();
+            coverCanvas.Dispose();
+            scaledBitmap.Dispose();
             #endregion
 
             #region 绘制歌曲定数和PTT
@@ -1075,6 +1090,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 userBack.ScalePixels(scaledUserBack, SKFilterQuality.Low);
 
                 mainCanvas.DrawBitmap(scaledUserBack, 125, 80);
+                scaledUserBack.Dispose();
             }
             #endregion
 
@@ -1086,6 +1102,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
                 pttBmp.ScalePixels(scaledPTTBmp, SKFilterQuality.Low);
 
                 mainCanvas.DrawBitmap(scaledPTTBmp, 50, 60);
+                scaledPTTBmp.Dispose();
+                pttBmp.Dispose();
             }
             #endregion
 
@@ -1195,6 +1213,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             byte[] data = image.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
             surface.Dispose();
             image.Dispose();
+            mainCanvas.Dispose();
             return data;
         }
 

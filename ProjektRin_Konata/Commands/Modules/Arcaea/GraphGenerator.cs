@@ -75,7 +75,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion
 
             #region 获取封面图片
-            SKBitmap bitmap = GetCoverBmp(songResult.song_id);
+            SKBitmap bitmap = GetCoverBmp(songResult.song_id, songResult.difficulty == SongResult.Difficulty.Beyond);
             SKBitmap scaledBitmap = new SKBitmap(580, 580);
             bitmap.ScalePixels(scaledBitmap, SKFilterQuality.None);
             #endregion
@@ -614,7 +614,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion                        
 
             #region 生成并绘制歌曲成绩图
-            if (b30Result.content.best30_overflow.Count > 0)
+            if (b30Result.content.best30_overflow != null && b30Result.content.best30_overflow.Count > 0)
             {
                 for (int i = 0; i < b30Result.content.best30_overflow.Count; i++)
                 {
@@ -750,7 +750,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion
 
             #region 获取封面图片
-            SKBitmap bitmap = GetCoverBmp(songResult.song_id);
+            SKBitmap bitmap = GetCoverBmp(songResult.song_id, songResult.difficulty == SongResult.Difficulty.Beyond);
             SKBitmap scaledBitmap = new SKBitmap(550, 550);
             bitmap.ScalePixels(scaledBitmap, SKFilterQuality.None);
             #endregion

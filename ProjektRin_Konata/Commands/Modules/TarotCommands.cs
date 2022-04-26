@@ -92,40 +92,40 @@ namespace ProjektRin.Commands.Modules
             reply3 = $"\n结局 {title3}: {(!IsReversed3 ? "正位" : "逆位")}\n{description3}";
 
             SKBitmap tarotImg1 = SKBitmap.Decode(coverPath1);
-            if (IsReversed1)
-            {
-                SKBitmap flipImg = new SKBitmap(tarotImg1.Width, tarotImg1.Height);
-                SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(-1, -1, tarotImg1.Width / 2, tarotImg1.Height / 2);
-                canvas.DrawBitmap(tarotImg1, 0, 0);
-                tarotImg1 = flipImg.Copy();
-                flipImg.Dispose();
-                canvas.Dispose();
-            }
+            //if (IsReversed1)
+            //{
+            //    SKBitmap flipImg = new SKBitmap(tarotImg1.Width, tarotImg1.Height);
+            //    SKCanvas canvas = new SKCanvas(flipImg);
+            //    canvas.Scale(-1, -1, tarotImg1.Width / 2, tarotImg1.Height / 2);
+            //    canvas.DrawBitmap(tarotImg1, 0, 0);
+            //    tarotImg1 = flipImg.Copy();
+            //    flipImg.Dispose();
+            //    canvas.Dispose();
+            //}
 
             SKBitmap tarotImg2 = SKBitmap.Decode(coverPath2);
-            if (IsReversed2)
-            {
-                SKBitmap flipImg = new SKBitmap(tarotImg2.Width, tarotImg2.Height);
-                SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(-1, -1, tarotImg2.Width / 2, tarotImg2.Height / 2);
-                canvas.DrawBitmap(tarotImg2, 0, 0);
-                tarotImg2 = flipImg.Copy();
-                flipImg.Dispose();
-                canvas.Dispose();
-            }
+            //if (IsReversed2)
+            //{
+            //    SKBitmap flipImg = new SKBitmap(tarotImg2.Width, tarotImg2.Height);
+            //    SKCanvas canvas = new SKCanvas(flipImg);
+            //    canvas.Scale(-1, -1, tarotImg2.Width / 2, tarotImg2.Height / 2);
+            //    canvas.DrawBitmap(tarotImg2, 0, 0);
+            //    tarotImg2 = flipImg.Copy();
+            //    flipImg.Dispose();
+            //    canvas.Dispose();
+            //}
 
             SKBitmap tarotImg3 = SKBitmap.Decode(coverPath3);
             if (IsReversed3)
-            {
-                SKBitmap flipImg = new SKBitmap(tarotImg3.Width, tarotImg3.Height);
-                SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(-1, -1, tarotImg3.Width / 2, tarotImg3.Height / 2);
-                canvas.DrawBitmap(tarotImg3, 0, 0);
-                tarotImg3 = flipImg.Copy();
-                flipImg.Dispose();
-                canvas.Dispose();
-            }
+            //{
+            //    SKBitmap flipImg = new SKBitmap(tarotImg3.Width, tarotImg3.Height);
+            //    SKCanvas canvas = new SKCanvas(flipImg);
+            //    canvas.Scale(-1, -1, tarotImg3.Width / 2, tarotImg3.Height / 2);
+            //    canvas.DrawBitmap(tarotImg3, 0, 0);
+            //    tarotImg3 = flipImg.Copy();
+            //    flipImg.Dispose();
+            //    canvas.Dispose();
+            //}
 
             multiReply
                 .AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(magicWords.ElementAt(new Random().Next(magicWords.Length))).Build()))

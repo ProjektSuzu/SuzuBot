@@ -104,16 +104,16 @@ namespace ProjektRin.Commands.Modules
                 $"\n";
 
             SKBitmap tarotImg = SKBitmap.Decode(TarotCommands.GetCardCoverPath(card.title));
-            if (isReversed)
-            {
-                SKBitmap flipImg = new SKBitmap(tarotImg.Width, tarotImg.Height);
-                SKCanvas canvas = new SKCanvas(flipImg);
-                canvas.Scale(-1, -1, tarotImg.Width / 2, tarotImg.Height / 2);
-                canvas.DrawBitmap(tarotImg, 0, 0);
-                tarotImg = flipImg.Copy();
-                flipImg.Dispose();
-                canvas.Dispose();
-            }
+            //if (isReversed)
+            //{
+            //    SKBitmap flipImg = new SKBitmap(tarotImg.Width, tarotImg.Height);
+            //    SKCanvas canvas = new SKCanvas(flipImg);
+            //    canvas.Scale(-1, -1, tarotImg.Width / 2, tarotImg.Height / 2);
+            //    canvas.DrawBitmap(tarotImg, 0, 0);
+            //    tarotImg = flipImg.Copy();
+            //    flipImg.Dispose();
+            //    canvas.Dispose();
+            //}
 
             message.Image(tarotImg.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray()).Text(reply);
             reply = "\n结果仅供参考, 自己的命运要自己把握哦(ﾉﾟ▽ﾟ)ﾉ";

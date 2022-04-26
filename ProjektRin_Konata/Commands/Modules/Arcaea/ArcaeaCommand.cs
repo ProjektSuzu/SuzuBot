@@ -17,19 +17,23 @@ namespace ProjektRin.Commands.Modules.Arcaea
         private readonly ArcUserInfoDB arcUserDB = ArcUserInfoDB.Instance;
 
         public override string Help => $"[Arcaea]\n" +
-                $"/arc      打印帮助信息\n" +
+                $"/arc      同 /arc recent\n" +
                 $"/arc b30 [<usercode>]       获取b30成绩图\n" +
                 $"/arc recent [<usercode>]          获取最近一次游玩成绩图\n" +
                 $"/arc best <song> <PST/PRS/FTR/BYD>    获取一首歌的最佳游玩记录\n" +
                 $"/arc bind <name/usercode>      为当前QQ号绑定好友代码\n" +
                 $"/arc unbind       为当前QQ号解绑好友代码\n" +
+                $"/arc calc <rating> <score>    计算指定定数在指定分数情况下的潜力值" +
                 $"/arc suggest [<min>]      根据当前B30结果来推荐能推分的歌曲\n" +
                 $"/arc info <song>  查询一首歌的信息\n" +
+                $"/arc help 打印帮助信息" +
                 $"\n" +
                 $"  name        Arcaea玩家名字\n" +
                 $"  usercode    Arcaea好友代码 必须是9位纯数字\n" +
                 $"  song        歌曲名字 可以是歌曲全名、内部sid、或者别名\n" +
-                $"  min         推荐歌曲的最小推分值 例如 0.01\n";
+                $"  min         推荐歌曲的最小推分值 例如 0.01\n" +
+                $"  rating      定数\n" +
+                $"  score       成绩";
 
         public override void OnInit()
         {
@@ -44,7 +48,8 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             if (funcName == null)
             {
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(Help));
+                args = args.Skip(1).ToList();
+                OnRecent(bot, messageEvent, args);
                 return;
             }
 
@@ -52,60 +57,141 @@ namespace ProjektRin.Commands.Modules.Arcaea
             switch (funcName)
             {
                 case "b30":
-                    {
-                        OnB30(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnB30(bot, messageEvent, args);
+                    break;
+                }
 
                 case "bind":
-                    {
-                        OnBind(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnBind(bot, messageEvent, args);
+                    break;
+                }
 
                 case "unbind":
-                    {
-                        OnUnbind(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnUnbind(bot, messageEvent, args);
+                    break;
+                }
 
                 case "best":
-                    {
-                        OnSongBest(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnSongBest(bot, messageEvent, args);
+                    break;
+                }
+
+                case "calculate":
+                case "calc":
+                {
+                    OnCalculate(bot, messageEvent, args);
+                    break;
+                }
 
                 case "song":
                 case "info":
-                    {
-                        OnSongInfo(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnSongInfo(bot, messageEvent, args);
+                    break;
+                }
 
                 case "suggest":
                 case "推荐":
                 case "推分":
-                    {
-                        OnSongSuggest(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnSongSuggest(bot, messageEvent, args);
+                    break;
+                }
 
                 case "r":
                 case "recent":
-                    {
-                        OnRecent(bot, messageEvent, args);
-                        break;
-                    }
+                {
+                    OnRecent(bot, messageEvent, args);
+                    break;
+                }
 
+                case "h":
+                case "help":
+                {
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(Help));
+                    break;
+                }
+                    
                 default:
-                    {
-                        reply = $"错误: 找不到功能: \"{funcName}\"\n" +
-                            $"如需查看功能帮助 请输入\n" +
-                            $"/arc";
-                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                        return;
-                    }
+                {
+                    reply = $"错误: 找不到功能: \"{funcName}\"\n" +
+                        $"如需查看功能帮助 请输入\n" +
+                        $"/arc help";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
             }
+        }
+
+        private void OnCalculate(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            float rating;
+            uint score;
+            float result;
+
+            var reply = "";
+            if (args.Count > 0)
+            {
+                if (!float.TryParse(args[0], out rating))
+                {
+                    reply = $"错误: 参数非法: \"{args[0]}\" => <rating>.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+            else
+            {
+                reply = $"错误: 缺少参数: <rating>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            args = args.Skip(1).ToList();
+
+            if (args.Count > 0)
+            {
+                if (!uint.TryParse(args[0], out score))
+                {
+                    reply = $"错误: 参数非法: \"{args[0]}\" => <score>.";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+            else
+            {
+                reply = $"错误: 缺少参数: <score>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (score < 09_800_000)
+            {
+                if (score > 09_500_000)
+                    result = rating + (float)(score - 09_500_000) / 300_000;
+                else
+                    result = 0f;
+            }
+            else if (score < 10_000_000)
+            {
+                result = rating + 1 + (float)(score - 09_800_000) / 200_000;
+            }
+            else
+            {
+                result = rating + 2;
+            }
+
+            if (result < 0f)
+                result = 0f;
+
+            reply =
+                $"{rating:0.0000} <> {score:00000000} \n" +
+                $"=> {result:0.0000}\n";
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
+            return;
         }
 
         private void OnRecent(Bot bot, GroupMessageEvent messageEvent, List<string> args)
@@ -115,7 +201,9 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             if (args.Count > 0)
             {
-                usercode = args[0];
+                reply = $"错误: 参数非法: \"{usercode}\" => [<usercode>].";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
             }
 
             if (usercode != "")

@@ -24,19 +24,20 @@ jobs:
     - name: Build
       run: |
         dotnet build --no-restore
-        dotnet publish -c Release --no-self-contained -f net60 -o publish
     - name: Test
       run: dotnet test --no-build --verbosity normal
+#    - name: Publish
+#      run:  dotnet publish -c Release --no-self-contained -f net60 -o publish
       
-    - name: Stop current program
-      uses: garygrossgarten/github-action-ssh@v0.6.3
-      with:
-        command: |
-          sudo screen -S rin -X stuff $'\003'
-        host: ${{ secrets.host }}
-        port: ${{ secrets.port }}
-        username: ${{ secrets.username }}
-        password: ${{ secrets.password }}
+#    - name: Stop current program
+#      uses: garygrossgarten/github-action-ssh@v0.6.3
+#      with:
+#        command: |
+#          sudo screen -S rin -X stuff $'\003'
+#        host: ${{ secrets.host }}
+#        port: ${{ secrets.port }}
+#        username: ${{ secrets.username }}
+#        password: ${{ secrets.password }}
         
     - name: Copy folder content recursively to remote
       uses: garygrossgarten/github-action-scp@v0.7.3
@@ -48,14 +49,14 @@ jobs:
         username: ${{ secrets.username }}
         password: ${{ secrets.password }}
         
-    - name: Run new program
-      uses: garygrossgarten/github-action-ssh@v0.6.3
-      with:
-        command: |
-          screen -S rin -X exec dotnet /home/RinBot_Kotana/publish/ProjektRin.dll
-        host: ${{ secrets.host }}
-        port: ${{ secrets.port }}
-        username: ${{ secrets.username }}
-        password: ${{ secrets.password }}
+#    - name: Run new program
+#      uses: garygrossgarten/github-action-ssh@v0.6.3
+#      with:
+#        command: |
+#          screen -S rin -X exec dotnet /home/RinBot_Kotana/publish/ProjektRin.dll
+#        host: ${{ secrets.host }}
+#        port: ${{ secrets.port }}
+#        username: ${{ secrets.username }}
+#        password: ${{ secrets.password }}
     
   

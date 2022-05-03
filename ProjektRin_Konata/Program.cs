@@ -47,43 +47,18 @@ public static class Program
         Logger.Info("Loading Commands.");
         CommandManager.Instance.LoadCommandSet();
         Logger.Info("Logging in.");
-
-        int maxAttempt = 5;
-        int attempt = 0;
-
-        for (; attempt < maxAttempt; attempt++)
+        var success = BotManager.Instance.LoginBot();
+        
+        Logger.Warn("IsOnline: " + BotManager.Instance.Bot.IsOnline());
+        
+        if (!success)
         {
-            if (BotManager.Instance.LoginBot())
-            {
-                break;
-            }
-        }
-
-        if (!BotManager.Instance.Bot.IsOnline())
-        {
-            Logger.Fatal("Bot Login Failed.");
-            return -1;
+            Logger.Fatal("Bot Login Failed");
+            Environment.Exit(-1);
         }
 
         Logger.Info("Bot started.");
 
-#if DEBUG
-        uint devGroupUin = 644504300;
-        BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]DEBUG" + "\n" +
-            $"UTC {DateTime.UtcNow:s}" + "\n" +
-            "RinBot启动成功" + "\n\n" +
-            $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
-            $"构建时间: UTC {RinBuildStamp.BuildTime}"));
-#else
-        uint devGroupUin = 644504300;
-        BotManager.Instance.Bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]Release" + "\n" +
-            $"UTC {DateTime.UtcNow:s}" + "\n" +
-            "RinBot启动成功" + "\n\n" +
-            $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
-            $"构建时间: UTC {RinBuildStamp.BuildTime}"));
-#endif
-
-        Logger.Info("Bot online message send.");
         return 0;
     }
 

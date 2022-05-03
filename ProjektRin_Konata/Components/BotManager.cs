@@ -5,6 +5,8 @@ using Konata.Core.Interfaces.Api;
 using NLog;
 using System.Text.Json;
 using Konata.Core.Interfaces;
+using Konata.Core.Message;
+using ProjektRin.Utils.BuildStamp;
 
 
 namespace ProjektRin.Components
@@ -89,6 +91,9 @@ namespace ProjektRin.Components
         //参考Kagami的写法   
         public Bot InitBot()
         {
+            if (_bot != null)
+                _bot.Dispose();
+
             BotConfig _botConfig = GetConfig();
             BotDevice _botDevice = GetDevice();
             BotKeyStore _botKeyStore = GetKeyStore();
@@ -125,6 +130,29 @@ namespace ProjektRin.Components
                             break;
                     }
                 };
+
+                BotManager.Instance.Bot.OnBotOnline += (bot, message) =>
+                {
+#if DEBUG
+                    Logger.Info("Send BotOnline message.");
+                    uint devGroupUin = 644504300;
+                    bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]DEBUG" + "\n" +
+                                                                         $"UTC {DateTime.UtcNow:s}" + "\n" +
+                                                                         "RinBot启动成功" + "\n\n" +
+                                                                         $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" +
+                                                                         "\n" +
+                                                                         $"构建时间: UTC {RinBuildStamp.BuildTime}"));
+#else
+            uint devGroupUin = 644504300;
+            bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]Release" + "\n" +
+                $"UTC {DateTime.UtcNow:s}" + "\n" +
+                "RinBot启动成功" + "\n\n" +
+                $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
+                $"构建时间: UTC {RinBuildStamp.BuildTime}"));
+#endif
+                    Logger.Info("Bot online message send.");
+                };                
+
                 _bot.OnGroupMessage += _commandManager.GroupCommandHandler;
                 _bot.OnGroupPoke += _commandManager.GroupPokeEventHandler;
                 _bot.OnBotOffline += RelayLogin;

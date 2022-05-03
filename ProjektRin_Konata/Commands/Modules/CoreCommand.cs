@@ -527,7 +527,7 @@ namespace ProjektRin.Commands.Modules
             {
                 if (!PermissionManager.Instance.IsAdmin(messageEvent.MemberUin))
                 {
-                    reply = $"你没有足够的权限来使用这个参数: -G\n要求 {PermissionManager.Permission.Root}.";
+                    reply = $"你没有足够的权限来使用这个参数: <groupUin>\n要求 {PermissionManager.Permission.Root}.";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }

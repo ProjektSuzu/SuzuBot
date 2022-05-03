@@ -258,7 +258,7 @@ namespace ProjektRin.Components
                                 }
                                 //获取用户权限组
                                 Permission permission = Permission.User;
-                                if (groupMessageEvent.MemberUin == 1785416538u)
+                                if (PermissionManager.Instance.IsAdmin(groupMessageEvent.MemberUin))
                                 {
                                     permission = Permission.Root;
                                 }
@@ -270,7 +270,7 @@ namespace ProjektRin.Components
                                 if (permission < attr.Permission)
                                 {
                                     Logger.Warn($"G{groupMessageEvent.GroupUin}|U{groupMessageEvent.MemberUin} => {method.Name} Rejected.");
-                                    string? reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission}.";
+                                    string? reply = $"你没有足够的权限来执行这条命令: {attr.Name}\n要求 {attr.Permission} 而你当前只有 {permission}.";
                                     bot.SendGroupMessage(groupMessageEvent.GroupUin, new MessageBuilder(reply));
                                     return;
                                 }

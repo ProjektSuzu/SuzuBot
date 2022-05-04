@@ -40,7 +40,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         }
 
-        [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?", @"^a\s([\s\S]+)?" })]
+        [GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?", @"^a\s([\s\S]+)?" , @"^a$" })]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? funcName = args.FirstOrDefault();

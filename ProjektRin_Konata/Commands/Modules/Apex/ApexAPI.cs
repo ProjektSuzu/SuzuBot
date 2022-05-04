@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NLog;
 using ProjektRin.Components;
 
@@ -31,20 +32,24 @@ namespace ProjektRin.Commands.Modules.Apex
         }
         #endregion
 
+        HttpClient httpClient = new HttpClient()
+        {
+            Timeout = new TimeSpan(0, 0, 15)
+        };
+
         private static readonly string statsApi =
             @"https://api.mozambiquehe.re/bridge?version=5&platform=PC&player={player}&auth={token}";
         private static readonly string N2UApi =
             @"https://api.mozambiquehe.re/nametouid?player={player}&platform=PC&auth={token}";
+
+        private static readonly string predatorApi =
+            @"https://api.mozambiquehe.re/predator?auth={token}";
 
         private static readonly string TAG = "APEX";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public async Task<PlayerStats?> GetPlayerStats(string userId)
         {
-            HttpClient httpClient = new HttpClient()
-            {
-                Timeout = new TimeSpan(0, 0, 15)
-            };
             var url = statsApi.Replace("{player}", userId).Replace("{token}", config.Token);
             var response = httpClient.GetAsync(url).Result;
             var responseString = await response.Content.ReadAsStringAsync();
@@ -54,14 +59,26 @@ namespace ProjektRin.Commands.Modules.Apex
 
         public async Task<UidInfo> GetPlayerUid(string userName)
         {
-            HttpClient httpClient = new HttpClient()
-            {
-                Timeout = new TimeSpan(0, 0, 15)
-            };
             var url = N2UApi.Replace("{player}", userName).Replace("{token}", config.Token);
             var response = httpClient.GetAsync(url).Result;
             var responseString = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<UidInfo>(responseString);
+        }
+
+        public async Task<PredatorInfo> GetPredatorInfo()
+        {
+            var url = predatorApi.Replace("{token}", config.Token);
+            var response = httpClient.GetAsync(url).Result;
+            var responseString = await response.Content.ReadAsStringAsync();
+            var json = JsonConvert.DeserializeObject<JObject>(responseString);
+            var rp = json["RP"]["PC"]["val"].Value<uint>();
+            var ap = json["AP"]["PC"]["val"].Value<uint>();            
+            
+            return new ()
+            {
+                RankPoint = rp,
+                ArenaPoint = ap
+            };
         }
 
         private class ApexConfig
@@ -69,6 +86,12 @@ namespace ProjektRin.Commands.Modules.Apex
             [JsonProperty("token")]
             public readonly string Token;
         }
+    }
+
+    public class PredatorInfo
+    {
+        public uint RankPoint;
+        public uint ArenaPoint;
     }
 
     public class UidInfo

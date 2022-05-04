@@ -87,19 +87,12 @@ namespace ProjektRin.Commands.Modules.Apex
 
         public void OnApexPredatorRequirement(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            Process p = new Process();
-            p.StartInfo.FileName = "python3";
-            p.StartInfo.Arguments = Path.Combine(BotManager.resourcePath, "ApexProbe/pfp.py");
-            p.StartInfo.RedirectStandardOutput = true;
-            p.Start();
-            p.WaitForExit();
-            var result = p.StandardOutput.ReadToEnd();
-            var json = JsonConvert.DeserializeObject<Dictionary<string, string>>(result);
+            PredatorInfo result = ApexAPI.Instance.GetPredatorInfo().Result;
 
             var reply =
                 $"[APEX查分器]\n" +
-                $"当前排位最低冲猎分数: {json["BR"]} RP\n" +
-                $"当前竞技场最低冲猎分数: {json["Arena"]} AP";
+                $"当前排位最低冲猎分数: {result.RankPoint} RP\n" +
+                $"当前竞技场最低冲猎分数: {result.ArenaPoint} AP";
 
             var info = db.GetByUin(messageEvent.MemberUin);
 
@@ -108,8 +101,9 @@ namespace ProjektRin.Commands.Modules.Apex
                 var stats = api.GetPlayerStats(info.UserId).Result;
                 if (stats != null && stats.Error == null)
                 {
-                    reply += $"\n当前排位分数: {stats.global.rank.rankScore} RP\n" +
-                             $"当前竞技场分数: {stats.global.arena.rankScore} AP\n";
+                    reply += $"\n\n" +
+                             $"当前你的排位分数: {stats.global.rank.rankScore} RP\n" +
+                             $"当前你的竞技场分数: {stats.global.arena.rankScore} AP\n";
                 }
             }
 

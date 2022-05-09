@@ -156,7 +156,7 @@ namespace ProjektRin.Components
                 _bot.OnGroupMessage += _commandManager.GroupCommandHandler;
                 _bot.OnGroupPoke += _commandManager.GroupPokeEventHandler;
                 _bot.OnBotOffline += RelayLogin;
-                _bot.OnFriendRequest += (sender, args) => 
+                _bot.OnFriendRequest += (sender, args) =>
                     sender.ApproveFriendRequest(args.ReqUin, args.Token);
                 _bot.OnGroupInvite += (sender, args) =>
                     sender.ApproveGroupInvitation(args.GroupUin, args.InviterUin, args.Token);

@@ -30,6 +30,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
         public Song? TryGetSong(string name)
         {
+            name = name.ToLower();
             Song? song;
             song = GetSong(name);
             if (song != null)
@@ -39,7 +40,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             string? sid = dbConnection
                 .Table<Alias>()
-                .Where(a => a.AliasName == name)
+                .Where(a => a.AliasName.ToLower() == name)
                 .Select(a => a.SongID)
                 .ToList().FirstOrDefault();
             if (sid != null)
@@ -49,7 +50,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             song = dbConnection
                 .Table<Song>()
-                .Where(a => a.NameEN == name || a.NameJP == name)
+                .Where(a => a.NameEN.ToLower() == name || a.NameJP.ToLower() == name)
                 .ToList().FirstOrDefault();
             if (song != null)
             {
@@ -65,7 +66,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
         {
             return dbConnection
                 .Table<Song>()
-                .Where(s => s.SongID == sid)
+                .Where(s => s.SongID.ToLower() == sid)
                 .ToList()
                 .FirstOrDefault();
         }
@@ -74,7 +75,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
         {
             return dbConnection
                 .Table<Alias>()
-                .Where(a => a.SongID == sid)
+                .Where(a => a.SongID.ToLower() == sid)
                 .Select(a => a.AliasName)
                 .ToList();
         }

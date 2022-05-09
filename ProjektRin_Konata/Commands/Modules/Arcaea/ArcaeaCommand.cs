@@ -307,12 +307,12 @@ namespace ProjektRin.Commands.Modules.Arcaea
             }
             string? sid = string.Join(' ', songName);
 
-            if (difficulty == -1)
-            {
-                reply = $"错误: 缺少参数: <PST/PRS/FTR/BYD>.";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                return;
-            }
+            //if (difficulty == -1)
+            //{
+            //    reply = $"错误: 缺少参数: <PST/PRS/FTR/BYD>.";
+            //    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            //    return;
+            //}
 
             if (sid == "")
             {
@@ -345,10 +345,26 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Text("\n收到, 正在处理成绩图...")
+                .Text("收到, 正在处理成绩图...")
                 );
+            
+            BestPlayResult? result = null;
 
-            BestPlayResult? result = aua.GetUserBest(usercode, song.SongID, (SongResult.Difficulty)difficulty).Result;
+            if (difficulty == -1)
+            {
+                for (int i = 3; i >= 0; i--)
+                {
+                    result = aua.GetUserBest(usercode, song.SongID, (SongResult.Difficulty)i).Result;
+                    if (result != null && result.status == 0)
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                result = aua.GetUserBest(usercode, song.SongID, (SongResult.Difficulty)difficulty).Result;
+            }
 
             if (result == null)
             {
@@ -390,7 +406,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     reply = $"错误: 参数非法: \"{args[0]}\" [<min>].";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
-                }
+                }   
             }
 
             ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);

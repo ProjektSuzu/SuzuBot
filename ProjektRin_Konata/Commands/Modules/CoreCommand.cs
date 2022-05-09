@@ -37,6 +37,10 @@ namespace ProjektRin.Commands.Modules
             $"期待今后和你们共度的时光\n" +
             $"☆ ～('▽^人)";
 
+        public string NewAnnouncement =
+            "目前所有使用帮助已经移动到网页服务\n" +
+            "请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
+
         public string Announcement =
             $"[使用须知]\n" +
             $"我也不知道我写了个啥玩意\n" +
@@ -104,20 +108,22 @@ namespace ProjektRin.Commands.Modules
             if (setName == "")
             {
                 multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Introduction).Build()));
-                multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Announcement).Build()));
-                multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Help).Build()));
+                //multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Announcement).Build()));
+                //multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Help).Build()));
 
-                foreach (KeyValuePair<(CommandSet, BaseCommand), List<(Command handler, System.Reflection.MethodInfo method)>> set in commandManager.CmdSets)
-                {
-                    if (set.Key.Item1.Name == "核心功能")
-                    {
-                        continue;
-                    }
+                //foreach (KeyValuePair<(CommandSet, BaseCommand), List<(Command handler, System.Reflection.MethodInfo method)>> set in commandManager.CmdSets)
+                //{
+                //    if (set.Key.Item1.Name == "核心功能")
+                //    {
+                //        continue;
+                //    }
 
-                    string? help = set.Key.Item2.Help;
-                    MessageBuilder? message = new MessageBuilder(help);
-                    multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, message.Build()));
-                }
+                //    string? help = set.Key.Item2.Help;
+                //    MessageBuilder? message = new MessageBuilder(help);
+                //    multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, message.Build()));
+                //}
+
+                multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(NewAnnouncement).Build()));
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
                 return;
             }

@@ -320,7 +320,7 @@ namespace ProjektRin.Commands.Modules
             }
         }
 
-        [GroupMessageCommand("阿塔大乐透", new[] { @"^lottery\s?([0-9]+)?", @"^大乐透\s?([0-9]+)?" })]
+        //[GroupMessageCommand("阿塔大乐透", new[] { @"^lottery\s?([0-9]+)?", @"^大乐透\s?([0-9]+)?" })]
         public void OnLottery(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? reply = "";

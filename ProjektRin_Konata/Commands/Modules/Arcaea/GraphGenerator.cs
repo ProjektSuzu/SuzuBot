@@ -75,7 +75,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion
 
             #region 获取封面图片
-            SKBitmap bitmap = GetCoverBmp(songResult.song_id, songResult.difficulty == SongResult.Difficulty.Beyond);
+            SKBitmap bitmap = GetCoverImg(songResult.song_id, songResult.difficulty == SongResult.Difficulty.Beyond);
             SKBitmap scaledBitmap = new SKBitmap(580, 580);
             bitmap.ScalePixels(scaledBitmap, SKFilterQuality.None);
             #endregion
@@ -750,7 +750,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             #endregion
 
             #region 获取封面图片
-            SKBitmap bitmap = GetCoverBmp(songResult.song_id, songResult.difficulty == SongResult.Difficulty.Beyond);
+            SKBitmap bitmap = GetCoverImg(songResult.song_id, songResult.difficulty == SongResult.Difficulty.Beyond);
             SKBitmap scaledBitmap = new SKBitmap(550, 550);
             bitmap.ScalePixels(scaledBitmap, SKFilterQuality.None);
             #endregion
@@ -906,7 +906,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     if (diff != 0)
                     {
                         percentage = (float)diff / (theoretical - 10_000_000);
-                        progressStr = $"TV  -{FormatScore(diff)}";
+                        progressStr = $"MAX  -{FormatScore(diff)}";
                     }
                     else
                     {
@@ -1222,7 +1222,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
             return score.ToString().PadLeft(8, '0').Insert(5, "\'").Insert(2, "\'");
         }
 
-        public SKBitmap GetCoverBmp(string sid, bool beyond = false)
+        public SKBitmap GetCoverImg(string sid, bool beyond = false)
         {
             string path = Path.Combine(resourcePath, $"covers/{sid}{(beyond ? " byd" : "")}.jpg");
             if (!File.Exists(path))

@@ -516,7 +516,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
                     $"B30数据更新时间: {info.LastUpdate:G}";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Image(GraphGenerator.Instance.GetCoverBmp(result.Song.SongID, result.Difficulty == SongResult.Difficulty.Beyond).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray())
+                .Image(GraphGenerator.Instance.GetCoverImg(result.Song.SongID, result.Difficulty == SongResult.Difficulty.Beyond).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray())
                 .Text(reply));
             return;
         }
@@ -550,7 +550,7 @@ namespace ProjektRin.Commands.Modules.Arcaea
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Image(GraphGenerator.Instance.GetCoverBmp(song.SongID).Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).ToArray())
+                .Image(GraphGenerator.Instance.GetCoverImg(song.SongID).Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).ToArray())
                 .Text(reply));
         }
 

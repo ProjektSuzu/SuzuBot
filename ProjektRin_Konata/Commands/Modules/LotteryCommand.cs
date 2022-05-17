@@ -12,7 +12,7 @@ using System.Text;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("抽奖", "com.akulak.lottery")]
+    //[CommandSet("抽奖", "com.akulak.lottery")]
     internal class LotteryCommand : BaseCommand
     {
         public override string Help =>

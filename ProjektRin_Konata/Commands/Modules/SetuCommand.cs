@@ -11,7 +11,7 @@ using System.Net.Http.Headers;
 
 namespace ProjektRin.Commands.Modules
 {
-    [CommandSet("色图", "com.akulak.setu")]
+    //[CommandSet("色图", "com.akulak.setu")
     internal class SetuCommand : BaseCommand
     {
         private static readonly string api = @"https://api.lolicon.app/setu/v2";

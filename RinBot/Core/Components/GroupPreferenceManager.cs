@@ -23,12 +23,12 @@ namespace ProjektRin.Core.Components
         private static readonly string groupPreferencePath = Path.Combine(BotManager.configPath, "groupPreference.json");
         private List<GroupPreference> groupPreferences;
 
-        private void Save()
+        public void Save()
         {
             File.WriteAllText(groupPreferencePath, JsonConvert.SerializeObject(groupPreferences));
         }
 
-        private void Load()
+        public void Load()
         {
             if (File.Exists(groupPreferencePath))
             {
@@ -54,6 +54,7 @@ namespace ProjektRin.Core.Components
             Save();
             return preference;
         }
+        
 
         public bool IsCommandSetEnabled(uint groupUin, string packageName)
         {
@@ -79,7 +80,7 @@ namespace ProjektRin.Core.Components
     internal class GroupPreference
     {
         public uint GroupUin;
-        public bool PassiveMode;
+        public bool SilentMode;
         public Dictionary<string, bool> CommandSetPreferences = new();
     }
 }

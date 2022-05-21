@@ -127,7 +127,7 @@ namespace ProjektRin.Core.Components
             string? message = messageChain.ToString().Trim();
             AtChain? atChain = (AtChain?)messageChain.FirstOrDefault(x => x is AtChain);
             if (
-                !GroupPreferenceManager.Instance.GetPreference(groupMessageEvent.GroupUin).PassiveMode && message.StartsWith('/') ||
+                !GroupPreferenceManager.Instance.GetPreference(groupMessageEvent.GroupUin).SilentMode && message.StartsWith('/') ||
                 message.StartsWith("铃酱") ||
                 atChain != null && atChain.AtUin == bot.Uin
                 )

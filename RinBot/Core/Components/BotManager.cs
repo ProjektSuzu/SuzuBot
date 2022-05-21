@@ -174,6 +174,17 @@ namespace RinBot.Core.Components
 
                 bot.OnGroupMessage += CommandManager.Instance.OnGroupMessageEvent;
                 bot.OnGroupPoke += CommandManager.Instance.OnGroupPokeEvent;
+
+                bot.OnBotOffline += (s, e) =>
+                {
+                    if (e.Type == BotOfflineEvent.OfflineType.ServerKickOff)
+                    {
+                        Logger.Info("Bot kicked off.\n" +
+                            "Sleep 30s before relogin.");
+                        Thread.Sleep(30000);
+                        (s as Bot).Login();
+                    }
+                };
             }
             return bot;
         }

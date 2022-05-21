@@ -45,6 +45,11 @@
     <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Attributes\Command\" />
+    <Folder Include="Commands\Modules\" />
+  </ItemGroup>
+
 	  <!-- Get Build Stamp -->
   <Target Name="GetBuildStamp" BeforeTargets="GenerateBuildStamp" Condition="'$(BuildHash)' == ''">
     <PropertyGroup>

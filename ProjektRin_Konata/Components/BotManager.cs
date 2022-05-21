@@ -98,11 +98,6 @@ namespace ProjektRin.Components
             BotDevice _botDevice = GetDevice();
             BotKeyStore _botKeyStore = GetKeyStore();
 
-            //_bot = new Bot(
-            //    _botConfig,
-            //    _botDevice,
-            //    _botKeyStore
-            //    );
             _bot = BotFather.Create(
                 _botConfig,
                 _botDevice,
@@ -129,60 +124,10 @@ namespace ProjektRin.Components
                         case CaptchaEvent.CaptchaType.Unknown:
                             break;
                     }
-                };
+                };            
 
-                BotManager.Instance.Bot.OnBotOnline += (bot, message) =>
-                {
-#if DEBUG
-                    Logger.Info("Send BotOnline message.");
-                    uint devGroupUin = 644504300;
-                    bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]DEBUG" + "\n" +
-                                                                         $"UTC {DateTime.UtcNow:s}" + "\n" +
-                                                                         "RinBot启动成功" + "\n\n" +
-                                                                         $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" +
-                                                                         "\n" +
-                                                                         $"构建时间: UTC {RinBuildStamp.BuildTime}"));
-#else
-            uint devGroupUin = 644504300;
-            bot.SendGroupMessage(devGroupUin, new MessageBuilder("[ProjektRin]Release" + "\n" +
-                $"UTC {DateTime.UtcNow:s}" + "\n" +
-                "RinBot启动成功" + "\n\n" +
-                $"{RinBuildStamp.Version} {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
-                $"构建时间: UTC {RinBuildStamp.BuildTime}"));
-#endif
-                    Logger.Info("Bot online message send.");
-                };                
-
-                _bot.OnGroupMessage += _commandManager.GroupCommandHandler;
-                _bot.OnGroupPoke += _commandManager.GroupPokeEventHandler;
-                _bot.OnBotOffline += RelayLogin;
-                //_bot.OnFriendRequest += (sender, args) =>
-                //    sender.ApproveFriendRequest(args.ReqUin, args.Token);
-                //_bot.OnGroupInvite += (sender, args) =>
-                //    sender.ApproveGroupInvitation(args.GroupUin, args.InviterUin, args.Token);
             }
             return _bot;
         }
-
-        public void RelayLogin(object sender, BotOfflineEvent args)
-        {
-            if (args.Type == BotOfflineEvent.OfflineType.ServerKickOff)
-            {
-                Logger.Info("Admin logged in.\n" +
-                            "Sleep 30s before relogin.");
-                Thread.Sleep(30000);
-                (sender as Bot).Login();
-            }
-            else
-            {
-                (sender as Bot).Login();
-            }
-        }
-
-        public bool LoginBot()
-        {
-            return _bot.Login().Result;
-        }
-
     }
 }

@@ -5,8 +5,7 @@ namespace ProjektRin.Core.Attributes.Command.Modules
     [AttributeUsage(AttributeTargets.Method)]
     internal class GroupMessageCommand : MessageCommand
     {
-        public GroupMessageCommand(string name, Permission permission, bool isRaw, string[] regexs) : base(name, permission, isRaw, regexs) { }
-        public GroupMessageCommand(string name, Permission permission, string[] regexs) : base(name, permission, regexs) { }
-        public GroupMessageCommand(string name, string[] regexs) : base(name, regexs) { }
+        public GroupMessageCommand(string name, string[] regexs, Permission permission = Permission.User, bool isRaw = false) : base(name, regexs, permission, isRaw) { }
+        public GroupMessageCommand(string name, string regex, Permission permission = Permission.User, bool isRaw = false) : base(name, regex, permission, isRaw) { }
     }
 }

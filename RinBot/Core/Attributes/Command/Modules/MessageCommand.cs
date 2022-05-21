@@ -8,7 +8,7 @@ namespace ProjektRin.Core.Attributes.Command.Modules
         public readonly List<Regex> Regexs;
         public readonly bool IsRaw;
 
-        protected MessageCommand(string name, Permission permission, bool isRaw, string[] regexs) : base(name, permission)
+        protected MessageCommand(string name, string[] regexs, Permission permission, bool isRaw) : base(name, permission)
         {
             Regexs = new List<Regex>();
             foreach (var regex in regexs)
@@ -17,24 +17,11 @@ namespace ProjektRin.Core.Attributes.Command.Modules
             }
             IsRaw = isRaw;
         }
-
-        protected MessageCommand(string name, Permission permission, string[] regexs) : base(name, permission)
+        protected MessageCommand(string name, string regex, Permission permission, bool isRaw) : base(name, permission)
         {
             Regexs = new List<Regex>();
-            foreach (var regex in regexs)
-            {
-                Regexs.Add(new Regex(regex));
-            }
-            IsRaw = false;
-        }
-        protected MessageCommand(string name, string[] regexs) : base(name, Permission.User)
-        {
-            Regexs = new List<Regex>();
-            foreach (var regex in regexs)
-            {
-                Regexs.Add(new Regex(regex));
-            }
-            IsRaw = false;
+            Regexs.Add(new Regex(regex));
+            IsRaw = isRaw;
         }
     }
 }

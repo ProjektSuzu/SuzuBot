@@ -13,17 +13,30 @@ namespace ProjektRin.Components
 {
     public class BotManager
     {
-        private static readonly BotManager _instance = new();
-        private BotManager() { }
-        public static BotManager Instance => _instance;
+        #region 单例模式
+        private static BotManager instance;
+        private BotManager() 
+        {
+            if (!Directory.Exists(configPath))
+                Directory.CreateDirectory(configPath);
+        }
+        public static BotManager Instance
+        {
+            get
+            {
+                if (instance == null) instance = new();
+                return instance;
+            }
+        }
+        #endregion
 
-        private Bot _bot;
-        public Bot Bot => _bot;
+        private Bot bot;
+        public Bot Bot => bot;
 
         public static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+        public static string configPath = Path.Combine(rootPath, "configs");
         public static string resourcePath = Path.Combine(rootPath, "resources");
-
-        private readonly CommandManager _commandManager = CommandManager.Instance;
+        
         private static readonly string TAG = "Bot";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
@@ -34,16 +47,16 @@ namespace ProjektRin.Components
                 EnableAudio = true,
                 TryReconnect = true,
                 HighwayChunkSize = 8192,
-                CustomHost = "msfwifi.3g.qq.com:8080"
+                //CustomHost = "msfwifi.3g.qq.com:8080"
             };
         }
 
-        public BotDevice GetDevice()
+        public BotDevice? GetDevice()
         {
-            if (File.Exists(Path.Combine(rootPath, "device.json")))
+            if (File.Exists(Path.Combine(configPath, "device.json")))
             {
                 return JsonSerializer.Deserialize
-                    <BotDevice>(File.ReadAllText(Path.Combine(rootPath, "device.json")));
+                    <BotDevice>(File.ReadAllText(Path.Combine(configPath, "device.json")));
             }
             else
             {
@@ -51,31 +64,30 @@ namespace ProjektRin.Components
                 {
                     string? deviceJson = JsonSerializer.Serialize(_botDevice,
                         new JsonSerializerOptions { WriteIndented = true });
-                    File.WriteAllText(Path.Combine(rootPath, "device.json"), deviceJson);
+                    File.WriteAllText(Path.Combine(configPath, "device.json"), deviceJson);
                 }
                 return _botDevice;
             }
         }
 
-        public BotKeyStore GetKeyStore()
+        public BotKeyStore? GetKeyStore()
         {
-            if (File.Exists(rootPath + "/keystore.json"))
+            if (File.Exists(Path.Combine(configPath, "keystore.json")))
             {
                 return JsonSerializer.Deserialize
-                    <BotKeyStore>(File.ReadAllText(Path.Combine(rootPath, "keystore.json")));
+                    <BotKeyStore>(File.ReadAllText(Path.Combine(configPath, "keystore.json")));
             }
             else
             {
-                Console.WriteLine("For first running, please " +
-                              "type your account and password.");
+                Console.WriteLine("第一次使用请先输入账号和密码");
 
-                Console.Write("Account: ");
+                Console.Write("账号: ");
                 string? account = Console.ReadLine();
 
-                Console.Write("Password: ");
+                Console.Write("密码: ");
                 string? password = Console.ReadLine();
 
-                Console.WriteLine("Keystore Updated.");
+                Console.WriteLine("密钥已更新.");
                 return UpdateKeyStore(new BotKeyStore(account, password));
             }
         }
@@ -84,28 +96,28 @@ namespace ProjektRin.Components
         {
             string? deviceJson = JsonSerializer.Serialize(botKeyStore,
                 new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(Path.Combine(rootPath, "keystore.json"), deviceJson);
+            File.WriteAllText(Path.Combine(configPath, "keystore.json"), deviceJson);
             return botKeyStore;
         }
 
         //参考Kagami的写法   
         public Bot InitBot()
         {
-            if (_bot != null)
-                _bot.Dispose();
+            if (bot != null)
+                bot.Dispose();
 
             BotConfig _botConfig = GetConfig();
             BotDevice _botDevice = GetDevice();
             BotKeyStore _botKeyStore = GetKeyStore();
 
-            _bot = BotFather.Create(
+            bot = BotFather.Create(
                 _botConfig,
                 _botDevice,
                 _botKeyStore
             );
             {
-                _bot.OnLog += (s, e) => { Logger.Trace(e.EventMessage); };
-                _bot.OnCaptcha += (s, e)
+                bot.OnLog += (s, e) => { Logger.Trace(e.EventMessage); };
+                bot.OnCaptcha += (s, e)
                     =>
                 {
                     switch (e.Type)
@@ -124,10 +136,30 @@ namespace ProjektRin.Components
                         case CaptchaEvent.CaptchaType.Unknown:
                             break;
                     }
-                };            
+                };
+
+                bot.OnGroupMessage += (s, e) =>
+                {
+                    Logger.Debug($"{e.GroupName}({e.GroupUin})|{e.MemberCard}({e.MemberUin}):\n{e.Message.Chain.ToString()}");
+                };
+
+                bot.OnGroupPoke += (s, e) =>
+                {
+                    Logger.Debug($"{e.GroupUin}:{e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
+                };
+
+                bot.OnGroupInvite += (s, e) =>
+                {
+                    Logger.Debug($"{e.InviterNick}({e.InviterUin}) 邀请进入群聊 {e.GroupName}({e.GroupUin})");
+                };
+
+                bot.OnFriendRequest += (s, e) =>
+                {
+                    Logger.Debug($"{e.ReqNick}({e.ReqUin}) 请求添加好友");
+                };
 
             }
-            return _bot;
+            return bot;
         }
     }
 }

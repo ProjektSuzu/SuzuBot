@@ -11,6 +11,7 @@ public static class Program
 {
     private static readonly string TAG = "Main";
     private static readonly Logger Logger = LogManager.GetLogger(TAG);
+
     public static int Main()
     {
         Console.WriteLine(
@@ -30,34 +31,24 @@ public static class Program
     $"ProjektRin {RinBuildStamp.Version}" + "\n" +
     $"Build: {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
     $"Time: {RinBuildStamp.BuildTime}" + "\n\n" +
+    $"Konata.Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" + "\n" +
     @"Powered by Konata (C)" + "\n" +
-    $"Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" +
     "\n"
     );
         Logger.Info("\n\n\n\n");
-        Logger.Info($"Current Dir: {AppDomain.CurrentDomain.BaseDirectory}");
         Logger.Info("Initializing Bot.");
         BotManager.Instance.InitBot();
-        Logger.Info("Initializing Database.");
-        if (!DatabaseManager.Instance.OpenConnection())
-        {
-            Logger.Fatal("Aborting.");
-            return -1;
-        }
-        Logger.Info("Loading Commands.");
-        CommandManager.Instance.LoadCommandSet();
-        Logger.Info("Logging in.");
-        var success = BotManager.Instance.LoginBot();
-        
-        Logger.Warn("IsOnline: " + BotManager.Instance.Bot.IsOnline());
-        
-        if (!success)
-        {
-            Logger.Fatal("Bot Login Failed");
-            Environment.Exit(-1);
-        }
 
-        Logger.Info("Bot started.");
+        Logger.Info("Logging in.");
+        var result = BotManager.Instance.Bot.Login().Result;
+        if (result)
+        {
+            Logger.Info("Bot online.");
+        }
+        else
+        {
+            Logger.Info("Bot login failed.");
+        }
 
         return 0;
     }

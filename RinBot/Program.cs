@@ -1,7 +1,6 @@
 ﻿using Konata.Core.Interfaces.Api;
-using Konata.Core.Message;
 using NLog;
-using ProjektRin.Components;
+using ProjektRin.Core.Components;
 using ProjektRin.Utils.BuildStamp;
 using ProjektRin.Utils.Database;
 
@@ -15,20 +14,14 @@ public static class Program
     public static int Main()
     {
         Console.WriteLine(
-    @"==================================================" + "\n" +
-    @"  _____  _____   ____       _ ______ _  _________ " + "\n" +
-    @" |  __ \|  __ \ / __ \     | |  ____| |/ /__   __|" + "\n" +
-    @" | |__) | |__) | |  | |    | | |__  | ' /   | |   " + "\n" +
-    @" |  ___/|  _  /| |  | |_   | |  __| |  <    | |   " + "\n" +
-    @" | |    | | \ \| |__| | |__| | |____| . \   | |   " + "\n" +
-    @" |_|___ |_|__\_\\____/ \____/|______|_|\_\  |_|   " + "\n" +
-    @" |  __ \|_   _| \ | |                             " + "\n" +
-    @" | |__) | | | |  \| |                             " + "\n" +
-    @" |  _  /  | | | . ` |                             " + "\n" +
-    @" | | \ \ _| |_| |\  |                             " + "\n" +
-    @" |_|  \_\_____|_| \_|                             " + "\n" +
-    @"==================================================" + "\n" +
-    $"ProjektRin {RinBuildStamp.Version}" + "\n" +
+    @"=================================" + "\n" +
+    @"    ____  _       ____        __ " + "\n" +
+    @"   / __ \(_)___  / __ )____  / /_" + "\n" +
+    @"  / /_/ / / __ \/ __  / __ \/ __/" + "\n" +
+    @" / _, _/ / / / / /_/ / /_/ / /_  " + "\n" +
+    @"/_/ |_/_/_/ /_/_____/\____/\__/  " + "\n" +
+    @"=================================" + "\n" +
+    $"RinBot {RinBuildStamp.Version}" + "\n" +
     $"Build: {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
     $"Time: {RinBuildStamp.BuildTime}" + "\n\n" +
     $"Konata.Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" + "\n" +
@@ -38,6 +31,10 @@ public static class Program
         Logger.Info("\n\n\n\n");
         Logger.Info("Initializing Bot.");
         BotManager.Instance.InitBot();
+        Logger.Info("Initializing Database.");
+        DatabaseManager.Instance.OpenConnection();
+        Logger.Info("Loading CommandSets.");
+        CommandManager.Instance.LoadCommandSets();
 
         Logger.Info("Logging in.");
         var result = BotManager.Instance.Bot.Login().Result;
@@ -48,6 +45,7 @@ public static class Program
         else
         {
             Logger.Info("Bot login failed.");
+            Environment.Exit(-1);
         }
 
         return 0;

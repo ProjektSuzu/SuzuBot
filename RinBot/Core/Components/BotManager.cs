@@ -1,21 +1,19 @@
 ﻿using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Events.Model;
+using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
 using NLog;
 using System.Text.Json;
-using Konata.Core.Interfaces;
-using Konata.Core.Message;
-using ProjektRin.Utils.BuildStamp;
 
 
-namespace ProjektRin.Components
+namespace ProjektRin.Core.Components
 {
     public class BotManager
     {
         #region 单例模式
         private static BotManager instance;
-        private BotManager() 
+        private BotManager()
         {
             if (!Directory.Exists(configPath))
                 Directory.CreateDirectory(configPath);
@@ -33,12 +31,14 @@ namespace ProjektRin.Components
         private Bot bot;
         public Bot Bot => bot;
 
-        public static string rootPath = AppDomain.CurrentDomain.BaseDirectory;
-        public static string configPath = Path.Combine(rootPath, "configs");
-        public static string resourcePath = Path.Combine(rootPath, "resources");
-        
+        public static readonly string rootPath = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string configPath = Path.Combine(rootPath, "configs");
+        public static readonly string resourcePath = Path.Combine(rootPath, "resources");
+
         private static readonly string TAG = "Bot";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
+
+        public static bool AutoAccept = false;
 
         public BotConfig GetConfig()
         {
@@ -124,12 +124,12 @@ namespace ProjektRin.Components
                     {
                         case CaptchaEvent.CaptchaType.Sms:
                             Logger.Info(e.Phone);
-                            ((Bot)s)!.SubmitSmsCode(Console.ReadLine());
+                            s!.SubmitSmsCode(Console.ReadLine());
                             break;
 
                         case CaptchaEvent.CaptchaType.Slider:
                             Logger.Info(e.SliderUrl);
-                            ((Bot)s)!.SubmitSliderTicket(Console.ReadLine());
+                            s!.SubmitSliderTicket(Console.ReadLine());
                             break;
 
                         default:
@@ -137,6 +137,7 @@ namespace ProjektRin.Components
                             break;
                     }
                 };
+
 
                 bot.OnGroupMessage += (s, e) =>
                 {
@@ -151,13 +152,26 @@ namespace ProjektRin.Components
                 bot.OnGroupInvite += (s, e) =>
                 {
                     Logger.Debug($"{e.InviterNick}({e.InviterUin}) 邀请进入群聊 {e.GroupName}({e.GroupUin})");
+                    if (AutoAccept)
+                    {
+                        s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
+                        Logger.Debug($"已自动同意进入群聊 {e.GroupName}({e.GroupUin})");
+                    }
+
                 };
 
                 bot.OnFriendRequest += (s, e) =>
                 {
                     Logger.Debug($"{e.ReqNick}({e.ReqUin}) 请求添加好友");
+                    if (AutoAccept)
+                    {
+                        s.ApproveFriendRequest(e.ReqUin, e.Token);
+                        Logger.Debug($"已自动同意添加好友 {e.ReqNick}({e.ReqUin})");
+                    }
                 };
 
+                bot.OnGroupMessage += CommandManager.Instance.OnGroupMessageEvent;
+                bot.OnGroupPoke += CommandManager.Instance.OnGroupPokeEvent;
             }
             return bot;
         }

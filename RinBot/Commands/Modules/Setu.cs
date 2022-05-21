@@ -6,17 +6,21 @@ using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using NLog;
 using RinBot.Core.Attributes.Command.Modules;
+using RinBot.Core.Attributes.CommandSet;
 using System.Net.Http.Headers;
 
 namespace RinBot.Commands.Modules
 {
-    //[CommandSet("色图", "com.akulak.setu")
+    [CommandSet("色图", "com.akulak.setu")]
     internal class Setu : BaseCommand
     {
         private static readonly string api = @"https://api.lolicon.app/setu/v2";
 
         private static readonly string TAG = "SETU";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
+
+        private static List<KeyValuePair<uint, DateTime>> cooldownList = new();
+        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(60);
 
         private HttpClient httpClient = new HttpClient();
         public override void OnInit() { }
@@ -45,6 +49,19 @@ namespace RinBot.Commands.Modules
         [GroupMessageCommand("色图", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
+            if (cooldownList.Any(x => x.Key == messageEvent.GroupUin))
+            {
+                var lastTime = cooldownList.First(x => x.Key == messageEvent.GroupUin).Value;
+                if (lastTime.Add(cooldown) > DateTime.Now)
+                {
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"不可以色色!\n下一次使用还要等{(cooldown - (DateTime.Now - lastTime)).Seconds}秒哦"));
+                    return;
+                }
+            }
+            cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
+
             string? reply = "";
             int r18 = 0;
             int num = 1;
@@ -89,8 +106,11 @@ namespace RinBot.Commands.Modules
                 }
             }
 
+            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now));
             reply = $"处理中 请稍候.";
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Text(reply));
 
             SetuResult result;
             try

@@ -87,7 +87,7 @@ namespace ProjektRin.Core.Components
                     {
                         if (methodAttr is Command cmd)
                         {
-                            Logger.Info($"Loading Command: {cmd.Name}");
+                            Logger.Info($"> Loading Command: {cmd.Name}");
                             loadedCommandSet.Commands.Add(new(cmd, method));
                         }
                     }
@@ -104,6 +104,7 @@ namespace ProjektRin.Core.Components
         }
         public void ReloadCommandSets()
         {
+            Logger.Info("Reloading Command Sets.");
             commandSets.Clear();
             GC.Collect();
             GC.WaitForPendingFinalizers();

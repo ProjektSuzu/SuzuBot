@@ -35,6 +35,8 @@ namespace ProjektRin.Core.Components
         public static readonly string configPath = Path.Combine(rootPath, "configs");
         public static readonly string resourcePath = Path.Combine(rootPath, "resources");
 
+        public static readonly uint DevGroupUin = 644504300;
+
         private static readonly string TAG = "Bot";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 

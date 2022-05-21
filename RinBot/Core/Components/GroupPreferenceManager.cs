@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace ProjektRin.Core.Components
+namespace RinBot.Core.Components
 {
     internal class GroupPreferenceManager
     {
@@ -54,7 +54,7 @@ namespace ProjektRin.Core.Components
             Save();
             return preference;
         }
-        
+
 
         public bool IsCommandSetEnabled(uint groupUin, string packageName)
         {

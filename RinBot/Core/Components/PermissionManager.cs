@@ -1,7 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Interfaces.Api;
 
-namespace ProjektRin.Core.Components
+namespace RinBot.Core.Components
 {
     internal class PermissionManager
     {

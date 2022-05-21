@@ -1,7 +1,7 @@
-﻿using ProjektRin.Core.Components;
+﻿using RinBot.Core.Components;
 using System.Text.RegularExpressions;
 
-namespace ProjektRin.Core.Attributes.Command.Modules
+namespace RinBot.Core.Attributes.Command.Modules
 {
     internal class MessageCommand : Command
     {

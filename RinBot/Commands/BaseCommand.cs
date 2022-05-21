@@ -1,4 +1,4 @@
-﻿namespace ProjektRin.Commands
+﻿namespace RinBot.Commands
 {
     abstract internal class BaseCommand
     {

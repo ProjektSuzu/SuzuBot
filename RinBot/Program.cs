@@ -1,10 +1,10 @@
 ﻿using Konata.Core.Interfaces.Api;
 using NLog;
-using ProjektRin.Core.Components;
-using ProjektRin.Utils.BuildStamp;
-using ProjektRin.Utils.Database;
+using RinBot.Core.Components;
+using RinBot.Utils.BuildStamp;
+using RinBot.Utils.Database;
 
-namespace ProjektRin;
+namespace RinBot;
 
 public static class Program
 {

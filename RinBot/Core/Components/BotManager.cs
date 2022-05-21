@@ -7,7 +7,7 @@ using NLog;
 using System.Text.Json;
 
 
-namespace ProjektRin.Core.Components
+namespace RinBot.Core.Components
 {
     public class BotManager
     {

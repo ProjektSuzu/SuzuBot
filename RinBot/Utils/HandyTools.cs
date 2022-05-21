@@ -2,13 +2,8 @@
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ProjektRin.Utils
+namespace RinBot.Utils
 {
     internal static class HandyTools
     {

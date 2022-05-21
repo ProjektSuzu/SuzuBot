@@ -1,6 +1,6 @@
-﻿using ProjektRin.Core.Components;
+﻿using RinBot.Core.Components;
 
-namespace ProjektRin.Core.Attributes.Command
+namespace RinBot.Core.Attributes.Command
 {
     internal class Command : Attribute
     {

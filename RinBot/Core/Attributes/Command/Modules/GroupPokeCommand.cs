@@ -1,10 +1,10 @@
-﻿using ProjektRin.Core.Components;
+﻿using RinBot.Core.Components;
 
-namespace ProjektRin.Core.Attributes.Command.Modules
+namespace RinBot.Core.Attributes.Command.Modules
 {
     internal class GroupPokeCommand : Command
     {
-        public GroupPokeCommand(string name, Permission permission) : base(name, permission)
+        public GroupPokeCommand(string name, Permission permission = Permission.User) : base(name, permission)
         {
         }
     }

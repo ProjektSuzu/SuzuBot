@@ -1,9 +1,9 @@
 ﻿using NLog;
-using ProjektRin.Core.Components;
-using ProjektRin.Utils.Database.Tables;
+using RinBot.Core.Components;
+using RinBot.Utils.Database.Tables;
 using SQLite;
 
-namespace ProjektRin.Utils.Database
+namespace RinBot.Utils.Database
 {
     internal class DatabaseManager
     {
@@ -11,8 +11,8 @@ namespace ProjektRin.Utils.Database
         private static DatabaseManager instance;
         private DatabaseManager()
         {
-            if (!Directory.Exists(dbPath))
-                Directory.CreateDirectory(dbPath);
+            if (!Directory.Exists(DbPath))
+                Directory.CreateDirectory(DbPath);
         }
         public static DatabaseManager Instance
         {
@@ -24,8 +24,8 @@ namespace ProjektRin.Utils.Database
         }
         #endregion
 
-        private static readonly string dbPath = Path.Combine(BotManager.rootPath, "database");
-        private static readonly string rinDbPath = Path.Combine(dbPath, "rin.db");
+        public static readonly string DbPath = Path.Combine(BotManager.rootPath, "databases");
+        private static readonly string rinDbPath = Path.Combine(DbPath, "rin.db");
         public SQLiteConnection dbConnection;
 
         private static readonly string TAG = "DBMGR";

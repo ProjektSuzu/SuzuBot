@@ -1,6 +1,6 @@
-﻿using ProjektRin.Core.Components;
+﻿using RinBot.Core.Components;
 
-namespace ProjektRin.Core.Attributes.Command.Modules
+namespace RinBot.Core.Attributes.Command.Modules
 {
     [AttributeUsage(AttributeTargets.Method)]
     internal class GroupMessageCommand : MessageCommand

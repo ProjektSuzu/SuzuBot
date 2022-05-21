@@ -1,4 +1,4 @@
-﻿namespace ProjektRin.Core.Attributes.CommandSet
+﻿namespace RinBot.Core.Attributes.CommandSet
 {
     [AttributeUsage(AttributeTargets.Class)]
     internal class CommandSet : Attribute

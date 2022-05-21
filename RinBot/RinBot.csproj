@@ -6,7 +6,7 @@
 	<SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StartupObject>ProjektRin.Program</StartupObject>
+    <StartupObject>RinBot.Program</StartupObject>
     <NeutralLanguage>zh-Hans</NeutralLanguage>
     <Company>AkulaKirov</Company>
     <Authors>AkulaKirov</Authors>
@@ -23,7 +23,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog" Version="4.7.15" />
-    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.256" />
+    <PackageReference Include="SkiaSharp" Version="2.88.0-preview.209" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.0-preview.209" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
   </ItemGroup>

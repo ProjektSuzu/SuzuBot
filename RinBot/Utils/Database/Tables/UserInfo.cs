@@ -1,10 +1,10 @@
 ﻿using SQLite;
 
-namespace ProjektRin.Utils.Database.Tables
+namespace RinBot.Utils.Database.Tables
 {
     public static class UserInfoManager
     {
-        private static readonly SQLiteConnection _db = DatabaseManager.Instance.dbConnection;
+        private static readonly SQLiteConnection db = DatabaseManager.Instance.dbConnection;
 
         public static int LevelToExp(int level)
         {
@@ -33,14 +33,14 @@ namespace ProjektRin.Utils.Database.Tables
 
         public static bool UpdateUserInfo(UserInfo info)
         {
-            int result = _db
+            int result = db
                 .Update(info);
             return result > 0;
         }
 
         public static UserInfo? GetUserInfo(uint uin, bool create = true)
         {
-            List<UserInfo>? result = _db
+            List<UserInfo>? result = db
                 .Table<UserInfo>()
                 .Where(t => t.uin == uin).ToList();
             if (result.Count == 0)
@@ -48,7 +48,7 @@ namespace ProjektRin.Utils.Database.Tables
                 if (create)
                 {
                     UserInfo? record = new UserInfo { uin = uin, coin = 0, exp = 0, level = 1, lastSign = new DateTime(), isBanned = false };
-                    _db.Insert(record);
+                    db.Insert(record);
                     return GetUserInfo(uin);
                 }
                 else

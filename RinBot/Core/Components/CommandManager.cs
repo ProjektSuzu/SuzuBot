@@ -4,15 +4,15 @@ using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using NLog;
-using ProjektRin.Commands;
-using ProjektRin.Core.Attributes.Command;
-using ProjektRin.Core.Attributes.Command.Modules;
-using ProjektRin.Core.Attributes.CommandSet;
-using ProjektRin.Utils.Database.Tables;
+using RinBot.Commands;
+using RinBot.Core.Attributes.Command;
+using RinBot.Core.Attributes.Command.Modules;
+using RinBot.Core.Attributes.CommandSet;
+using RinBot.Utils.Database.Tables;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace ProjektRin.Core.Components
+namespace RinBot.Core.Components
 {
     class LoadedCommandSet
     {

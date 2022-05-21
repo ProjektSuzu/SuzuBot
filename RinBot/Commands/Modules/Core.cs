@@ -4,15 +4,15 @@ using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using NLog;
-using ProjektRin.Core.Attributes.Command.Modules;
-using ProjektRin.Core.Attributes.CommandSet;
-using ProjektRin.Core.Components;
-using ProjektRin.Utils;
-using ProjektRin.Utils.BuildStamp;
+using RinBot.Core.Attributes.Command.Modules;
+using RinBot.Core.Attributes.CommandSet;
+using RinBot.Core.Components;
+using RinBot.Utils;
+using RinBot.Utils.BuildStamp;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace ProjektRin.Commands.Modules
+namespace RinBot.Commands.Modules
 {
     [CommandSet("核心功能", "com.akulak.core")]
     internal class Core : BaseCommand

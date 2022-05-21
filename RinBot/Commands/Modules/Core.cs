@@ -363,5 +363,15 @@ namespace RinBot.Commands.Modules
                 }
             }
         }
+
+        [GroupMessageCommand("自动接受请求", new[] { @"^auto-accept", @"^自动接受" }, Permission.Admin)]
+        public void OnAutoAccept(Bot bot, GroupMessageEvent messageEvent)
+        {
+            BotManager.AutoAccept = !BotManager.AutoAccept;
+            messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"自动接受已{(BotManager.AutoAccept ? "开启" : "关闭")}"));
+            return;
+        }
     }
 }

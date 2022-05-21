@@ -138,7 +138,9 @@ namespace RinBot.Commands.Modules
 
                 $"[KonataCore] {CoreBuildStamp.Version}\n" +
                 $"{CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}\n" +
-                $"共有 {friendCount} 个好友, {groupCount} 个群.\n\n" +
+                $"共有 {friendCount} 个好友, {groupCount} 个群.\n" +
+                $"自动同意: {(BotManager.AutoAccept ? "开启" : "关闭")}.\n\n" +
+
 
                 $"{DateTime.Now:O}\nEOT";
 
@@ -364,7 +366,7 @@ namespace RinBot.Commands.Modules
             }
         }
 
-        [GroupMessageCommand("自动接受请求", new[] { @"^auto-accept", @"^自动接受" }, Permission.Admin)]
+        [GroupMessageCommand("自动同意请求", new[] { @"^auto-accept", @"^自动同意" }, Permission.Admin)]
         public void OnAutoAccept(Bot bot, GroupMessageEvent messageEvent)
         {
             BotManager.AutoAccept = !BotManager.AutoAccept;

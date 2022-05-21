@@ -1,4 +1,4 @@
-# ProjektRin.Bot
+# RinBot
 
 [![.NET](https://github.com/ProjektRin/ProjektRin.Bot/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/ProjektRin/ProjektRin.Bot/actions/workflows/dotnet.yml)
 [![](https://img.shields.io/github/license/ProjektRin/ProjektRin.Bot)](https://github.com/ProjektRin/ProjektRin.Bot/blob/master/LICENSE)

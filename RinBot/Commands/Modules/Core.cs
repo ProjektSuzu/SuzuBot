@@ -153,5 +153,215 @@ namespace ProjektRin.Commands.Modules
                 .Add(ReplyChain.Create(messageEvent.Message))
                 .Text("Pong!"));
         }
+
+        [GroupMessageCommand("静默模式", @"^silent\s?([\s\S]+)?")]
+        public void OnSilentMode(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var groupUin = messageEvent.GroupUin;
+
+            if (args.Count > 0)
+            {
+                var targetUin = args.First();
+                if (uint.TryParse(targetUin, out groupUin))
+                {
+                    if (permissionManager.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin) < Permission.Admin)
+                    {
+                        messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text(
+                                $"你没有权限使用此参数: <groupUin>\n" +
+                                $"此命令需要的权限等级为 {Permission.Admin}\n" +
+                                $"你的权限等级为 {PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin)}"));
+                        return;
+                    }
+                }
+                else
+                {
+                    messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"错误: 参数非法: \"{targetUin}\" => groupUin"));
+                    return;
+                }
+            }
+
+            var preference = groupPreferenceManager.GetPreference(groupUin);
+            preference.SilentMode = !preference.SilentMode;
+
+            messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"G{groupUin} => 已{(preference.SilentMode ? "开启" : "关闭")}静默模式"));
+            return;
+        }
+
+        [GroupMessageCommand("命令集控制", @"^cmdctl\s?([\s\S]+)?", Permission.Operator)]
+        public void OnCommandSetControl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            if (args.Count == 0)
+            {
+                string reply = $"本群的命令集规则:\n";
+                foreach (var loadedCommandSet in commandManager.CommandSets)
+                {
+                    bool globallyStatus = loadedCommandSet.IsEnabled;
+                    bool locallyStatus = groupPreferenceManager.IsCommandSetEnabled(messageEvent.GroupUin, loadedCommandSet.CommandSetAttr.PackageName);
+
+                    reply += $"{(globallyStatus ? "◆" : "◇")}|{(locallyStatus ? "●" : "○")} {loadedCommandSet.CommandSetAttr.Name}\n";
+                }
+                bool silent = groupPreferenceManager.GetPreference(messageEvent.GroupUin).SilentMode;
+
+                reply +=
+                    $"\n被静默模式: {(silent ? "开启" : "关闭")} \n\n" +
+                    "◆/◇ 为全局开关状态\n" +
+                    "●/○ 为本群开关状态\n";
+
+                messageEvent.Reply(bot, new MessageBuilder(reply));
+                return;
+            }
+            else
+            {
+                uint groupUin = messageEvent.GroupUin;
+                bool action;
+                bool global = false;
+                List<string> commandSets = new();
+                List<string> packageNames = new();
+
+                var actionStr = args.First();
+                args.RemoveAt(0);
+                if (actionStr == "enable")
+                    action = true;
+                else if (actionStr == "disable")
+                    action = false;
+                else
+                {
+                    messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"错误: 参数非法: \"{actionStr}\" => enable/disable"));
+                    return;
+                }
+
+                while (args.Count > 0)
+                {
+                    var item = args.First();
+                    args.RemoveAt(0);
+
+                    switch (item)
+                    {
+                        case "-g":
+                            {
+                                if (permissionManager.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin) < Permission.Admin)
+                                {
+                                    messageEvent.Reply(bot, new MessageBuilder()
+                                        .Add(ReplyChain.Create(messageEvent.Message))
+                                        .Text(
+                                            $"你没有权限使用此参数: -g\n" +
+                                            $"此命令需要的权限等级为 {Permission.Admin}\n" +
+                                            $"你的权限等级为 {PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin)}"));
+                                    return;
+                                }
+                                global = true;
+                                break;
+                            }
+
+                        case "-t":
+                            {
+                                if (args.Count == 0)
+                                {
+                                    messageEvent.Reply(bot, new MessageBuilder()
+                                        .Add(ReplyChain.Create(messageEvent.Message))
+                                        .Text($"错误: 缺少参数: targetGroupUin"));
+                                    return;
+                                }
+
+                                var targetGroupUin = args.First();
+                                args.RemoveAt(0);
+
+                                if (uint.TryParse(targetGroupUin, out groupUin))
+                                {
+                                    if (permissionManager.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin) < Permission.Admin)
+                                    {
+                                        messageEvent.Reply(bot, new MessageBuilder()
+                                            .Add(ReplyChain.Create(messageEvent.Message))
+                                            .Text(
+                                                $"你没有权限使用此参数: -t <targetGroupUin>\n" +
+                                                $"此命令需要的权限等级为 {Permission.Admin}\n" +
+                                                $"你的权限等级为 {PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin)}"));
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    messageEvent.Reply(bot, new MessageBuilder()
+                                        .Add(ReplyChain.Create(messageEvent.Message))
+                                        .Text($"错误: 参数非法: \"{targetGroupUin}\" => <targetGroupUin>"));
+                                    return;
+                                }
+                                break;
+                            }
+
+                        default:
+                            {
+                                commandSets.Add(item);
+                                break;
+                            }
+                    }
+                }
+
+                foreach (var x in commandSets)
+                {
+                    if (x == "核心功能")
+                    {
+                        messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"错误: 核心功能 无法操作"));
+                        return;
+                    }
+                    var commandSet = commandManager.CommandSets.FirstOrDefault(y => y.CommandSetAttr.Name == x);
+                    if (commandSet == null)
+                    {
+                        messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"错误: 参数非法: \"{x}\" => <cmdSets>"));
+                        return;
+                    }
+                    else
+                    {
+                        packageNames.Add(commandSet.CommandSetAttr.PackageName);
+                    }
+                }
+
+                if (global)
+                {
+                    foreach (var x in packageNames)
+                    {
+                        commandManager.CommandSets.First(y => y.CommandSetAttr.PackageName == x).IsEnabled = action;
+                    }
+                    Logger.Info($"已全局{(action ? "开启" : "关闭")} {packageNames.Count()} 个命令集");
+                    messageEvent.Reply(bot, new MessageBuilder()
+                                .Add(ReplyChain.Create(messageEvent.Message))
+                                .Text($"已全局{(action ? "开启" : "关闭")} {packageNames.Count()} 个命令集"));
+                    return;
+                }
+                else
+                {
+                    var preference = groupPreferenceManager.GetPreference(groupUin);
+                    foreach (var x in packageNames)
+                    {
+                        if (preference.CommandSetPreferences.ContainsKey(x))
+                        {
+                            preference.CommandSetPreferences[x] = action;
+                        }
+                        else
+                        {
+                            preference.CommandSetPreferences.Add(x, action);
+                        }
+                    }
+                    groupPreferenceManager.Save();
+                    Logger.Info($"G{groupUin} => 已{(action ? "开启" : "关闭")} {packageNames.Count()} 个命令集");
+                    messageEvent.Reply(bot, new MessageBuilder()
+                                .Add(ReplyChain.Create(messageEvent.Message))
+                                .Text($"G{groupUin} => 已{(action ? "开启" : "关闭")} {packageNames.Count()} 个命令集"));
+                    return;
+                }
+            }
+        }
     }
 }

@@ -211,7 +211,7 @@ namespace RinBot.Commands.Modules
                 bool silent = groupPreferenceManager.GetPreference(messageEvent.GroupUin).SilentMode;
 
                 reply +=
-                    $"\n被静默模式: {(silent ? "开启" : "关闭")} \n\n" +
+                    $"\n静默模式: {(silent ? "开启" : "关闭")} \n\n" +
                     "◆/◇ 为全局开关状态\n" +
                     "●/○ 为本群开关状态\n";
 

@@ -27,7 +27,7 @@ namespace RinBot.Commands.Modules
 
         private SetuResult GetSetu(List<string> tags, int r18 = 0, int num = 1)
         {
-            
+
             string? json = JsonConvert.SerializeObject(new SetuPost(r18, tags, num));
             HttpContent content = new StringContent(json);
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");

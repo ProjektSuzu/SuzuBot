@@ -75,10 +75,12 @@ namespace RinBot.Core.Components
 
                 //初始化结构体
                 LoadedCommandSet loadedCommandSet = new();
-                loadedCommandSet.CommandSetAttr = cmdSetAttr;
-                loadedCommandSet.CommandSetClass = instance;
-                loadedCommandSet.Commands = new();
-                loadedCommandSet.IsEnabled = true;
+                {
+                    loadedCommandSet.CommandSetAttr = cmdSetAttr;
+                    loadedCommandSet.CommandSetClass = instance;
+                    loadedCommandSet.IsEnabled = true;
+                    loadedCommandSet.Commands = new();
+                };
 
                 //获取所有方法
                 foreach (var method in type.GetMethods())

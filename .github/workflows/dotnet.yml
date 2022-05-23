@@ -26,8 +26,8 @@ jobs:
         dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
-#    - name: Publish
-#      run:  dotnet publish -c Release --no-self-contained -f net60 -o publish
+    - name: Publish
+      run:  dotnet publish -c Release --no-self-contained -f net60 -o publish
       
 #    - name: Stop current program
 #      uses: garygrossgarten/github-action-ssh@v0.6.3
@@ -39,24 +39,24 @@ jobs:
 #        username: ${{ secrets.username }}
 #        password: ${{ secrets.password }}
         
-#    - name: Copy folder content recursively to remote
-#      uses: garygrossgarten/github-action-scp@v0.7.3
-#      with:
-#        local: publish
-#        remote: /home/RinBot_Kotana/publish
-#        host: ${{ secrets.host }}
-#        port: ${{ secrets.port }}
-#        username: ${{ secrets.username }}
-#        password: ${{ secrets.password }}
+    - name: Copy folder content recursively to remote
+      uses: garygrossgarten/github-action-scp@v0.7.3
+      with:
+        local: publish
+        remote: /home/RinBot
+        host: ${{ secrets.host }}
+        port: ${{ secrets.port }}
+        username: ${{ secrets.username }}
+        password: ${{ secrets.password }}
         
-#    - name: Run new program
-#      uses: garygrossgarten/github-action-ssh@v0.6.3
-#      with:
-#        command: |
-#          screen -S rin -X exec dotnet /home/RinBot_Kotana/publish/ProjektRin.dll
-#        host: ${{ secrets.host }}
-#        port: ${{ secrets.port }}
-#        username: ${{ secrets.username }}
-#        password: ${{ secrets.password }}
+    - name: Restart systemd
+      uses: garygrossgarten/github-action-ssh@v0.6.3
+      with:
+        command: |
+          sudo systemctl restart rinbot.service
+        host: ${{ secrets.host }}
+        port: ${{ secrets.port }}
+        username: ${{ secrets.username }}
+        password: ${{ secrets.password }}
     
   

@@ -227,24 +227,35 @@ namespace RinBot.Core.Components
                                 args = new List<string>();
                             }
 
-                            switch (method.GetParameters().Count())
+                            try
                             {
-                                case 3:
-                                    {
-                                        isIntercepted = (bool?)method.Invoke(commandSet.CommandSetClass, new object[] { bot, groupMessageEvent, args });
-                                        break;
-                                    }
+                                switch (method.GetParameters().Count())
+                                {
+                                    case 3:
+                                        {
+                                            isIntercepted = (bool?)method.Invoke(commandSet.CommandSetClass, new object[] { bot, groupMessageEvent, args });
+                                            break;
+                                        }
 
-                                case 2:
-                                    {
-                                        isIntercepted = (bool?)method.Invoke(commandSet.CommandSetClass, new object[] { bot, groupMessageEvent });
-                                        break;
-                                    }
+                                    case 2:
+                                        {
+                                            isIntercepted = (bool?)method.Invoke(commandSet.CommandSetClass, new object[] { bot, groupMessageEvent });
+                                            break;
+                                        }
 
-                                default:
-                                    break;
+                                    default:
+                                        break;
+                                }
+                                Logger.Info($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} Invoked");
                             }
-                            Logger.Info($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} Invoked");
+                            catch (TargetInvocationException e)
+                            {
+                                Logger.Error($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} throwed an exception:\n{e.ToString()}");
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.Error($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} throwed an exception:\n{e.ToString()}");
+                            }
                             break;
                         }
                         if (isMatched) break;

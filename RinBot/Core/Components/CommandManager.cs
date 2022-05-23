@@ -248,10 +248,6 @@ namespace RinBot.Core.Components
                                 }
                                 Logger.Info($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} Invoked");
                             }
-                            catch (TargetInvocationException e)
-                            {
-                                Logger.Error($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} throwed an exception:\n{e.ToString()}");
-                            }
                             catch (Exception e)
                             {
                                 Logger.Error($"{groupMessageEvent.GroupName}({groupMessageEvent.GroupUin})|{groupMessageEvent.MemberCard}({groupMessageEvent.MemberUin}): {cmd.Name} throwed an exception:\n{e.ToString()}");

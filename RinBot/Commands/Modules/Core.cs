@@ -150,10 +150,21 @@ namespace RinBot.Commands.Modules
         [GroupMessageCommand("Ping", @"^ping")]
         public void OnPing(Bot bot, GroupMessageEvent messageEvent)
         {
-            string reply = $"Pong!";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
                 .Text("Pong!"));
+        }
+
+        [GroupMessageCommand("GarbageCollect", @"^gc")]
+        public void OnGarbageCollect(Bot bot, GroupMessageEvent messageEvent)
+        {
+            var workingSetBefore = Environment.WorkingSet;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            var workingSetAfter = Environment.WorkingSet;
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Text($"Collected. ({workingSetBefore / 1024 / 1024} MB -> {workingSetAfter / 1024 / 1024} MB)"));
         }
 
         [GroupMessageCommand("静默模式", @"^silent\s?([\s\S]+)?")]

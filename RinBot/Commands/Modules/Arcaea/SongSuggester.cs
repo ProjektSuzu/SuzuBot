@@ -36,7 +36,7 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public class SuggestResult
         {
-            public Song Song;
+            public Chart Song;
             public Difficulty Difficulty;
             public TargetScore TargetScore;
             public float B30Delta;
@@ -60,21 +60,21 @@ namespace RinBot.Commands.Modules.Arcaea
             double b30Top = b30.First().rating;
             double b30Floor = b30.Last().rating;
 
-            bool FloorLimit(Song s)
+            bool FloorLimit(Chart s)
             {
-                if ((float)s.RatingPST / 10 + 2 > b30Floor)
+                if ((float)s.Rating / 10 + 2 > b30Floor)
                 {
                     return true;
                 }
-                else if ((float)s.RatingPRS / 10 + 2 > b30Floor)
+                else if ((float)s.Rating / 10 + 2 > b30Floor)
                 {
                     return true;
                 }
-                else if ((float)s.RatingFTR / 10 + 2 > b30Floor)
+                else if ((float)s.Rating / 10 + 2 > b30Floor)
                 {
                     return true;
                 }
-                else if (s.RatingBYD > 0 && (float)s.RatingBYD / 10 + 2 > b30Floor)
+                else if (s.Rating > 0 && (float)s.Rating / 10 + 2 > b30Floor)
                 {
                     return true;
                 }
@@ -84,21 +84,21 @@ namespace RinBot.Commands.Modules.Arcaea
                 }
             }
 
-            bool TopLimit(Song s)
+            bool TopLimit(Chart s)
             {
-                if ((float)s.RatingPST / 10 >= b30Top)
+                if ((float)s.Rating / 10 >= b30Top)
                 {
                     return false;
                 }
-                else if ((float)s.RatingPRS / 10 >= b30Top)
+                else if ((float)s.Rating / 10 >= b30Top)
                 {
                     return false;
                 }
-                else if ((float)s.RatingFTR / 10 >= b30Top)
+                else if ((float)s.Rating / 10 >= b30Top)
                 {
                     return false;
                 }
-                else if (s.RatingBYD > 0 && (float)s.RatingBYD / 10 >= b30Top)
+                else if (s.Rating > 0 && (float)s.Rating / 10 >= b30Top)
                 {
                     return false;
                 }
@@ -108,9 +108,9 @@ namespace RinBot.Commands.Modules.Arcaea
                 }
             }
 
-            List<Song>? suggestSong = songDB
+            List<Chart>? suggestSong = songDB
                 .dbConnection
-                .Table<Song>()
+                .Table<Chart>()
                 .Where(FloorLimit)
                 .Where(TopLimit)
                 .ToList();
@@ -118,7 +118,7 @@ namespace RinBot.Commands.Modules.Arcaea
             List<SuggestResult> results = new();
 
 
-            foreach (Song? song in suggestSong)
+            foreach (Chart? song in suggestSong)
             {
                 for (int j = 0; j < 4; j++)
                 {
@@ -129,19 +129,19 @@ namespace RinBot.Commands.Modules.Arcaea
                     switch (j)
                     {
                         case 0:
-                            rating = (float)song.RatingPST / 10;
+                            rating = (float)song.Rating / 10;
                             break;
 
                         case 1:
-                            rating = (float)song.RatingPRS / 10;
+                            rating = (float)song.Rating / 10;
                             break;
 
                         case 2:
-                            rating = (float)song.RatingFTR / 10;
+                            rating = (float)song.Rating / 10;
                             break;
 
                         case 3:
-                            rating = (float)song.RatingBYD / 10;
+                            rating = (float)song.Rating / 10;
                             break;
 
                         default:
@@ -198,7 +198,7 @@ namespace RinBot.Commands.Modules.Arcaea
                                 Song = song,
                                 Difficulty = difficulty,
                                 TargetScore = targetScore,
-                                IsOverRank = GetRating(song, difficulty) > pttIndicator - 1,
+                                IsOverRank = GetRating(song.SongID, difficulty) > pttIndicator - 1,
                                 B30Delta = delta
                             };
 
@@ -224,23 +224,24 @@ namespace RinBot.Commands.Modules.Arcaea
             }
         }
 
-        public static float GetRating(Song s, Difficulty difficulty)
+        public static float GetRating(string sid, Difficulty difficulty)
         {
-            float rating;
-            switch (difficulty)
-            {
-                case Difficulty.Past: rating = s.RatingPST; break;
-                case Difficulty.Present: rating = s.RatingPRS; break;
-                case Difficulty.Future: rating = s.RatingFTR; break;
-                case Difficulty.Beyond: rating = s.RatingBYD; break;
-                default: rating = 0; break;
-            }
+            var song = ArcSongDB.Instance.GetSongs(sid)[(int)difficulty];
+            float rating = song.Rating;
+            //switch (difficulty)
+            //{
+            //    case Difficulty.Past: rating = s.Rating; break;
+            //    case Difficulty.Present: rating = s.Rating; break;
+            //    case Difficulty.Future: rating = s.Rating; break;
+            //    case Difficulty.Beyond: rating = s.Rating; break;
+            //    default: rating = 0; break;
+            //}
             return rating / 10;
         }
 
-        private static float CalculatePTT(Song s, Difficulty difficulty, TargetScore score)
+        private static float CalculatePTT(Chart s, Difficulty difficulty, TargetScore score)
         {
-            return CalculatePTT(GetRating(s, difficulty), score);
+            return CalculatePTT(GetRating(s.SongID, difficulty), score);
         }
 
         private static float CalculatePTT(float rating, TargetScore score)

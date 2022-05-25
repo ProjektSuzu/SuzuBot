@@ -39,12 +39,12 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 config = JsonConvert.DeserializeObject<AUAConfig>(File.ReadAllText(configPath));
             }
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
         }
         #endregion
 
         public async Task<B30Result?> GetB30(string usercode)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             Logger.Info($"B30 Querying: {usercode}");
             try
             {
@@ -76,7 +76,6 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public async Task<BestPlayResult?> GetUserBest(string usercode, string sid, Difficulty difficulty)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             Logger.Info($"Best Querying: {usercode}");
             try
             {
@@ -99,8 +98,6 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public async Task<UserInfoResult?> GetUserInfo(string usercode)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
-
             Logger.Info($"Info Querying: {usercode}");
             try
             {
@@ -123,8 +120,6 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public async Task<UserInfoResult?> GetUserInfoByName(string user)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
-
             Logger.Info($"Info Querying: {user}");
             try
             {
@@ -147,7 +142,6 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public async Task<byte[]?> GetCharaImg(uint chara, bool isUncapped = false)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             try
             {
                 HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/char?partner={chara}&awakened={isUncapped}").Result;
@@ -168,7 +162,6 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public async Task<byte[]?> GetCharaIcon(uint chara, bool isUncapped = false)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             try
             {
                 HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/icon?partner={chara}&awakened={isUncapped}").Result;
@@ -189,7 +182,6 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public async Task<byte[]?> GetSongCover(string sid, bool beyond = false)
         {
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
             try
             {
                 HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/song?songid={sid}{(beyond ? "&difficulty=byn" : "")}").Result;

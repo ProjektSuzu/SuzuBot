@@ -303,13 +303,15 @@ namespace RinBot.Commands.Modules.Arcaea
                 usercode = info.UserCode;
             }
 
-            Song? song = ArcSongDB.Instance.TryGetSong(sid);
-            if (song == null)
+            var songs = ArcSongDB.Instance.TryGetSong(sid);
+            if (songs.Count <= 0)
             {
                 reply = $"错误: 找不到歌曲: \"{sid}\"";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
+
+            sid = songs[0].SongID;
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
@@ -322,7 +324,7 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 for (int i = 3; i >= 0; i--)
                 {
-                    result = aua.GetUserBest(usercode, song.SongID, (SongResult.Difficulty)i).Result;
+                    result = aua.GetUserBest(usercode, sid, (SongResult.Difficulty)i).Result;
                     if (result != null && result.status == 0)
                     {
                         break;
@@ -331,7 +333,7 @@ namespace RinBot.Commands.Modules.Arcaea
             }
             else
             {
-                result = aua.GetUserBest(usercode, song.SongID, (SongResult.Difficulty)difficulty).Result;
+                result = aua.GetUserBest(usercode, sid, (SongResult.Difficulty)difficulty).Result;
             }
 
             if (result == null)
@@ -475,7 +477,7 @@ namespace RinBot.Commands.Modules.Arcaea
 
             reply =
                     $"推荐歌曲: {result.Song.NameEN}\n" +
-                    $"该歌曲 {result.Difficulty} 难度定数为 {SongSuggester.GetRating(result.Song, result.Difficulty)}\n" +
+                    $"该歌曲 {result.Difficulty} 难度定数为 {SongSuggester.GetRating(result.Song.SongID, result.Difficulty)}\n" +
                     $"若你将其推至 {GetScore(result.TargetScore)} 分\n" +
                     $"预计B30平均值将增加 {result.B30Delta:0.0000}\n" +
                     $"" +
@@ -501,24 +503,33 @@ namespace RinBot.Commands.Modules.Arcaea
 
             string? sid = string.Join(' ', args);
 
-            Song? song = ArcSongDB.Instance.TryGetSong(sid);
-            if (song == null)
+            var songs = ArcSongDB.Instance.TryGetSong(sid);
+            if (songs.Count <= 0)
             {
                 reply = $"错误: 找不到歌曲: \"{sid}\"";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
 
+            songs.Sort((a, b) => a.RatingClass.CompareTo(b.RatingClass));
+
+            sid = songs.First().SongID;
+            var nameEN = songs.First().NameEN;
+            var bpm = songs.First().BPM;
+
             reply =
-                $"曲名: {song.NameEN}\n" +
-                $"BPM: {song.BPM}\n" +
-                $"  PST/PRS/FTR/BYD\n" +
-                $"定数: {(float)song.RatingPST / 10:0.0}/{(float)song.RatingPRS / 10:0.0}/{(float)song.RatingFTR / 10:0.0}/{(song.RatingBYD < 0 ? "-" : ((float)song.RatingBYD / 10).ToString("0.0"))}\n" +
-                $"物量: {song.NotePST}/{song.NotePRS}/{song.NoteFTR}/{(song.NoteBYD < 0 ? "-" : song.NoteBYD.ToString())}\n";
+                $"曲名: {nameEN}\n" +
+                $"BPM: {bpm}\n" +
+                $"  PST/PRS/FTR{(songs.Count > 3 ? "/BYD" : "")}\n";
+
+            reply += $"难度: {String.Join('/', songs.Select(x => x.GetDifficultyFriendly()).ToList())}\n";
+            reply += $"定数: {String.Join('/', songs.Select(x => (float)x.Rating / 10).ToList())}\n";
+            reply += $"物量: {String.Join('/', songs.Select(x => x.Note).ToList())}\n";
+
 
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Image(GraphGenerator.Instance.GetCoverImg(song.SongID).Encode(SkiaSharp.SKEncodedImageFormat.Png, 100).ToArray())
+                .Image(GraphGenerator.Instance.GetCoverImg(sid).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 100).ToArray())
                 .Text(reply));
         }
 

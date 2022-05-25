@@ -28,14 +28,13 @@ namespace RinBot.Commands.Modules.Arcaea
         }
         #endregion
 
-        public Song? TryGetSong(string name)
+        public List<Chart> TryGetSong(string name)
         {
             name = name.ToLower();
-            Song? song;
-            song = GetSong(name);
-            if (song != null)
+            List<Chart> songs = GetSongs(name);
+            if (songs != null && songs.Count > 0)
             {
-                return song;
+                return songs;
             }
 
             string? sid = dbConnection
@@ -45,30 +44,29 @@ namespace RinBot.Commands.Modules.Arcaea
                 .ToList().FirstOrDefault();
             if (sid != null)
             {
-                return GetSong(sid);
+                return GetSongs(sid);
             }
 
-            song = dbConnection
-                .Table<Song>()
+            songs = dbConnection
+                .Table<Chart>()
                 .Where(a => a.NameEN.ToLower() == name || a.NameJP.ToLower() == name)
-                .ToList().FirstOrDefault();
-            if (song != null)
+                .ToList();
+            if (songs != null)
             {
-                return song;
+                return songs;
             }
             else
             {
-                return null;
+                return new();
             }
         }
 
-        public Song? GetSong(string sid)
+        public List<Chart> GetSongs(string sid)
         {
             return dbConnection
-                .Table<Song>()
+                .Table<Chart>()
                 .Where(s => s.SongID.ToLower() == sid)
-                .ToList()
-                .FirstOrDefault();
+                .ToList();
         }
 
         public List<string> GetAlias(string sid)
@@ -90,11 +88,11 @@ namespace RinBot.Commands.Modules.Arcaea
         public string AliasName { get; set; }
     }
 
-    [Table("songs")]
-    internal class Song
+    [Table("charts")]
+    internal class Chart
     {
         [PrimaryKey]
-        [Column("sid")]
+        [Column("song_id")]
         public string SongID { get; set; }
 
         [Column("name_en")]
@@ -106,45 +104,37 @@ namespace RinBot.Commands.Modules.Arcaea
         [Column("bpm")]
         public string BPM { get; set; }
 
-        [Column("rating_pst")]
-        public int RatingPST { get; set; }
+        [Column("rating_class")]
+        public int RatingClass { get; set; }
 
-        [Column("rating_prs")]
-        public int RatingPRS { get; set; }
+        [Column("difficulty")]
+        public int Difficulty { get; set; }
 
-        [Column("rating_ftr")]
-        public int RatingFTR { get; set; }
+        [Column("rating")]
+        public int Rating { get; set; }
 
-        [Column("rating_byn")]
-        public int RatingBYD { get; set; }
-
-        [Column("notes_pst")]
-        public int NotePST { get; set; }
-
-        [Column("notes_prs")]
-        public int NotePRS { get; set; }
-
-        [Column("notes_ftr")]
-        public int NoteFTR { get; set; }
-
-        [Column("notes_byn")]
-        public int NoteBYD { get; set; }
+        [Column("note")]
+        public int Note { get; set; }
 
         public int GetTheoreticalValue(Difficulty difficulty)
         {
-            switch (difficulty)
+            return 10000000 + Note;
+        }
+
+        public string GetDifficultyFriendly()
+        {
+            int difficulty = Difficulty;
+            int counter = 0;
+            while (difficulty >= 2)
             {
-                case Difficulty.Past:
-                    return 10000000 + NotePST;
-                case Difficulty.Present:
-                    return 10000000 + NotePRS;
-                case Difficulty.Future:
-                    return 10000000 + NoteFTR;
-                case Difficulty.Beyond:
-                    return 10000000 + NoteBYD;
-                default:
-                    return 10000000;
+                difficulty -= 2;
+                counter++;
             }
+
+            if (difficulty > 0)
+                return counter.ToString() + "+";
+            else
+                return counter.ToString();
         }
     }
 }

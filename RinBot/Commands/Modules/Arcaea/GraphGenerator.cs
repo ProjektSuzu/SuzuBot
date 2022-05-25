@@ -56,7 +56,8 @@ namespace RinBot.Commands.Modules.Arcaea
             //Console.WriteLine($"ID: {id}  {songResult.song_id}");
 
             #region 获取歌曲信息
-            Song song = ArcSongDB.Instance.GetSong(songResult.song_id);
+            List<Chart> songs = ArcSongDB.Instance.GetSongs(songResult.song_id);
+            var song = songs[(int)songResult.difficulty];
             #endregion
 
             #region 绘制背景
@@ -175,19 +176,19 @@ namespace RinBot.Commands.Modules.Arcaea
             switch (songResult.difficulty)
             {
                 case SongResult.Difficulty.Beyond:
-                    songRating = $"BEYOND {(float)song.RatingBYD / 10:0.00}";
+                    songRating = $"BEYOND {(float)song.Rating / 10:0.00}";
                     break;
 
                 case SongResult.Difficulty.Future:
-                    songRating = $"FUTURE {(float)song.RatingFTR / 10:0.00}";
+                    songRating = $"FUTURE {(float)song.Rating / 10:0.00}";
                     break;
 
                 case SongResult.Difficulty.Present:
-                    songRating = $"PRESENT {(float)song.RatingPRS / 10:0.00}";
+                    songRating = $"PRESENT {(float)song.Rating / 10:0.00}";
                     break;
 
                 case SongResult.Difficulty.Past:
-                    songRating = $"PAST {(float)song.RatingPST / 10:0.00}";
+                    songRating = $"PAST {(float)song.Rating / 10:0.00}";
                     break;
 
                 default:
@@ -718,7 +719,7 @@ namespace RinBot.Commands.Modules.Arcaea
             #region 获取游玩数据
             AccountInfo accountInfo;
             SongResult songResult;
-            Song songInfo;
+            Chart songInfo;
             if (playResult is UserInfoResult)
             {
                 accountInfo = ((UserInfoResult)playResult).content.account_info;
@@ -729,7 +730,8 @@ namespace RinBot.Commands.Modules.Arcaea
                 accountInfo = ((BestPlayResult)playResult).content.account_info;
                 songResult = ((BestPlayResult)playResult).content.record;
             }
-            songInfo = ArcSongDB.Instance.GetSong(songResult.song_id);
+            var songs = ArcSongDB.Instance.GetSongs(songResult.song_id);
+            songInfo = songs[(int)songResult.difficulty];
             #endregion
 
             #region 绘制背景
@@ -861,19 +863,19 @@ namespace RinBot.Commands.Modules.Arcaea
             switch (songResult.difficulty)
             {
                 case SongResult.Difficulty.Beyond:
-                    songRating = $"{(float)songInfo.RatingBYD / 10:0.00}";
+                    songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
                 case SongResult.Difficulty.Future:
-                    songRating = $"{(float)songInfo.RatingFTR / 10:0.00}";
+                    songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
                 case SongResult.Difficulty.Present:
-                    songRating = $"{(float)songInfo.RatingPRS / 10:0.00}";
+                    songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
                 case SongResult.Difficulty.Past:
-                    songRating = $"{(float)songInfo.RatingPST / 10:0.00}";
+                    songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
                 default:

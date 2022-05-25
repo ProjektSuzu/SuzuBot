@@ -226,7 +226,8 @@ namespace RinBot.Commands.Modules.Arcaea
 
         public static float GetRating(string sid, Difficulty difficulty)
         {
-            var song = ArcSongDB.Instance.GetSongs(sid)[(int)difficulty];
+            var song = ArcSongDB.Instance.GetSongs(sid).ElementAtOrDefault((int)difficulty);
+            if (song == null) return 0;
             float rating = song.Rating;
             //switch (difficulty)
             //{

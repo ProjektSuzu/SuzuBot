@@ -86,9 +86,7 @@ namespace RinBot.Commands.Modules.Arcaea
 
                 default:
                     {
-                        reply = $"错误: 找不到功能: \"{funcName}\"\n" +
-                            $"如需查看功能帮助 请输入\n" +
-                            $"/arc help";
+                        reply = $"错误: 找不到功能: \"{funcName}\"\n";
                         bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                         return;
                     }

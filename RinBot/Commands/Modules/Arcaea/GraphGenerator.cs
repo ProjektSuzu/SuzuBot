@@ -1,5 +1,6 @@
 ﻿using RinBot.Core.Components;
 using SkiaSharp;
+using SkiaSharp.HarfBuzz;
 
 namespace RinBot.Commands.Modules.Arcaea
 {
@@ -124,7 +125,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKtc-Regular.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSans-Regular.ttf"));
                 SKRect rect = new SKRect();
                 float maxWidth = 700;
                 fontPaint.MeasureText(songName, ref rect);
@@ -796,7 +797,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKsc-Regular.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSans-Regular.ttf"));
                 SKRect rect = new SKRect();
                 float maxWidth = 1600;
                 fontPaint.MeasureText(songName, ref rect);
@@ -805,7 +806,6 @@ namespace RinBot.Commands.Modules.Arcaea
                     songName = songName.Substring(0, songName.Length - 3) + "..";
                     fontPaint.MeasureText(songName, ref rect);
                 }
-
                 mainCanvas.DrawText(songName, 900, 310, fontPaint);
             }
             #endregion

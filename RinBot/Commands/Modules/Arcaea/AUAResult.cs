@@ -102,7 +102,7 @@
     {
         public double best30_avg;
         public double recent10_avg;
-        public AccountInfo account_Info;
+        public AccountInfo account_info;
         public List<SongResult> best30_list;
         public List<SongResult> best30_overflow;
     }

@@ -13,7 +13,7 @@ namespace RinBot.Commands.Modules.Arcaea
     internal class ArcaeaCommand : BaseCommand
     {
         private readonly ArcaeaUnlimitedAPI aua = ArcaeaUnlimitedAPI.Instance;
-        private readonly ArcUserInfoDB arcUserDB = ArcUserInfoDB.Instance;
+        private readonly ArcUserInfo arcUserDB = ArcUserInfo.Instance;
 
         [RinBot.Core.Attributes.Command.Modules.GroupMessageCommand("Arcaea", new[] { @"^arc\s?([\s\S]+)?", @"^a\s([\s\S]+)?", @"^a$" })]
         public void OnArcaea(Bot bot, GroupMessageEvent messageEvent, List<string> args)
@@ -81,6 +81,12 @@ namespace RinBot.Commands.Modules.Arcaea
                 case "recent":
                     {
                         OnRecent(bot, messageEvent, args);
+                        break;
+                    }
+
+                case "chart":
+                    {
+                        OnChart(bot, messageEvent);
                         break;
                     }
 
@@ -185,7 +191,7 @@ namespace RinBot.Commands.Modules.Arcaea
             }
             else
             {
-                ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
+                ArcaeaUserInfo? info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
                 if (info == null)
                 {
                     reply =
@@ -230,6 +236,35 @@ namespace RinBot.Commands.Modules.Arcaea
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .Add(ReplyChain.Create(messageEvent.Message))
                     .Image(GraphGenerator.Instance.GeneratePlayResult(result))
+                    );
+            return;
+        }
+
+        private void OnChart(Bot bot, GroupMessageEvent messageEvent)
+        {
+            string? reply = "";
+            ArcaeaUserInfo? info;
+
+            info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
+            if (info == null)
+            {
+                reply =
+                    $"错误: 当前QQ号不存在绑定的记录.\n" +
+                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Text("收到, 正在处理成绩图...")
+                );
+
+            var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Image(GraphGenerator.Instance.GeneratePttChart(records))
                     );
             return;
         }
@@ -287,7 +322,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 return;
             }
 
-            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
+            ArcaeaUserInfo? info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
             if (info == null)
             {
                 reply =
@@ -377,7 +412,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 }
             }
 
-            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
+            ArcaeaUserInfo? info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
             if (info == null)
             {
                 reply =
@@ -566,7 +601,7 @@ namespace RinBot.Commands.Modules.Arcaea
             }
             else
             {
-                ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
+                ArcaeaUserInfo? info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
                 if (info == null)
                 {
                     reply =
@@ -630,7 +665,7 @@ namespace RinBot.Commands.Modules.Arcaea
         private void OnUnbind(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? reply = "";
-            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
+            ArcaeaUserInfo? info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
             if (info == null)
             {
                 reply = "错误: 当前QQ号不存在绑定的记录.";
@@ -639,7 +674,7 @@ namespace RinBot.Commands.Modules.Arcaea
             }
             else
             {
-                arcUserDB.Remove(messageEvent.MemberUin);
+                arcUserDB.RemoveBind(messageEvent.MemberUin);
                 reply = $"U{messageEvent.MemberUin} => ∅    解绑成功.\n";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
@@ -655,12 +690,13 @@ namespace RinBot.Commands.Modules.Arcaea
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
-            ArcaeaUserInfo? info = arcUserDB.GetByUin(messageEvent.MemberUin);
-            if (info != null)
+            ArcaeaBindInfo? bind = arcUserDB.GetBindByUin(messageEvent.MemberUin);
+            if (bind != null)
             {
+                var info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
                 reply = "错误: 当前QQ号已存在一个绑定的记录.\n" +
                     "如需更换绑定, 请先使用 /arc unbind 解绑.\n" +
-                    $"U{info.Uin} => {info.UserName}({info.UserCode}).";
+                    $"U{bind.Uin} => {info.UserName}({info.UserCode}).";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }
@@ -703,9 +739,10 @@ namespace RinBot.Commands.Modules.Arcaea
                 return;
             }
 
-            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() { Uin = messageEvent.MemberUin, UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = "" };
-
-            arcUserDB.Insert(newInfo);
+            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() {UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = "" };
+            ArcaeaBindInfo newBind = new ArcaeaBindInfo() { Uin = messageEvent.MemberUin, UserCode = newInfo.UserCode };
+            arcUserDB.UpdateUserInfo(newInfo);
+            arcUserDB.UpdateBind(newBind);
             reply = $"绑定成功\n" +
                 $"U{messageEvent.MemberUin} => {newInfo.UserName}({newInfo.UserCode}).";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));

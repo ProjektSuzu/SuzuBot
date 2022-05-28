@@ -1,6 +1,9 @@
-﻿using RinBot.Core.Components;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RinBot.Core.Components;
 using SkiaSharp;
-using SkiaSharp.HarfBuzz;
+using System.Globalization;
+
 
 namespace RinBot.Commands.Modules.Arcaea
 {
@@ -378,7 +381,7 @@ namespace RinBot.Commands.Modules.Arcaea
             #endregion
 
             #region 获取用户信息
-            AccountInfo playerInfo = b30Result.content.account_Info;
+            AccountInfo playerInfo = b30Result.content.account_info;
             #endregion
 
             #region 绘制玩家信息框
@@ -1217,6 +1220,159 @@ namespace RinBot.Commands.Modules.Arcaea
             image.Dispose();
             mainCanvas.Dispose();
             return data;
+        }
+
+        public byte[] GeneratePttChart(List<PttRecord> records)
+        {
+            SKImageInfo imageInfo = new SKImageInfo(1000, 500);
+            SKSurface surface = SKSurface.Create(imageInfo);
+            var canvas = surface.Canvas;
+            var width = imageInfo.Width;
+            var height = imageInfo.Height;
+
+            var border = 50;
+
+            float axisXLength = width - 2 * border;
+            float axisYLength = height - 2 * border;
+
+            using (SKPaint paint = new())
+            {
+                canvas.DrawLine(new SKPoint(border, height - border), new SKPoint(width - border, height - border), paint);
+
+            }
+
+            List<(DateTime, float)> lists = new();
+            foreach (var x in records)
+            {
+                var date = DateTime.ParseExact(x.Date, "yyMMdd", CultureInfo.InvariantCulture);
+                var score = float.Parse(x.PTT.ToString()) / 100;
+                lists.Add(new(date, score));
+            }
+
+            List<SKPoint> points = new();
+
+
+            var origin = new SKPoint(border, border + axisYLength);
+            var path = new SKPath();
+            path.MoveTo(origin);
+
+            var minX = lists.Min(x => x.Item1);
+            var deltaX = lists.Max(x => x.Item1) - minX;
+
+            var minY = lists.Min(x => x.Item2);
+            var maxY = lists.Max(x => x.Item2);
+
+            float bottomY = (float)Math.Ceiling(maxY);
+            float topY = (float)Math.Floor(minY);
+
+            while (bottomY > minY)
+                bottomY -= 0.5f;
+
+            while (topY < maxY)
+                topY += 0.5f;
+
+            float deltaY = (float)(topY - bottomY);
+
+            using (SKPaint linePaint = new())
+            using (SKPaint fontPaint = new())
+            {
+                linePaint.Color = SKColors.LightGray;
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKtc-Regular.otf"));
+                fontPaint.TextSize = 20;
+                fontPaint.TextAlign = SKTextAlign.Right;
+                fontPaint.IsAntialias = true;
+
+                var delta = 0.5f;
+                while (deltaY / delta > 5)
+                    delta += 0.5f;
+
+
+                for (int i = 0; i <= deltaY / delta; i++)
+                {
+                    var p0 = new SKPoint(border, border + axisYLength - (i * delta) * axisYLength / deltaY);
+                    var p1 = new SKPoint(border + axisXLength, border + axisYLength - (i * delta) * axisYLength / deltaY);
+                    canvas.DrawLine(p0, p1, linePaint);
+                    var str = (bottomY + i * delta).ToString("0.0");
+                    canvas.DrawText(str, p0.X - 8, p0.Y, fontPaint);
+                }
+            }
+
+            using (SKPaint linePaint = new())
+            using (SKPaint fontPaint = new())
+            {
+                linePaint.Color = SKColors.LightGray;
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKtc-Regular.otf"));
+                fontPaint.TextSize = 20;
+                fontPaint.TextAlign = SKTextAlign.Center;
+                fontPaint.IsAntialias = true;
+
+                var delta = TimeSpan.FromDays(30);
+                while (deltaX / delta > 5)
+                    delta += TimeSpan.FromDays(30);
+
+
+                for (int i = 0; i <= deltaX / delta; i++)
+                {
+                    var p0 = new SKPoint((float)(border + (i * delta) * axisXLength / deltaX), border + axisYLength);
+                    var p1 = new SKPoint((float)(border + (i * delta) * axisXLength / deltaX), border + axisYLength - 10);
+                    canvas.DrawLine(p0, p1, linePaint);
+                    var str = (minX + i * delta).ToString("yyyy/MM");
+                    canvas.DrawText(str, p1.X, p1.Y + 40, fontPaint);
+                }
+            }
+
+            foreach (var (a, b) in lists)
+            {
+                float x = (float)((a - minX) / deltaX * axisXLength);
+                float y = (b - bottomY) / deltaY * axisYLength;
+                points.Add(new SKPoint(origin.X + x, origin.Y - y));
+            }
+
+            if (points.Count == 1)
+            {
+                var p = points[0];
+                path.MoveTo(border, p.Y);
+                path.LineTo(border + axisXLength, p.Y);
+            }
+            else
+            {
+                for (int i = 0; i < points.Count; i++)
+                {
+                    var p = points[i];
+                    if (i == 0)
+                    {
+                        path.MoveTo(p);
+                    }
+                    else
+                    {
+                        path.LineTo(p);
+                    }
+                }
+            }
+            using (SKPaint pathPaint = new SKPaint())
+            {
+                pathPaint.Style = SKPaintStyle.Stroke;
+                pathPaint.StrokeWidth = 4;
+                pathPaint.Color = SKColors.SkyBlue;
+                pathPaint.IsAntialias = true;
+                canvas.DrawPath(path, pathPaint);
+            }
+
+            using (SKPaint fontPaint = new())
+            {
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/NotoSansCJKtc-Regular.otf"));
+                fontPaint.TextSize = 20;
+                fontPaint.TextAlign = SKTextAlign.Center;
+                fontPaint.IsAntialias = true;
+
+                var point = path.LastPoint;
+                var str = ((float)records.Last().PTT / 100).ToString("0.00");
+                canvas.DrawText(str, point.X, point.Y - 10, fontPaint);
+            }
+            var bytes = surface.Snapshot().Encode(SKEncodedImageFormat.Png, 100).ToArray();
+            canvas.Dispose();
+            surface.Dispose();
+            return bytes;
         }
 
         private string FormatScore(int score)

@@ -44,7 +44,7 @@ namespace RinBot.Commands.Modules.Arcaea
         }
         public static SuggestResult? Suggest(B30Result b30Result, float minDelta = 0.001f)
         {
-            float pttIndicator = b30Result.content.account_Info.rating;
+            float pttIndicator = b30Result.content.account_info.rating;
             if (pttIndicator < 0)
             {
                 pttIndicator = (float)b30Result.content.best30_avg;

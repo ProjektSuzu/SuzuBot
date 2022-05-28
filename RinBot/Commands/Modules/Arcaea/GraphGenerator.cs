@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RinBot.Core.Components;
 using SkiaSharp;
 using System.Globalization;
+
 
 namespace RinBot.Commands.Modules.Arcaea
 {
@@ -808,7 +809,6 @@ namespace RinBot.Commands.Modules.Arcaea
                     songName = songName.Substring(0, songName.Length - 3) + "..";
                     fontPaint.MeasureText(songName, ref rect);
                 }
-
                 mainCanvas.DrawText(songName, 900, 310, fontPaint);
             }
             #endregion

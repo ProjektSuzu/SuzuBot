@@ -64,7 +64,6 @@ namespace RinBot.Commands.Modules
 
             string? reply = "";
             int r18 = 0;
-            int num = 1;
             List<string> tags = new();
 
             string? arg = "";
@@ -78,23 +77,6 @@ namespace RinBot.Commands.Modules
                     case "-r18":
                         {
                             r18 = 2;
-                            break;
-                        }
-
-                    case "-n":
-                        {
-                            arg = args.FirstOrDefault(defaultValue: "");
-                            if (args.Count > 0)
-                            {
-                                args.RemoveAt(0);
-                            }
-
-                            if (!int.TryParse(arg, out num) || num < 1)
-                            {
-                                reply = $"错误: 参数非法: \"{arg}\" => -n <num>";
-                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                                return;
-                            }
                             break;
                         }
 
@@ -115,7 +97,7 @@ namespace RinBot.Commands.Modules
             SetuResult result;
             try
             {
-                result = GetSetu(tags, r18, num);
+                result = GetSetu(tags, r18, 1);
             }
             catch (Exception e)
             {
@@ -131,52 +113,40 @@ namespace RinBot.Commands.Modules
                 return;
             }
             MultiMsgChain multiReply = MultiMsgChain.Create();
-
+            HttpClient httpClient = new HttpClient();
             List<Task> tasks = new List<Task>();
+            var data = result.data.First();
 
-            void DownloadPic(SetuResult.Data data)
+            byte[] bytes;
+            try
             {
-                HttpClient httpClient = new HttpClient();
-                byte[] bytes;
-                try
-                {
-                    bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
-                }
-                catch (Exception)
-                {
-                    reply = $"错误: 下载图片时发生错误.";
-                    MessageBuilder? errorMessage = new MessageBuilder(reply);
-                    multiReply
-                    .AddMessage(
-                    new MessageStruct(bot.Uin, bot.Name,
-                    errorMessage.Build()
-                    ));
-                    return;
-                }
-                reply =
-                $"色图来了(º﹃º )\n" +
-                $"标题: {data.title}\n" +
-                $"作者: {data.author}\n" +
-                $"PID: {data.pid}\n" +
-                $"标签: {string.Join(' ', data.tags)}\n" +
-                $"\n";
-                MessageBuilder message = new MessageBuilder(reply).Image(bytes);
-
+                bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
+            }
+            catch (Exception)
+            {
+                reply = $"错误: 下载图片时发生错误.";
+                MessageBuilder? errorMessage = new MessageBuilder(reply);
                 multiReply
-                    .AddMessage(
-                    new MessageStruct(bot.Uin, bot.Name,
-                    message.Build()
-                    ));
+                .AddMessage(
+                new MessageStruct(bot.Uin, bot.Name,
+                errorMessage.Build()
+                ));
+                return;
             }
+            reply =
+             "色图来了(º﹃º )\n" + 
+            $"标题: {data.title}\n" +
+            $"PID: {data.pid}\n" +
+            $"作者: {data.author}\n" +
+            $"标签: {string.Join(' ', data.tags)}\n" +
+            $"\n";
+            MessageBuilder message = new MessageBuilder(reply).Image(bytes);
 
-            foreach (SetuResult.Data? data in result.data)
-            {
-                Task? task = new Task(() => DownloadPic(data));
-                task.Start();
-                tasks.Add(task);
-            }
-
-            Task.WaitAll(tasks.ToArray());
+            multiReply
+                .AddMessage(
+                new MessageStruct(bot.Uin, bot.Name,
+                message.Build()
+                ));
 
             Task<bool>? success = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             Logger.Info($"Setu send: {success.Result}");

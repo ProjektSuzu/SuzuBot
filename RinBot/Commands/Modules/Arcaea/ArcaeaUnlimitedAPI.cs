@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NLog;
 using RinBot.Core.Components;
+using System.Globalization;
 using System.Net.Http.Headers;
 using static RinBot.Commands.Modules.Arcaea.SongResult;
 
@@ -57,12 +58,49 @@ namespace RinBot.Commands.Modules.Arcaea
                 {
                     Logger.Info($"Query Success: {usercode}");
                     B30Result? result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
-                    ArcaeaUserInfo? info = ArcUserInfoDB.Instance.GetByUserCode(usercode);
-                    if (info != null)
+                    ArcaeaUserInfo? info = ArcUserInfo.Instance.GetByUserCode(usercode);
+                    if (info != null && result != null)
                     {
                         info.B30Json = response.Content.ReadAsStringAsync().Result;
+                        info.PTT = result.content.account_info.rating;
                         info.LastUpdate = DateTime.Now;
-                        ArcUserInfoDB.Instance.Update(info);
+                        if (info.RecordJson != null && info.RecordJson != "")
+                        {
+                            var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
+                            if (records != null && records.Count > 0)
+                            {
+                                var record = records.Last();
+                                var date = DateTime.ParseExact(record.Date, "yyMMdd", CultureInfo.InvariantCulture);
+                                if (DateTime.Now - date > TimeSpan.FromDays(1))
+                                {
+                                    var dateStr = DateTime.Now.ToString("yyMMdd");
+                                    var ptt = result.content.account_info.rating;
+                                    records.Add(new PttRecord() { Date = dateStr, PTT = ptt });
+                                }
+                                info.RecordJson = JsonConvert.SerializeObject(records);
+                            }
+                            else
+                            {
+                                var dateStr = DateTime.Now.ToString("yyMMdd");
+                                var ptt = result.content.account_info.rating;
+                                records = new()
+                                {
+                                    new PttRecord() { Date = dateStr, PTT = ptt }
+                                };
+                                info.RecordJson = JsonConvert.SerializeObject(records);
+                            }
+                        }
+                        else
+                        {
+                            var dateStr = DateTime.Now.ToString("yyMMdd");
+                            var ptt = result.content.account_info.rating;
+                            var records = new List<PttRecord>()
+                                {
+                                    new PttRecord() { Date = dateStr, PTT = ptt }
+                                };
+                            info.RecordJson = JsonConvert.SerializeObject(records);
+                        }
+                        ArcUserInfo.Instance.UpdateUserInfo(info);
                     }
 
                     return result;
@@ -109,7 +147,51 @@ namespace RinBot.Commands.Modules.Arcaea
                 else
                 {
                     Logger.Info($"Query Success: {usercode}");
-                    return JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
+                    var result = JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
+                    ArcaeaUserInfo? info = ArcUserInfo.Instance.GetByUserCode(usercode);
+                    if (info != null && result != null)
+                    {
+                        info.PTT = result.content.account_info.rating;
+                        info.LastUpdate = DateTime.Now;
+                        if (info.RecordJson != null && info.RecordJson != "")
+                        {
+                            var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
+                            if (records != null && records.Count > 0)
+                            {
+                                var record = records.Last();
+                                var date = DateTime.ParseExact(record.Date, "yyMMdd", CultureInfo.InvariantCulture);
+                                if (DateTime.Now - date > TimeSpan.FromDays(1))
+                                {
+                                    var dateStr = DateTime.Now.ToString("yyMMdd");
+                                    var ptt = result.content.account_info.rating;
+                                    records.Add(new PttRecord() { Date = dateStr, PTT = ptt });
+                                }
+                                info.RecordJson = JsonConvert.SerializeObject(records);
+                            }
+                            else
+                            {
+                                var dateStr = DateTime.Now.ToString("yyMMdd");
+                                var ptt = result.content.account_info.rating;
+                                records = new()
+                                {
+                                    new PttRecord() { Date = dateStr, PTT = ptt }
+                                };
+                                info.RecordJson = JsonConvert.SerializeObject(records);
+                            }
+                        }
+                        else
+                        {
+                            var dateStr = DateTime.Now.ToString("yyMMdd");
+                            var ptt = result.content.account_info.rating;
+                            var records = new List<PttRecord>()
+                                {
+                                    new PttRecord() { Date = dateStr, PTT = ptt }
+                                };
+                            info.RecordJson = JsonConvert.SerializeObject(records);
+                        }
+                        ArcUserInfo.Instance.UpdateUserInfo(info);
+                    }
+                    return result;
                 }
             }
             catch
@@ -131,7 +213,8 @@ namespace RinBot.Commands.Modules.Arcaea
                 else
                 {
                     Logger.Info($"Query Success: {user}");
-                    return JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
+                    var result = JsonConvert.DeserializeObject<UserInfoResult>(response.Content.ReadAsStringAsync().Result);
+                    return result;
                 }
             }
             catch

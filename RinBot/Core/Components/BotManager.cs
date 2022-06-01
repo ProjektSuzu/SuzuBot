@@ -157,8 +157,17 @@ namespace RinBot.Core.Components
                     Logger.Debug($"{e.InviterNick}({e.InviterUin}) 邀请进入群聊 {e.GroupName}({e.GroupUin})");
                     if (AutoAccept)
                     {
-                        s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
-                        Logger.Debug($"已自动同意进入群聊 {e.GroupName}({e.GroupUin})");
+                        if (s.GetGroupMemberList(955578812).Result.FirstOrDefault(x => x.Uin == e.InviterUin, null) != null)
+                        {
+                            s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
+                            Logger.Debug($"已自动同意进入群聊 {e.GroupName}({e.GroupUin})");
+                        }
+                        else
+                        {
+                            s.DeclineGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
+                            s.SendFriendMessage(e.InviterUin, $"拒绝进入群聊\n请先加入 RinBot 认领群 (955578812)");
+                            Logger.Debug($"已自动拒绝进入群聊 {e.GroupName}({e.GroupUin})");
+                        }
                     }
 
                 };
@@ -167,7 +176,7 @@ namespace RinBot.Core.Components
                 {
                     Logger.Debug($"{e.ReqNick}({e.ReqUin}) 请求添加好友");
                     if (AutoAccept)
-                    {
+                    { 
                         s.ApproveFriendRequest(e.ReqUin, e.Token);
                         Logger.Debug($"已自动同意添加好友 {e.ReqNick}({e.ReqUin})");
                     }

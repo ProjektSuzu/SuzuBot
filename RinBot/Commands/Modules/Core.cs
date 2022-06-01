@@ -161,6 +161,7 @@ namespace RinBot.Commands.Modules
             var workingSetBefore = Environment.WorkingSet;
             GC.Collect();
             GC.WaitForPendingFinalizers();
+            GC.Collect();
             var workingSetAfter = Environment.WorkingSet;
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
@@ -199,7 +200,7 @@ namespace RinBot.Commands.Modules
 
             var preference = groupPreferenceManager.GetPreference(groupUin);
             preference.SilentMode = !preference.SilentMode;
-
+            groupPreferenceManager.Save();
             messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
                             .Text($"G{groupUin} => 已{(preference.SilentMode ? "开启" : "关闭")}静默模式"));

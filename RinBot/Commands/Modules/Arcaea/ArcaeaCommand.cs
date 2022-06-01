@@ -205,7 +205,6 @@ namespace RinBot.Commands.Modules.Arcaea
                     usercode = info.UserCode;
                 }
             }
-
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
                 .Text("收到, 正在处理成绩图...")

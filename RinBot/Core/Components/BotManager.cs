@@ -173,8 +173,20 @@ namespace RinBot.Core.Components
                     }
                 };
 
-                bot.OnGroupMessage += CommandManager.Instance.OnGroupMessageEvent;
-                bot.OnGroupPoke += CommandManager.Instance.OnGroupPokeEvent;
+                bot.OnGroupMessage += (s, e) =>
+                {
+                    Task.Run(() =>
+                    {
+                        CommandManager.Instance.OnGroupMessageEvent(s, e);
+                    });
+                };
+                bot.OnGroupPoke += (s, e) =>
+                {
+                    Task.Run(() =>
+                    {
+                        CommandManager.Instance.OnGroupPokeEvent(s, e);
+                    });
+                };
 
                 bot.OnBotOffline += (s, e) =>
                 {

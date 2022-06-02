@@ -92,7 +92,7 @@ namespace RinBot.Commands.Modules.Arcaea
 
                 default:
                     {
-                        reply = $"错误: 找不到功能: \"{funcName}\"\n";
+                        reply = $"错误: 找不到功能: \"{funcName}\"";
                         bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                         return;
                     }
@@ -161,7 +161,7 @@ namespace RinBot.Commands.Modules.Arcaea
 
             reply =
                 $"{rating:0.0000} <> {score:00000000} \n" +
-                $"=> {result:0.0000}\n";
+                $"=> {result:0.0000}";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
             return;
         }
@@ -196,7 +196,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 {
                     reply =
                         $"错误: 当前QQ号不存在绑定的记录.\n" +
-                        $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
+                        $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                     return;
                 }
@@ -249,7 +249,7 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 reply =
                     $"错误: 当前QQ号不存在绑定的记录.\n" +
-                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
+                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -326,7 +326,7 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 reply =
                     $"错误: 当前QQ号不存在绑定的记录.\n" +
-                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
+                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -416,7 +416,7 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 reply =
                     $"错误: 当前QQ号不存在绑定的记录.\n" +
-                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定\n";
+                    $"若要使用此功能, 请先使用 /arc bind <name/usercode> 进行绑定";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -674,7 +674,7 @@ namespace RinBot.Commands.Modules.Arcaea
             else
             {
                 arcUserDB.RemoveBind(messageEvent.MemberUin);
-                reply = $"U{messageEvent.MemberUin} => ∅    解绑成功.\n";
+                reply = $"U{messageEvent.MemberUin} => ∅    解绑成功.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }
@@ -694,7 +694,7 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 var info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
                 reply = "错误: 当前QQ号已存在一个绑定的记录.\n" +
-                    "如需更换绑定, 请先使用 /arc unbind 解绑.\n" +
+                    "如需更换绑定, 请先使用 /arc unbind 解绑." +
                     $"U{bind.Uin} => {info.UserName}({info.UserCode}).";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;

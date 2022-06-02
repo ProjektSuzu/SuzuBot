@@ -40,7 +40,7 @@ namespace RinBot.Core.Components
         private static readonly string TAG = "Bot";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
-        public static bool AutoAccept = false;
+        public static bool AutoAccept = true;
 
         public BotConfig GetConfig()
         {

@@ -20,7 +20,7 @@ namespace RinBot.Commands.Modules
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         private static List<KeyValuePair<uint, DateTime>> cooldownList = new();
-        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(60);
+        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(30);
 
         private HttpClient httpClient = new HttpClient();
         public override void OnInit() { }

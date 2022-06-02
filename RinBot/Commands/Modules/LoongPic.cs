@@ -18,7 +18,7 @@ namespace RinBot.Commands.Modules
             picDir = new DirectoryInfo(Path.Combine(BotManager.resourcePath, "LoongPic"));
         }
 
-        [GroupMessageCommand("发龙图", new[] { @"^loong\s?([\s\S]+)?", @"^龙图\s?([\s\S]+)?" })]
+        [GroupMessageCommand("发龙图", new[] { @"^loong\s?([\s\S]+)?", @"^dragon\s?([\s\S]+)?", @"^龙图\s?([\s\S]+)?" })]
         public void OnSendLoongPic(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? reply = "";

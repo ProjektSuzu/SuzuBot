@@ -103,6 +103,7 @@ namespace RinBot.Commands.Modules
             {
                 reply = $"错误: {e.Message}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
                 return;
             }
 
@@ -110,8 +111,10 @@ namespace RinBot.Commands.Modules
             {
                 reply = $"找不到符合要求的色图: {string.Join(' ', tags)}";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
                 return;
             }
+
             MultiMsgChain multiReply = MultiMsgChain.Create();
             HttpClient httpClient = new HttpClient();
             List<Task> tasks = new List<Task>();

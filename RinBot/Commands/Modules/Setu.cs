@@ -20,7 +20,7 @@ namespace RinBot.Commands.Modules
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         private static List<KeyValuePair<uint, DateTime>> cooldownList = new();
-        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(5);
 
         private HttpClient httpClient = new HttpClient();
         public override void OnInit() { }
@@ -51,12 +51,12 @@ namespace RinBot.Commands.Modules
         {
             if (cooldownList.Any(x => x.Key == messageEvent.GroupUin))
             {
-                var lastTime = cooldownList.First(x => x.Key == messageEvent.GroupUin).Value;
-                if (lastTime.Add(cooldown) > DateTime.Now)
+                var cdTime = cooldownList.First(x => x.Key == messageEvent.GroupUin).Value;
+                if (cdTime > DateTime.Now)
                 {
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                         .Add(ReplyChain.Create(messageEvent.Message))
-                        .Text($"不可以色色!\n下一次使用还要等{(cooldown - (DateTime.Now - lastTime)).Seconds}秒哦"));
+                        .Text($"不可以色色!\n下一次使用还要等{(cdTime - DateTime.Now).Seconds}秒哦"));
                     return;
                 }
             }
@@ -64,6 +64,7 @@ namespace RinBot.Commands.Modules
 
             string? reply = "";
             int r18 = 0;
+            int num = 1;
             List<string> tags = new();
 
             string? arg = "";
@@ -80,6 +81,23 @@ namespace RinBot.Commands.Modules
                             break;
                         }
 
+                    case "-n":
+                        {
+                            arg = args.FirstOrDefault(defaultValue: "");
+                            if (args.Count > 0)
+                            {
+                                args.RemoveAt(0);
+                            }
+
+                            if (!int.TryParse(arg, out num) || num < 1 || num > 20)
+                            {
+                                reply = $"错误: 参数非法: \"{arg}\" => <num>";
+                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                                return;
+                            }
+                            break;
+                        }
+
                     default:
                         {
                             tags.Add(arg);
@@ -88,7 +106,8 @@ namespace RinBot.Commands.Modules
                 }
             }
 
-            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now));
+            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * num));
+
             reply = $"处理中 请稍候.";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
@@ -97,7 +116,7 @@ namespace RinBot.Commands.Modules
             SetuResult result;
             try
             {
-                result = GetSetu(tags, r18, 1);
+                result = GetSetu(tags, r18, num);
             }
             catch (Exception e)
             {
@@ -118,38 +137,54 @@ namespace RinBot.Commands.Modules
             MultiMsgChain multiReply = MultiMsgChain.Create();
             HttpClient httpClient = new HttpClient();
             List<Task> tasks = new List<Task>();
-            var data = result.data.First();
 
-            byte[] bytes;
-            try
+            void DownloadPic(SetuResult.Data data)
             {
-                bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
-            }
-            catch (Exception)
-            {
-                reply = $"错误: 下载图片时发生错误.";
-                MessageBuilder? errorMessage = new MessageBuilder(reply);
+                var reply = "";
+                byte[] bytes;
+                try
+                {
+                    bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
+                }
+                catch (Exception)
+                {
+                    reply = $"错误: 下载图片时发生错误.";
+                    MessageBuilder? errorMessage = new MessageBuilder(reply);
+                    multiReply
+                    .AddMessage(
+                    new MessageStruct(bot.Uin, bot.Name,
+                    errorMessage.Build()
+                    ));
+                    return;
+                }
+                reply =
+                "色图来了(º﹃º )\n" +
+                $"标题: {data.title}\n" +
+                $"PID: {data.pid}\n" +
+                $"作者: {data.author}\n" +
+                $"标签: {string.Join(' ', data.tags)}\n" +
+                $"\n";
+                MessageBuilder message = new MessageBuilder(reply).Image(bytes);
+
                 multiReply
-                .AddMessage(
-                new MessageStruct(bot.Uin, bot.Name,
-                errorMessage.Build()
-                ));
-                return;
+                    .AddMessage(
+                    new MessageStruct(bot.Uin, bot.Name,
+                    message.Build()
+                    ));
             }
-            reply =
-             "色图来了(º﹃º )\n" + 
-            $"标题: {data.title}\n" +
-            $"PID: {data.pid}\n" +
-            $"作者: {data.author}\n" +
-            $"标签: {string.Join(' ', data.tags)}\n" +
-            $"\n";
-            MessageBuilder message = new MessageBuilder(reply).Image(bytes);
 
-            multiReply
-                .AddMessage(
-                new MessageStruct(bot.Uin, bot.Name,
-                message.Build()
-                ));
+            int count = 0;
+            foreach (var data in result.data)
+            {
+                Task? task = new Task(() => DownloadPic(data));
+                task.Start();
+                tasks.Add(task);
+                count++;
+            }
+
+            Task.WaitAll(tasks.ToArray());
+            cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
+            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * count));
 
             Task<bool>? success = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             Logger.Info($"Setu send: {success.Result}");

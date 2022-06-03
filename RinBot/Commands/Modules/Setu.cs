@@ -20,7 +20,7 @@ namespace RinBot.Commands.Modules
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         private static List<KeyValuePair<uint, DateTime>> cooldownList = new();
-        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(30);
 
         private HttpClient httpClient = new HttpClient();
         public override void OnInit() { }
@@ -64,7 +64,7 @@ namespace RinBot.Commands.Modules
 
             string? reply = "";
             int r18 = 0;
-            int num = 1;
+            //int num = 1;
             List<string> tags = new();
 
             string? arg = "";
@@ -81,22 +81,22 @@ namespace RinBot.Commands.Modules
                             break;
                         }
 
-                    case "-n":
-                        {
-                            arg = args.FirstOrDefault(defaultValue: "");
-                            if (args.Count > 0)
-                            {
-                                args.RemoveAt(0);
-                            }
+                    //case "-n":
+                    //    {
+                    //        arg = args.FirstOrDefault(defaultValue: "");
+                    //        if (args.Count > 0)
+                    //        {
+                    //            args.RemoveAt(0);
+                    //        }
 
-                            if (!int.TryParse(arg, out num) || num < 1 || num > 20)
-                            {
-                                reply = $"错误: 参数非法: \"{arg}\" => <num>";
-                                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                                return;
-                            }
-                            break;
-                        }
+                    //        if (!int.TryParse(arg, out num) || num < 1 || num > 20)
+                    //        {
+                    //            reply = $"错误: 参数非法: \"{arg}\" => <num>";
+                    //            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    //            return;
+                    //        }
+                    //        break;
+                    //    }
 
                     default:
                         {
@@ -106,7 +106,8 @@ namespace RinBot.Commands.Modules
                 }
             }
 
-            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * num));
+            //cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * num));
+            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown));
 
             reply = $"处理中 请稍候.";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
@@ -116,7 +117,7 @@ namespace RinBot.Commands.Modules
             SetuResult result;
             try
             {
-                result = GetSetu(tags, r18, num);
+                result = GetSetu(tags, r18, 1);
             }
             catch (Exception e)
             {
@@ -136,11 +137,12 @@ namespace RinBot.Commands.Modules
 
             MultiMsgChain multiReply = MultiMsgChain.Create();
             HttpClient httpClient = new HttpClient();
-            List<Task> tasks = new List<Task>();
+            //List<Task> tasks = new List<Task>();
+            var data = result.data.First();
 
-            void DownloadPic(SetuResult.Data data)
-            {
-                var reply = "";
+            //void DownloadPic(SetuResult.Data data)
+            //{
+                reply = "";
                 byte[] bytes;
                 try
                 {
@@ -171,20 +173,20 @@ namespace RinBot.Commands.Modules
                     new MessageStruct(bot.Uin, bot.Name,
                     message.Build()
                     ));
-            }
+            //}
 
-            int count = 0;
-            foreach (var data in result.data)
-            {
-                Task? task = new Task(() => DownloadPic(data));
-                task.Start();
-                tasks.Add(task);
-                count++;
-            }
+            //int count = 0;
+            //foreach (var data in result.data)
+            //{
+            //    Task? task = new Task(() => DownloadPic(data));
+            //    task.Start();
+            //    tasks.Add(task);
+            //    count++;
+            //}
 
-            Task.WaitAll(tasks.ToArray());
-            cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
-            cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * count));
+            //Task.WaitAll(tasks.ToArray());
+            //cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
+            //cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * count));
 
             Task<bool>? success = bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(multiReply));
             Logger.Info($"Setu send: {success.Result}");

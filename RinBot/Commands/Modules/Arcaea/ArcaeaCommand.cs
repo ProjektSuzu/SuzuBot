@@ -741,7 +741,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 return;
             }
 
-            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() {UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = "" };
+            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() { UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = "" };
             ArcaeaBindInfo newBind = new ArcaeaBindInfo() { Uin = messageEvent.MemberUin, UserCode = newInfo.UserCode };
             arcUserDB.UpdateUserInfo(newInfo);
             arcUserDB.UpdateBind(newBind);

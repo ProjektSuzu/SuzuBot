@@ -44,7 +44,7 @@ namespace RinBot.Commands.Modules.Arcaea
         {
             return dbConnection.Table<ArcaeaUserInfo>().FirstOrDefault(x => x.UserCode == usercode);
         }
-        
+
         public bool UpdateBind(ArcaeaBindInfo bindInfo)
         {
             return dbConnection.InsertOrReplace(bindInfo) > 0;

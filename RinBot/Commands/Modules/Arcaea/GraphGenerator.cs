@@ -1,5 +1,3 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RinBot.Core.Components;
 using SkiaSharp;
 using System.Globalization;

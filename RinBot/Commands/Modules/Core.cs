@@ -388,16 +388,16 @@ namespace RinBot.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("Tesst", new[] { @"^test" }, Permission.Admin)]
-        public void OnTest(Bot bot, GroupMessageEvent messageEvent)
-        {
-            messageEvent.Reply(bot, new MessageBuilder()
-                            .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"Test"));
-            messageEvent.Reply(bot, new MessageBuilder()
-                            .Add(ReplyChain.Create(messageEvent.Message))
-                            .Image(File.ReadAllBytes(Path.Combine(BotManager.resourcePath, "test.jpg"))));
-            return;
-        }
+        //[GroupMessageCommand("Tesst", new[] { @"^test" }, Permission.Admin)]
+        //public void OnTest(Bot bot, GroupMessageEvent messageEvent)
+        //{
+        //    messageEvent.Reply(bot, new MessageBuilder()
+        //                    .Add(ReplyChain.Create(messageEvent.Message))
+        //                    .Text($"Test"));
+        //    messageEvent.Reply(bot, new MessageBuilder()
+        //                    .Add(ReplyChain.Create(messageEvent.Message))
+        //                    .Image(File.ReadAllBytes(Path.Combine(BotManager.resourcePath, "test.jpg"))));
+        //    return;
+        //}
     }
 }

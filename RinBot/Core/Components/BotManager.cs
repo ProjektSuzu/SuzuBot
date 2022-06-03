@@ -176,7 +176,7 @@ namespace RinBot.Core.Components
                 {
                     Logger.Debug($"{e.ReqNick}({e.ReqUin}) 请求添加好友");
                     if (AutoAccept)
-                    { 
+                    {
                         s.ApproveFriendRequest(e.ReqUin, e.Token);
                         Logger.Debug($"已自动同意添加好友 {e.ReqNick}({e.ReqUin})");
                     }

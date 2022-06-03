@@ -142,37 +142,37 @@ namespace RinBot.Commands.Modules
 
             //void DownloadPic(SetuResult.Data data)
             //{
-                reply = "";
-                byte[] bytes;
-                try
-                {
-                    bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
-                }
-                catch (Exception)
-                {
-                    reply = $"错误: 下载图片时发生错误.";
-                    MessageBuilder? errorMessage = new MessageBuilder(reply);
-                    multiReply
-                    .AddMessage(
-                    new MessageStruct(bot.Uin, bot.Name,
-                    errorMessage.Build()
-                    ));
-                    return;
-                }
-                reply =
-                "色图来了(º﹃º )\n" +
-                $"标题: {data.title}\n" +
-                $"PID: {data.pid}\n" +
-                $"作者: {data.author}\n" +
-                $"标签: {string.Join(' ', data.tags)}\n" +
-                $"\n";
-                MessageBuilder message = new MessageBuilder(reply).Image(bytes);
-
+            reply = "";
+            byte[] bytes;
+            try
+            {
+                bytes = httpClient.GetByteArrayAsync(data.urls.regular).Result;
+            }
+            catch (Exception)
+            {
+                reply = $"错误: 下载图片时发生错误.";
+                MessageBuilder? errorMessage = new MessageBuilder(reply);
                 multiReply
-                    .AddMessage(
-                    new MessageStruct(bot.Uin, bot.Name,
-                    message.Build()
-                    ));
+                .AddMessage(
+                new MessageStruct(bot.Uin, bot.Name,
+                errorMessage.Build()
+                ));
+                return;
+            }
+            reply =
+            "色图来了(º﹃º )\n" +
+            $"标题: {data.title}\n" +
+            $"PID: {data.pid}\n" +
+            $"作者: {data.author}\n" +
+            $"标签: {string.Join(' ', data.tags)}\n" +
+            $"\n";
+            MessageBuilder message = new MessageBuilder(reply).Image(bytes);
+
+            multiReply
+                .AddMessage(
+                new MessageStruct(bot.Uin, bot.Name,
+                message.Build()
+                ));
             //}
 
             //int count = 0;

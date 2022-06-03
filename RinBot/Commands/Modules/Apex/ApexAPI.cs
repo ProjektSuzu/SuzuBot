@@ -10,7 +10,7 @@ namespace RinBot.Commands.Modules.Apex
     internal class ApexAPI
     {
         private static readonly string configPath = Path.Combine(BotManager.resourcePath, "ApexProbe/config.json");
-        private static readonly string mapCoverDir = Path.Combine(BotManager.resourcePath, "ApexProbe/covers"); 
+        private static readonly string mapCoverDir = Path.Combine(BotManager.resourcePath, "ApexProbe/covers");
         private ApexConfig config;
 
         #region 单例模式
@@ -68,7 +68,7 @@ namespace RinBot.Commands.Modules.Apex
 
                 default: return name;
             }
-        }        
+        }
 
         public async Task<PlayerStats?> GetPlayerStats(string userId)
         {

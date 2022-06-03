@@ -336,9 +336,9 @@ namespace RinBot.Commands.Modules.Arcaea
                 fontPaint.TextSize = 60;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/GeosansLight-Oblique.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/ark-pixel-12px-latin.otf"));
 
-                mainCanvas.DrawText(playTime.ToString("G"), 600, 585, fontPaint);
+                mainCanvas.DrawText(playTime.ToString("yyyy-MM-dd HH:mm:ss"), 600, 585, fontPaint);
 
                 fontPaint.TextAlign = SKTextAlign.Right;
                 fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/Exo-Regular.ttf"));

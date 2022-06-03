@@ -1192,10 +1192,10 @@ namespace RinBot.Commands.Modules.Arcaea
                 fontPaint.Color = SKColors.White;
                 fontPaint.TextSize = 48;
                 fontPaint.IsAntialias = true;
-                fontPaint.TextAlign = SKTextAlign.Center;
+                fontPaint.TextAlign = SKTextAlign.Left;
                 fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(resourcePath, "fonts/ark-pixel-12px-latin.otf"));
 
-                mainCanvas.DrawText(playTime.ToString("yyyy-MM-dd HH:mm:ss"), 900, 990, fontPaint);
+                mainCanvas.DrawText(playTime.ToString("yyyy-MM-dd HH:mm:ss"), 50, 40, fontPaint);
             }
             #endregion
 

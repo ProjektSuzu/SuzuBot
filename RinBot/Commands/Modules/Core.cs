@@ -387,5 +387,17 @@ namespace RinBot.Commands.Modules
                             .Text($"自动接受已{(BotManager.AutoAccept ? "开启" : "关闭")}"));
             return;
         }
+
+        [GroupMessageCommand("Tesst", new[] { @"^test" }, Permission.Admin)]
+        public void OnTest(Bot bot, GroupMessageEvent messageEvent)
+        {
+            messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"Test"));
+            messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Image(File.ReadAllBytes(Path.Combine(BotManager.resourcePath, "test.jpg"))));
+            return;
+        }
     }
 }

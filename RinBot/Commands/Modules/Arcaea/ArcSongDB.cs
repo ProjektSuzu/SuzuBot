@@ -77,6 +77,15 @@ namespace RinBot.Commands.Modules.Arcaea
                 .Select(a => a.AliasName)
                 .ToList();
         }
+
+        public string GetPackName(string id)
+        {
+            return dbConnection
+                .Table<Pack>()
+                .Where(a => a.Id == id)
+                .Select(a => a.Name)
+                .FirstOrDefault(defaultValue: "");
+        }
     }
 
     [Table("alias")]
@@ -103,6 +112,12 @@ namespace RinBot.Commands.Modules.Arcaea
 
         [Column("bpm")]
         public string BPM { get; set; }
+
+        [Column("set")]
+        public string Set { get; set; }
+
+        [Column("side")]
+        public int Side { get; set; }
 
         [Column("rating_class")]
         public int RatingClass { get; set; }
@@ -136,5 +151,15 @@ namespace RinBot.Commands.Modules.Arcaea
             else
                 return counter.ToString();
         }
+    }
+
+    [Table("packages")]
+    internal class Pack
+    {
+        [Column("id")]
+        public string Id { get; set; }
+
+        [Column("name")]
+        public string Name { get; set; }
     }
 }

@@ -50,6 +50,7 @@ namespace RinBot.Commands.Modules.Arcaea
                     }
 
                 case "best":
+                case "info":
                     {
                         OnSongBest(bot, messageEvent, args);
                         break;
@@ -63,7 +64,6 @@ namespace RinBot.Commands.Modules.Arcaea
                     }
 
                 case "song":
-                case "info":
                     {
                         OnSongInfo(bot, messageEvent, args);
                         break;
@@ -548,10 +548,13 @@ namespace RinBot.Commands.Modules.Arcaea
             sid = songs.First().SongID;
             var nameEN = songs.First().NameEN;
             var bpm = songs.First().BPM;
+            var pack = ArcSongDB.Instance.GetPackName(songs.First().Set);
+            var side = songs.First().Side == 0 ? "光芒侧" : "纷争侧";
 
             reply =
                 $"曲名: {nameEN}\n" +
                 $"BPM: {bpm}\n" +
+                $"{pack} ({side})\n" +
                 $"  PST/PRS/FTR{(songs.Count > 3 ? "/BYD" : "")}\n";
 
             reply += $"难度: {String.Join('/', songs.Select(x => x.GetDifficultyFriendly()).ToList())}\n";

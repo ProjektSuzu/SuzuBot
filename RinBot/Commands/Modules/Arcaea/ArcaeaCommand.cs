@@ -69,13 +69,13 @@ namespace RinBot.Commands.Modules.Arcaea
                         break;
                     }
 
-                case "suggest":
-                case "推荐":
-                case "推分":
-                    {
-                        OnSongSuggest(bot, messageEvent, args);
-                        break;
-                    }
+                //case "suggest":
+                //case "推荐":
+                //case "推分":
+                //    {
+                //        OnSongSuggest(bot, messageEvent, args);
+                //        break;
+                //    }
 
                 case "r":
                 case "recent":

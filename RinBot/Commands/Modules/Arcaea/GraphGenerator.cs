@@ -659,7 +659,7 @@ namespace RinBot.Commands.Modules.Arcaea
             #region 绘制信息框和PTT信息
             string b30AVG = b30Result.content.best30_avg.ToString("0.0000");
             string r10AVG = b30Result.content.recent10_avg.ToString("0.0000");
-            string maxEST = ((b30Result.content.best30_avg + b30Result.content.recent10_avg) / 2).ToString("0.0000");
+            string maxEST = ((b30Result.content.best30_avg + (b30Result.content.best30_list.Take(10).Sum(x => x.rating) / 10)) / 2).ToString("0.0000");
             using (SKPaint fontPaint = new SKPaint())
             {
                 SKBitmap infoBorad = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(resourcePath, "res_scoresection_beyond.png")));

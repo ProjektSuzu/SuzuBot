@@ -5,6 +5,7 @@ using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using RinBot.Core.Attributes.Command.Modules;
 using RinBot.Core.Attributes.CommandSet;
+using RinBot.Utils;
 
 namespace RinBot.Commands.Modules.Apex
 {
@@ -35,6 +36,11 @@ namespace RinBot.Commands.Modules.Apex
                     case "冲猎":
                     case "猎杀":
                         OnApexPredatorRequirement(bot, messageEvent, newArgs);
+                        return;
+
+                    case "map-rotation":
+                    case "地图轮换":
+                        OnMapRotation(bot, messageEvent);
                         return;
 
 
@@ -214,6 +220,11 @@ namespace RinBot.Commands.Modules.Apex
                 .Text(reply)
             );
             return;
+        }
+
+        public void OnMapRotation(Bot bot, GroupMessageEvent messageEvent)
+        {
+            messageEvent.Reply(bot, new MessageBuilder().Image(ApexAPI.Instance.GetMapRotationImg()));
         }
 
         string GetRankName(string rank)

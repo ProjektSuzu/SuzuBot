@@ -703,9 +703,9 @@ namespace RinBot.Commands.Modules.Arcaea
             #endregion
 
             SKBitmap image = SKBitmap.FromImage(surface.Snapshot());
-            SKBitmap scaledImage = new SKBitmap((int)(image.Width * 0.75), (int)(image.Height * 0.75));
+            SKBitmap scaledImage = new SKBitmap((int)(image.Width * 0.6), (int)(image.Height * 0.6));
             image.ScalePixels(scaledImage, SKFilterQuality.Medium);
-            byte[] data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 80).ToArray();
+            byte[] data = scaledImage.Encode(SKEncodedImageFormat.Jpeg, 70).ToArray();
             surface.Dispose();
             mainCanvas.Dispose();
             scaledImage.Dispose();

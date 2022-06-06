@@ -28,6 +28,7 @@
     <PackageReference Include="SkiaSharp" Version="2.88.1-preview.1" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.1-preview.1" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1-preview.1" />
+    <PackageReference Include="SkiaSharp.QrCode" Version="0.6.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
   </ItemGroup>
 

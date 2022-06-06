@@ -11,6 +11,8 @@ using RinBot.Utils;
 using RinBot.Utils.BuildStamp;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using SkiaSharp.QrCode;
+using SkiaSharp;
 
 namespace RinBot.Commands.Modules
 {
@@ -388,15 +390,31 @@ namespace RinBot.Commands.Modules
             return;
         }
 
-        //[GroupMessageCommand("Tesst", new[] { @"^test" }, Permission.Admin)]
+        //[GroupMessageCommand("Test", new[] { @"^test" }, Permission.Admin)]
         //public void OnTest(Bot bot, GroupMessageEvent messageEvent)
         //{
+        //    var image = ImageChain.Create(File.ReadAllBytes(Path.Combine(BotManager.resourcePath, "test.png")));
+        //    bot.UploadGroupImage(image, messageEvent.GroupUin).Wait();
+        //    byte[]? bytes = null;
+        //    using (var generator = new QRCodeGenerator())
+        //    {
+        //        var qr = generator.CreateQrCode(image.ImageUrl, ECCLevel.M);
+        //        var info = new SKImageInfo(512, 512);
+        //        using (var surface = SKSurface.Create(info))
+        //        {
+        //            var canvas = surface.Canvas;
+        //            canvas.Render(qr, info.Width, info.Height);
+
+        //            using (var qrImage = surface.Snapshot())
+        //            using (var data = qrImage.Encode(SKEncodedImageFormat.Png, 100))
+        //            {
+        //                bytes = data.ToArray();
+        //            }
+        //        }
+        //    }
         //    messageEvent.Reply(bot, new MessageBuilder()
-        //                    .Add(ReplyChain.Create(messageEvent.Message))
-        //                    .Text($"Test"));
-        //    messageEvent.Reply(bot, new MessageBuilder()
-        //                    .Add(ReplyChain.Create(messageEvent.Message))
-        //                    .Image(File.ReadAllBytes(Path.Combine(BotManager.resourcePath, "test.jpg"))));
+        //        .Add(ReplyChain.Create(messageEvent.Message))
+        //        .Image(bytes));
         //    return;
         //}
     }

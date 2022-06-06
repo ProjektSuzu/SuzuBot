@@ -189,7 +189,7 @@ namespace RinBot.Commands.Modules
                         canvas.Render(qr, info.Width, info.Height);
 
                         using (var qrImage = surface.Snapshot())
-                        using (var encode = qrImage.Encode(SKEncodedImageFormat.Png, 100))
+                        using (var encode = qrImage.Encode(SKEncodedImageFormat.Jpeg, 80))
                         {
                             bytes = encode.ToArray();
                         }
@@ -205,16 +205,17 @@ namespace RinBot.Commands.Modules
                     ));
             }
 
-            int count = 0;
+            //int count = 0;
             foreach (var data in result.data)
             {
-                Task? task = new Task(() => DownloadPic(data));
-                task.Start();
-                tasks.Add(task);
-                count++;
+                //Task? task = new Task(() => DownloadPic(data));
+                //task.Start();
+                //tasks.Add(task);
+                //count++;
+                DownloadPic(data);
             }
 
-            Task.WaitAll(tasks.ToArray());
+            //Task.WaitAll(tasks.ToArray());
             //cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
             //cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * count));
 

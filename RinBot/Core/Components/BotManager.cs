@@ -46,7 +46,7 @@ namespace RinBot.Core.Components
         {
             return new BotConfig
             {
-                EnableAudio = true,
+                //EnableAudio = true,
                 TryReconnect = true,
                 HighwayChunkSize = 1024000,
                 //CustomHost = "msfwifi.3g.qq.com:8080",

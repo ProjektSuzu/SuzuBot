@@ -64,7 +64,7 @@ namespace RinBot.Commands.Modules.Arcaea
                         info.B30Json = response.Content.ReadAsStringAsync().Result;
                         info.PTT = result.content.account_info.rating;
                         info.LastUpdate = DateTime.Now;
-                        if (info.RecordJson != null && info.RecordJson != "")
+                        if (info.RecordJson != null && info.RecordJson != "" && result.content.account_info.rating > 0)
                         {
                             var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
                             if (records != null && records.Count > 0)
@@ -153,7 +153,7 @@ namespace RinBot.Commands.Modules.Arcaea
                     {
                         info.PTT = result.content.account_info.rating;
                         info.LastUpdate = DateTime.Now;
-                        if (info.RecordJson != null && info.RecordJson != "")
+                        if (info.RecordJson != null && info.RecordJson != "" && result.content.account_info.rating > 0)
                         {
                             var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
                             if (records != null && records.Count > 0)

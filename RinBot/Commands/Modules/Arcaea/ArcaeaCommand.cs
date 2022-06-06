@@ -86,7 +86,13 @@ namespace RinBot.Commands.Modules.Arcaea
 
                 case "chart":
                     {
-                        OnChart(bot, messageEvent);
+                        OnChartPreview(bot, messageEvent, args);
+                        break;
+                    }
+
+                case "test":
+                    {
+                        OnTest(bot, messageEvent);
                         break;
                     }
 
@@ -239,7 +245,82 @@ namespace RinBot.Commands.Modules.Arcaea
             return;
         }
 
-        private void OnChart(Bot bot, GroupMessageEvent messageEvent)
+        private void OnChartPreview(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            List<string>? songName = new List<string>();
+            int difficulty = -1;
+            while (args.Count > 0)
+            {
+                string? arg = args[0];
+                args.RemoveAt(0);
+
+                string? argUpper = arg.ToUpper();
+
+                switch (argUpper)
+                {
+                    case "PST":
+                        difficulty = 0;
+                        break;
+
+                    case "PRS":
+                        difficulty = 1;
+                        break;
+
+                    case "FTR":
+                        difficulty = 2;
+                        break;
+
+                    case "BYD":
+                        difficulty = 3;
+                        break;
+
+                    default:
+                        songName.Add(arg);
+                        break;
+                }
+            }
+            string? sid = string.Join(' ', songName);
+
+            if (difficulty == -1)
+            {
+                reply = $"错误: 缺少参数: <PST/PRS/FTR/BYD>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            if (sid == "")
+            {
+                reply = $"错误: 缺少参数: <song>.";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            var songs = ArcSongDB.Instance.TryGetSong(sid);
+            if (songs.Count <= 0)
+            {
+                reply = $"错误: 找不到歌曲: \"{sid}\"";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+            sid = songs[0].SongID;
+
+            byte[]? bytes = aua.GetSongChartPreview(sid, difficulty).Result;
+            if (bytes == null)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text("错误: 无法生成预览图"));
+                return;
+            }
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Image(bytes)
+            );
+        }
+
+        private void OnTest(Bot bot, GroupMessageEvent messageEvent)
         {
             string? reply = "";
             ArcaeaUserInfo? info;
@@ -259,12 +340,21 @@ namespace RinBot.Commands.Modules.Arcaea
                 .Text("收到, 正在处理成绩图...")
                 );
 
-            var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
-
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+            try
+            {
+                var records = JsonConvert.DeserializeObject<List<PttRecord>>(info.RecordJson);
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .Add(ReplyChain.Create(messageEvent.Message))
                     .Image(GraphGenerator.Instance.GeneratePttChart(records))
-                    );
+                );
+            }
+            catch (Exception e)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text($"错误: 没有找到记录的PTT信息")
+                );
+            }
             return;
         }
 
@@ -741,7 +831,17 @@ namespace RinBot.Commands.Modules.Arcaea
                 return;
             }
 
-            ArcaeaUserInfo? newInfo = new ArcaeaUserInfo() { UserName = result.content.account_info.name, UserCode = result.content.account_info.code, B30Json = "" };
+            ArcaeaUserInfo? newInfo = arcUserDB.GetByUserCode(result.content.account_info.code);
+            if (newInfo == null)
+            {
+                newInfo = new ArcaeaUserInfo()
+                {
+                    UserName = result.content.account_info.name,
+                    UserCode = result.content.account_info.code,
+                    B30Json = ""
+                };
+            }
+
             ArcaeaBindInfo newBind = new ArcaeaBindInfo() { Uin = messageEvent.MemberUin, UserCode = newInfo.UserCode };
             arcUserDB.UpdateUserInfo(newInfo);
             arcUserDB.UpdateBind(newBind);

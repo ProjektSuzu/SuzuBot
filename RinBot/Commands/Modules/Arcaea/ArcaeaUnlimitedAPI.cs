@@ -283,6 +283,26 @@ namespace RinBot.Commands.Modules.Arcaea
             }
         }
 
+        public async Task<byte[]?> GetSongChartPreview(string sid, int difficulty)
+        {
+            try
+            {
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/preview?songid={sid}&difficulty={difficulty}").Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+                else
+                {
+                    return response.Content.ReadAsByteArrayAsync().Result;
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
 
         private class AUAConfig
         {

@@ -35,12 +35,12 @@ namespace RinBot.Commands.Modules.Arcaea
                 return null;
         }
 
-        public ArcaeaBindInfo GetBindByUin(uint uin)
+        public ArcaeaBindInfo? GetBindByUin(uint uin)
         {
             return dbConnection.Table<ArcaeaBindInfo>().FirstOrDefault(x => x.Uin == uin);
         }
 
-        public ArcaeaUserInfo GetByUserCode(string usercode)
+        public ArcaeaUserInfo? GetByUserCode(string usercode)
         {
             return dbConnection.Table<ArcaeaUserInfo>().FirstOrDefault(x => x.UserCode == usercode);
         }

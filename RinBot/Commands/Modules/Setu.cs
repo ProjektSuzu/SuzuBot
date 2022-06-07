@@ -170,7 +170,7 @@ namespace RinBot.Commands.Modules
                     return;
                 }
                 reply =
-                "色图来了(º﹃º )\n\n" +
+                "(º﹃º )色图来了\n\n" +
                 $"标题: {data.title}\n" +
                 $"PID: {data.pid}\n" +
                 $"作者: {data.author}\n" +

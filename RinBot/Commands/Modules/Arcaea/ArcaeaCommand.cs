@@ -787,7 +787,7 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 var info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
                 reply = "错误: 当前QQ号已存在一个绑定的记录.\n" +
-                    "如需更换绑定, 请先使用 /arc unbind 解绑." +
+                    "如需更换绑定, 请先使用 /arc unbind 解绑.\n" +
                     $"U{bind.Uin} => {info.UserName}({info.UserCode}).";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;

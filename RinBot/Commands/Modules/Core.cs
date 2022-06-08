@@ -9,10 +9,10 @@ using RinBot.Core.Attributes.CommandSet;
 using RinBot.Core.Components;
 using RinBot.Utils;
 using RinBot.Utils.BuildStamp;
+using SkiaSharp;
+using SkiaSharp.QrCode;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using SkiaSharp.QrCode;
-using SkiaSharp;
 
 namespace RinBot.Commands.Modules
 {

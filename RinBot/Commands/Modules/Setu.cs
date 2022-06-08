@@ -7,9 +7,9 @@ using Newtonsoft.Json;
 using NLog;
 using RinBot.Core.Attributes.Command.Modules;
 using RinBot.Core.Attributes.CommandSet;
-using System.Net.Http.Headers;
 using SkiaSharp;
 using SkiaSharp.QrCode;
+using System.Net.Http.Headers;
 
 namespace RinBot.Commands.Modules
 {

@@ -25,17 +25,9 @@ namespace RinBot.Commands.Modules
 
         private static readonly string TAG = "CORECMD";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
-        public string Introduction =>
-            $"[自我介绍]\n" +
-            $"这里是铃, 是基于 .NET 下的 Konata 框架\n" +
-            $"由 AkulaKirov 开发和维护的机器人\n" +
-            $"如果想要使用铃, 请使用 \"/\" \"铃酱\" 或者 At 的方式, 并加上想要调用的命令即可\n" +
-            $"目前铃还有很多需要完善的地方, 如果有好的建议可以加入 RinBot 认领群(955578812)进行讨论\n" +
-            $"或者使用 /反馈 加上想要反馈的内容就可以了\n" +
-            $"期待今后和你们共度的时光\n" +
-            $"☆ ～('▽^人)";
 
         public string Announcement =
+            $"[RinBot] {RinBuildStamp.Version}\n" + 
             "目前所有使用帮助已经移动到网页服务\n" +
             "请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
 
@@ -49,10 +41,7 @@ namespace RinBot.Commands.Modules
         [GroupMessageCommand("帮助", new[] { @"^help", @"^帮助" })]
         public void OnHelp(Bot bot, GroupMessageEvent messageEvent)
         {
-            MultiMsgChain multiReply = MultiMsgChain.Create();
-            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Introduction).Build()));
-            multiReply.AddMessage(new MessageStruct(bot.Uin, bot.Name, new MessageBuilder(Announcement).Build()));
-            messageEvent.Reply(bot, new MessageBuilder(multiReply));
+            messageEvent.Reply(bot, new MessageBuilder(Announcement));
         }
 
         [GroupMessageCommand("反馈", new[] { @"^feedback\s?([\s\S]+)?", @"^反馈\s?([\s\S]+)?" })]

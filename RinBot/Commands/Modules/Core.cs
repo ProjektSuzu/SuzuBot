@@ -67,36 +67,6 @@ namespace RinBot.Commands.Modules
                 .Text("已收到你的反馈(≧ω≦)/"));
         }
 
-        [GroupMessageCommand("公告", new[] { @"^announcement\s?([\s\S]+)?", @"^公告\s?([\s\S]+)?" }, Permission.Admin)]
-        public void OnAnnouncement(Bot bot, GroupMessageEvent messageEvent, List<string> args)
-        {
-            if (args.Count == 0)
-            {
-                messageEvent.Reply(bot, new MessageBuilder()
-                    .Add(ReplyChain.Create(messageEvent.Message))
-                    .Text("忘写公告内容啦o(*≧д≦)o!!")
-                    );
-                return;
-            }
-
-            string rawMessage = messageEvent.Message.Chain.ToString();
-            rawMessage = rawMessage.Split("announcement", 2).Last();
-            rawMessage = rawMessage.Split("公告", 2).Last();
-            rawMessage = "[开发者公告]\n" + rawMessage.Trim();
-
-            var groupList = bot.GetGroupList(true).Result;
-            int count = 0;
-            for (; count < groupList.Count; count++)
-            {
-                var uin = groupList[count].Uin;
-                bot.SendGroupMessage(uin, MessageBuilder.Eval(rawMessage + $"\n\n{count + 1}/{groupList.Count}"));
-            }
-
-            messageEvent.Reply(bot, new MessageBuilder()
-                .Add(ReplyChain.Create(messageEvent.Message))
-                .Text($"已通知了 {count} 个群"));
-        }
-
         [GroupMessageCommand("命令集热重载", new[] { @"^reload", @"^重载" }, Permission.Admin)]
         public void OnReload(Bot bot, GroupMessageEvent messageEvent)
         {

@@ -172,10 +172,10 @@ namespace RinBot.Commands.Modules
                 reply =
                 "(º﹃º )色图来了\n\n" +
                 $"标题: {data.title}\n" +
-                $"PID: {data.pid}\n" +
                 $"作者: {data.author}\n" +
-                $"标签: {string.Join(' ', data.tags)}\n" +
-                $"\n";
+                $"PID: {data.pid}\n" +
+                $"标签: {string.Join(' ', data.tags)}\n\n" +
+                $"请扫描二维码查看哦\n";
 
                 var image = ImageChain.Create(bytes);
                 bot.UploadGroupImage(image, messageEvent.GroupUin).Wait();

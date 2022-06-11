@@ -377,6 +377,6 @@ namespace RinBot.Commands.Modules
                 .Image(bytes));
             return;
         }
-    }
 #endif
+    }
 }

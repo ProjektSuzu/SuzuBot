@@ -349,6 +349,7 @@ namespace RinBot.Commands.Modules
             return;
         }
 
+#if DEBUG
         [GroupMessageCommand("Test", new[] { @"^test" }, Permission.Admin)]
         public void OnTest(Bot bot, GroupMessageEvent messageEvent)
         {
@@ -377,4 +378,5 @@ namespace RinBot.Commands.Modules
             return;
         }
     }
+#endif
 }

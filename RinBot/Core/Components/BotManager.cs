@@ -48,7 +48,7 @@ namespace RinBot.Core.Components
             {
                 //EnableAudio = true,
                 TryReconnect = true,
-                HighwayChunkSize = 2048000,
+                HighwayChunkSize = 65535,
                 CustomHost = "msfwifi.3g.qq.com:8080",
                 Protocol = OicqProtocol.Android,
             };

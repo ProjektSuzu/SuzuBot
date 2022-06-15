@@ -48,6 +48,16 @@ namespace RinBot.Commands.Modules
             return result;
         }
 
+        [GroupMessageCommand("二次元图", new[] { @"^acg", @"^二次元" })]
+        public void OnACGPic(Bot bot, GroupMessageEvent messageEvent)
+        {
+            var url = @"https://www.loliapi.com/acg/";
+            var bytes = httpClient.GetAsync(url).Result.Content.ReadAsByteArrayAsync().Result;
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Image(bytes));
+        }
+
         [GroupMessageCommand("色图", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
@@ -147,7 +157,6 @@ namespace RinBot.Commands.Modules
 
             MultiMsgChain multiReply = MultiMsgChain.Create();
             HttpClient httpClient = new HttpClient();
-            List<Task> tasks = new List<Task>();
             //var data = result.data.First();
 
             void DownloadPic(SetuResult.Data data)
@@ -205,17 +214,24 @@ namespace RinBot.Commands.Modules
                     ));
             }
 
-            //int count = 0;
+            //List<Task> tasks = new List<Task>();
+            //foreach (var data in result.data)
+            //{
+            //    Task? task = new Task(() => DownloadPic(data));
+            //    //task.Start();
+            //    //tasks.Add(task);
+            //    //count++;
+            //    //DownloadPic(data);
+            //}
+            //Task.WaitAll(tasks.ToArray());
+
+            List<Action> actions = new List<Action>();
             foreach (var data in result.data)
             {
-                Task? task = new Task(() => DownloadPic(data));
-                //task.Start();
-                //tasks.Add(task);
-                //count++;
-                //DownloadPic(data);
+                actions.Add(() => DownloadPic(data));
             }
+            Parallel.Invoke(actions.ToArray());
 
-            Task.WaitAll(tasks.ToArray());
             //cooldownList.RemoveAll(x => x.Key == messageEvent.GroupUin);
             //cooldownList.Add(new KeyValuePair<uint, DateTime>(messageEvent.GroupUin, DateTime.Now + cooldown * count));
 

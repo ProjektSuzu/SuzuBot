@@ -9,6 +9,7 @@ using RinBot.Core.Attributes.CommandSet;
 using RinBot.Core.Components;
 using RinBot.Utils;
 using RinBot.Utils.BuildStamp;
+using RinBot.Utils.Database.Tables;
 using SkiaSharp;
 using SkiaSharp.QrCode;
 using System.Diagnostics;
@@ -337,6 +338,52 @@ namespace RinBot.Commands.Modules
                     return;
                 }
             }
+        }
+
+        [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
+        public void OnInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var reply = "";
+            uint uin = messageEvent.MemberUin;
+
+            if (args.Count > 0)
+            {
+                if(!uint.TryParse(args.First(), out uin))
+                {
+                    var chain = MessageBuilder.Eval(args.First()).Build().GetChain<AtChain>();
+                    if (chain == null)
+                    {
+                        reply = $"错误: 未指定的对象.";
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                        return;
+                    }
+                    else
+                    {
+                        uin = chain.AtUin;
+                    }
+                }
+            }
+
+            UserInfo? info = UserInfoManager.GetUserInfo(uin);
+            //应该不会 但是以防万一
+            if (info == null)
+            {
+                reply = $"错误: 找不到用户: \"U{uin}\".";
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                return;
+            }
+
+            reply =
+                $"[UserInfo]用户信息" + "\n" +
+                $"用户名: {info.uin}" + "\n" +
+                $"内存: {UserInfoManager.CoinToString(info.coin)}" + "\n" +
+                $"等级: {info.level}" + "\n" +
+                $"经验: {info.exp} exp\n" +
+                $"距离下一等级还需经验: {UserInfoManager.LevelToExp(info.level) - info.exp} exp";
+
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                .Add(ReplyChain.Create(messageEvent.Message))
+                .Text(reply));
         }
 
         [GroupMessageCommand("自动同意请求", new[] { @"^auto-accept", @"^自动同意" }, Permission.Admin)]

@@ -8,7 +8,13 @@ namespace RinBot.Utils.Database.Tables
 
         public static int LevelToExp(int level)
         {
-            return level * (level + 5) * 10;
+            //return level * (level + 5) * 10;
+            return 5 * (int)Math.Pow(level, 2);
+        }
+
+        public static int ExpToLevel(int exp)
+        {
+            return (int)Math.Floor(Math.Sqrt(exp / 5));
         }
 
         public static string CoinToString(uint coin)
@@ -73,7 +79,7 @@ namespace RinBot.Utils.Database.Tables
         [Column("coin")]
         public uint coin { get; set; }
 
-        [Column("level")]
+        //[Column("level")]
         public int level { get; set; }
 
         [Column("exp")]

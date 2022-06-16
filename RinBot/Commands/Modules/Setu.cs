@@ -24,6 +24,8 @@ namespace RinBot.Commands.Modules
         private static List<KeyValuePair<uint, DateTime>> cooldownList = new();
         private static readonly TimeSpan cooldown = TimeSpan.FromSeconds(10);
 
+        public int setuLimit = 100;
+
         private HttpClient httpClient = new HttpClient();
         public override void OnInit() { }
 
@@ -108,11 +110,11 @@ namespace RinBot.Commands.Modules
                                 return;
                             }
 
-                            if (num > 10)
+                            if (num > setuLimit)
                             {
                                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                                     .Add(ReplyChain.Create(messageEvent.Message))
-                                    .Text($"不可以色色!\n最多只能获取10张色图哦"));
+                                    .Text($"不可以色色!\n最多只能获取{setuLimit}张色图哦"));
                                 return;
                             }
                             break;

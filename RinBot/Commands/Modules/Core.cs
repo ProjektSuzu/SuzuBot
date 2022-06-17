@@ -340,6 +340,29 @@ namespace RinBot.Commands.Modules
             }
         }
 
+        [GroupMessageCommand("系统控制", @"^systemctl\s?([\s\S]+)?", Permission.Admin)]
+        public void OnSystemctl(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            if (args.Count == 0)
+            {
+                messageEvent.Reply(bot, new MessageBuilder("Invalid Argument."));
+                return;
+            }
+            var arg = args.First();
+            switch (arg)
+            { 
+                case "reboot":
+                    messageEvent.Reply(bot, new MessageBuilder("RinBot Reboot."));
+                    Logger.Warn("RinBot Reboot.");
+                    Environment.Exit(0);
+                    return;
+
+                default:
+                    messageEvent.Reply(bot, new MessageBuilder("Invalid Argument."));
+                    return;
+            }
+        }
+
         [GroupMessageCommand("用户信息", new[] { @"^info\s?([\s\S]+)?", @"^信息\s?([\s\S]+)?" })]
         public void OnInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
@@ -376,7 +399,8 @@ namespace RinBot.Commands.Modules
             reply =
                 $"[UserInfo]用户信息" + "\n" +
                 $"用户名: {info.uin}" + "\n" +
-                $"内存: {UserInfoManager.CoinToString(info.coin)}" + "\n" +
+                $"内存: {UserInfoManager.CoinToString(info.coin)}" + "\n‘" +
+                $"好感度: {info.favorability}" + "\n" +
                 $"等级: {info.level}" + "\n" +
                 $"经验: {info.exp} exp\n" +
                 $"距离下一等级还需经验: {UserInfoManager.LevelToExp(info.level) - info.exp} exp";

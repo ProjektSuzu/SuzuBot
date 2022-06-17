@@ -9,17 +9,17 @@ using RinBot.Core.Components;
 
 namespace RinBot.Commands.Modules
 {
-    [CommandSet("戳一戳", "com.akulak.poke")]
-    internal class Poke : BaseCommand
+    [CommandSet("互动", "com.akulak.interact")]
+    internal class Interact : BaseCommand
     {
-        private List<string> replys;
+        private List<string> pokeReplys;
 
         private string imgDir;
 
         public override void OnInit()
         {
             string? json = File.ReadAllText(BotManager.resourcePath + "/pokeReply.json");
-            replys = JsonConvert.DeserializeObject<List<string>>(json) ?? new();
+            pokeReplys = JsonConvert.DeserializeObject<List<string>>(json) ?? new();
 
             imgDir = Path.Combine(BotManager.resourcePath, "image");
         }
@@ -32,8 +32,9 @@ namespace RinBot.Commands.Modules
                 return;
             }
 
-            string? reply = replys.ElementAt(new Random().Next(replys.Count()));
+            string? reply = pokeReplys.ElementAt(new Random().Next(pokeReplys.Count()));
             reply = reply.Replace("{uin}", pokeEvent.OperatorUin.ToString());
+            reply = reply.Replace("{name}", bot.GetGroupMemberInfo(pokeEvent.GroupUin, pokeEvent.OperatorUin).Result.NickName);
             reply = reply.Replace("{imgDir}", imgDir);
             try
             {

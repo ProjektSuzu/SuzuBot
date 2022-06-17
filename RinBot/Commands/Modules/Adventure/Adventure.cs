@@ -1,6 +1,5 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
-using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using Newtonsoft.Json;
@@ -9,12 +8,7 @@ using RinBot.Core.Attributes.CommandSet;
 using RinBot.Core.Components;
 using RinBot.Utils;
 using RinBot.Utils.Database.Tables;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using static RinBot.Commands.Modules.Apex.ApexMapRotation.Mode;
 
 namespace RinBot.Commands.Adventure
 {
@@ -73,7 +67,7 @@ namespace RinBot.Commands.Adventure
                 else
                 {
                     int min = int.Parse(valueRange[0]);
-                    int max = int.Parse(valueRange[1]);
+                    int max = int.Parse(valueRange[1]) + 1;
                     value = new Random().Next(min, max);
                 }
                 switch (effect[0])
@@ -109,10 +103,10 @@ namespace RinBot.Commands.Adventure
                     case "fav":
                         {
                             info.favorability += value;
-                            reply.AppendLine($"好感度{(value > 0 ? "增加了" : "减少了")} {(uint)Math.Abs(value)}");
+                            reply.AppendLine($"铃酱对你的好感度{(value > 0 ? "增加了" : "减少了")} {(uint)Math.Abs(value)}");
                             break;
                         }
-                    default:break;
+                    default: break;
                 }
             }
             UserInfoManager.UpdateUserInfo(info);

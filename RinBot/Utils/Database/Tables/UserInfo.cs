@@ -79,14 +79,20 @@ namespace RinBot.Utils.Database.Tables
         [Column("coin")]
         public uint coin { get; set; }
 
-        //[Column("level")]
+        [Column("level")]
         public int level { get; set; }
+
+        [Column("favorability")]
+        public int favorability { get; set; }
 
         [Column("exp")]
         public int exp { get; set; }
 
         [Column("last_sign")]
         public DateTime lastSign { get; set; }
+
+        [Column("nextAdventure")]
+        public DateTime nextAdventure { get; set; }
 
         [Column("is_banned")]
         public bool isBanned { get; set; }

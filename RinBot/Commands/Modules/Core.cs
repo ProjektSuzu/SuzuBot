@@ -28,7 +28,7 @@ namespace RinBot.Commands.Modules
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
         public string Announcement =
-            $"[RinBot] {RinBuildStamp.Version}\n" + 
+            $"[RinBot] {RinBuildStamp.Version}\n" +
             "目前所有使用帮助已经移动到网页服务\n" +
             "请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
 
@@ -350,7 +350,7 @@ namespace RinBot.Commands.Modules
             }
             var arg = args.First();
             switch (arg)
-            { 
+            {
                 case "reboot":
                     messageEvent.Reply(bot, new MessageBuilder("RinBot Reboot."));
                     Logger.Warn("RinBot Reboot.");
@@ -371,7 +371,7 @@ namespace RinBot.Commands.Modules
 
             if (args.Count > 0)
             {
-                if(!uint.TryParse(args.First(), out uin))
+                if (!uint.TryParse(args.First(), out uin))
                 {
                     var chain = MessageBuilder.Eval(args.First()).Build().GetChain<AtChain>();
                     if (chain == null)
@@ -399,7 +399,7 @@ namespace RinBot.Commands.Modules
             reply =
                 $"[UserInfo]用户信息" + "\n" +
                 $"用户名: {info.uin}" + "\n" +
-                $"内存: {UserInfoManager.CoinToString(info.coin)}" + "\n‘" +
+                $"内存: {UserInfoManager.CoinToString(info.coin)}" + "\n" +
                 $"好感度: {info.favorability}" + "\n" +
                 $"等级: {info.level}" + "\n" +
                 $"经验: {info.exp} exp\n" +

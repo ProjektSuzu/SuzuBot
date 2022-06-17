@@ -1,23 +1,17 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
-using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using RinBot.Core.Attributes.Command.Modules;
 using RinBot.Core.Attributes.CommandSet;
 using RinBot.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Commands.Modules
 {
     [CommandSet("随机", "com.akulak.random")]
     internal class RandomStuff : BaseCommand
     {
-        [GroupMessageCommand("随机选择", new[] { @"^choose\s?([\s\S]+)?" , @"^帮我选\s?([\s\S]+)?" })]
+        [GroupMessageCommand("随机选择", new[] { @"^choose\s?([\s\S]+)?", @"^帮我选\s?([\s\S]+)?" })]
         public void OnChoose(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             if (args.Count == 0)

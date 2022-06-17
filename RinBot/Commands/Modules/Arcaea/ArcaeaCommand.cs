@@ -73,7 +73,7 @@ namespace RinBot.Commands.Modules.Arcaea
                 //case "推荐":
                 //case "推分":
                 //    {
-                //        OnSongSuggest(bot, messageEvent, args);
+                //        OnSongSuggest(bot, messageEvent);
                 //        break;
                 //    }
 
@@ -485,21 +485,10 @@ namespace RinBot.Commands.Modules.Arcaea
             return;
         }
 
-        private async void OnSongSuggest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        private async void OnSongSuggest(Bot bot, GroupMessageEvent messageEvent)
         {
             string? reply = "";
             string? usercode = "";
-            float min = 0.001f;
-
-            if (args.Count > 0)
-            {
-                if (!float.TryParse(args[0], out min) || min < 0)
-                {
-                    reply = $"错误: 参数非法: \"{args[0]}\" [<min>].";
-                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
-                    return;
-                }
-            }
 
             ArcaeaUserInfo? info = arcUserDB.GetInfoByUin(messageEvent.MemberUin);
             if (info == null)
@@ -517,9 +506,9 @@ namespace RinBot.Commands.Modules.Arcaea
 
             B30Result b30;
 
-            reply =
-                $"处理中 请稍候..";
-            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
+            //reply =
+            //    $"处理中 请稍候..";
+            //bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
 
             try
             {
@@ -561,55 +550,11 @@ namespace RinBot.Commands.Modules.Arcaea
                 return;
             }
 
-            SongSuggester.SuggestResult? result = SongSuggester.Suggest(b30, min);
+            var result = SongSuggester.CalcSongList(b30.content);
 
-            if (result == null)
-            {
-                reply =
-                    $"没有找到适合你的歌曲...";
-                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
-                    .Add(ReplyChain.Create(messageEvent.Message))
-                    .Text(reply));
-                return;
-            }
-
-            string GetScore(SongSuggester.TargetScore score)
-            {
-                switch (score)
-                {
-                    case SongSuggester.TargetScore.S950W:
-                        return "950W";
-
-                    case SongSuggester.TargetScore.S980W:
-                        return "980W";
-
-                    case SongSuggester.TargetScore.S990W:
-                        return "990W";
-
-                    case SongSuggester.TargetScore.S995W:
-                        return "995W";
-
-                    case SongSuggester.TargetScore.S1000W:
-                        return "1000W";
-
-                    default:
-                        return "PM";
-                }
-            }
-
-            reply =
-                    $"推荐歌曲: {result.Song.NameEN}\n" +
-                    $"该歌曲 {result.Difficulty} 难度定数为 {SongSuggester.GetRating(result.Song.SongID, result.Difficulty)}\n" +
-                    $"若你将其推至 {GetScore(result.TargetScore)} 分\n" +
-                    $"预计B30平均值将增加 {result.B30Delta:0.0000}\n" +
-                    $"" +
-                    $"{(result.IsOverRank ? "\n⚠警告: 该曲对你当前PTT有越级风险⚠\n" : "")}" +
-                    $"\n" +
-                    $"B30数据更新时间: {info.LastUpdate:G}";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                 .Add(ReplyChain.Create(messageEvent.Message))
-                .Image(GraphGenerator.Instance.GetCoverImg(result.Song.SongID, result.Difficulty == SongResult.Difficulty.Beyond).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray())
-                .Text(reply));
+                .Text($"{result}"));
             return;
         }
 
@@ -644,7 +589,7 @@ namespace RinBot.Commands.Modules.Arcaea
             reply =
                 $"曲名: {nameEN}\n" +
                 $"BPM: {bpm}\n" +
-                $"{pack} ({side})\n" +
+                $"曲包: {pack} ({side})\n" +
                 $"  PST/PRS/FTR{(songs.Count > 3 ? "/BYD" : "")}\n";
 
             reply += $"难度: {String.Join('/', songs.Select(x => x.GetDifficultyFriendly()).ToList())}\n";

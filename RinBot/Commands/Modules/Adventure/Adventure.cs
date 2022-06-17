@@ -48,7 +48,7 @@ namespace RinBot.Commands.Adventure
                 return;
             }
 
-            info.nextAdventure = DateTime.Now.AddMinutes(30);
+            info.nextAdventure = DateTime.Now.AddMinutes(10);
             var advEvent = advEvents[new Random().Next(advEvents.Count)];
 
             StringBuilder reply = new();

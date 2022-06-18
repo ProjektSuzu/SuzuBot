@@ -481,7 +481,7 @@ namespace RinBot.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?" , @"^give\s?([0-9]+)?" , @"^v我\s?([0-9]+)?" }, Permission.Admin)]
+        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?" , @"^v-me\s?([0-9]+)?" , @"^v我\s?([0-9]+)?" }, Permission.Admin)]
         public void OnGive(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? reply = "";

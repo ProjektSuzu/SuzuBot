@@ -48,7 +48,7 @@ namespace RinBot.Commands.Adventure
                 return;
             }
 
-            info.nextAdventure = DateTime.Now.AddMinutes(10);
+            info.nextAdventure = DateTime.Now.AddMinutes(60);
             var advEvent = advEvents[new Random().Next(advEvents.Count)];
 
             StringBuilder reply = new();
@@ -91,7 +91,7 @@ namespace RinBot.Commands.Adventure
                     case "exp":
                         {
                             info.exp += value;
-                            if (info.exp >= UserInfoManager.LevelToExp(info.level))
+                            while (info.exp >= UserInfoManager.LevelToExp(info.level))
                             {
                                 info.exp -= UserInfoManager.LevelToExp(info.level);
                                 info.level++;

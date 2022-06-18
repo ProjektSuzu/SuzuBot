@@ -39,7 +39,7 @@ namespace RinBot.Commands.Modules
                 info.exp += exp;
                 info.coin += coin;
                 info.lastSign = DateTime.Today;
-                if (info.exp >= UserInfoManager.LevelToExp(info.level))
+                while (info.exp >= UserInfoManager.LevelToExp(info.level))
                 {
                     info.exp -= UserInfoManager.LevelToExp(info.level);
                     info.level++;

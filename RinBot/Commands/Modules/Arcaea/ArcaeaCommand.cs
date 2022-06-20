@@ -771,7 +771,9 @@ namespace RinBot.Commands.Modules.Arcaea
             {
                 reply = $"错误: 未能查找到对应用户信息: {user}.\n" +
                     $"{result.message}.\n" +
-                    $"请检查是否意外的添加了空格和括号.";
+                    $"请检查是否意外的添加了空格和括号.\n" +
+                    $"例如: /arc bind 114514810\n" +
+                    $"/arc bind YajuuSenpai";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply).Add(ReplyChain.Create(messageEvent.Message)));
                 return;
             }

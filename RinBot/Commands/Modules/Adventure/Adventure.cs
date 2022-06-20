@@ -10,117 +10,86 @@ using RinBot.Utils;
 using RinBot.Utils.Database.Tables;
 using System.Text;
 
-namespace RinBot.Commands.Adventure
+namespace RinBot.Commands.Modules.Adventure
 {
-    //虽然内存是写在UserInfoManager里的
-    //但是懒 有空再搬过来
-
     [CommandSet("探险", "com.akulak.adventure")]
     internal class Adventure : BaseCommand
     {
-        private List<AdvEvent> advEvents;
+        private readonly string advStatesPath = Path.Combine(BotManager.configPath, "advStates.json");
+        private Dictionary<uint, AdvState> advStates;
 
         public override void OnInit()
         {
-            string? json = File.ReadAllText(BotManager.resourcePath + "/adventureEvent.json");
-            advEvents = JsonConvert.DeserializeObject<List<AdvEvent>>(json) ?? new();
+            Load();
         }
 
-        [GroupMessageCommand("探险冷却重置", new[] { @"^adventure-reset" }, Permission.Admin)]
-        public void OnAdventureReset(Bot bot, GroupMessageEvent messageEvent)
+        public void Save()
         {
-            var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
-            info.nextAdventure = DateTime.Now;
-            UserInfoManager.UpdateUserInfo(info);
-            messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
-                    .Text("Cooldown Reset."));
-            return;
+            File.WriteAllText(advStatesPath, JsonConvert.SerializeObject(advStates));
         }
 
-        [GroupMessageCommand("探险", new[] { @"^adventure$", @"^探险" })]
+        public void Load()
+        {
+            if (File.Exists(advStatesPath))
+            {
+                advStates = JsonConvert.DeserializeObject<Dictionary<uint, AdvState>>(File.ReadAllText(advStatesPath));
+            }
+            else
+            {
+                advStates = new();
+                Save();
+            }
+        }
+
+        [GroupMessageCommand("探险", new[] { @"^adventure$", @"^探险$" })]
         public void OnAdventure(Bot bot, GroupMessageEvent messageEvent)
         {
             var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
-            if (info.nextAdventure > DateTime.Now)
+            AdvState? advState;
+            
+            //存在进行中的事件链或冷却
+            if (advStates.ContainsKey(messageEvent.MemberUin))
             {
+                advState = advStates[messageEvent.MemberUin];
+                //还在冷却
+                if (advState.CoolDown > DateTime.Now)
+                {
+                    var timeDelta = advState.CoolDown - DateTime.Now;
+                    messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"探险进度冷却中\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}.")); ;
+                    return;
+                }
+            }
+            else
+            {
+                advState = new AdvState()
+                {
+                    CoolDown = DateTime.Now,
+                    Content = "",
+                    NextEventID = ""
+                };
+            }
+            
+            if (advState.NextEventID == "")
+            {
+                advState = AdventureManager.StartNewEvent(ref info);
+                var timeDelta = advState.CoolDown - DateTime.Now;
                 messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
-                    .Text($"你还需要等待 {(int)(info.nextAdventure - DateTime.Now).TotalMinutes} 分钟才能进行下一次探险"));
-                return;
+                        .Text(advState.Content.Replace("{name}", messageEvent.MemberCard))
+                        .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}.")); ;
             }
-
-            info.nextAdventure = DateTime.Now.AddMinutes(60);
-            var advEvent = advEvents[new Random().Next(advEvents.Count)];
-
-            StringBuilder reply = new();
-            reply.AppendLine(advEvent.Content.Replace("{name}", messageEvent.MemberCard) + "\n");
-
-            var effects = advEvent.Effect.Split(';');
-            foreach (var effectStr in effects)
+            else
             {
-                var effect = effectStr.Split(':');
-                var valueRange = effect[1].Split('?');
-                int value = 0;
-                if (valueRange.Count() == 1)
-                {
-                    value = int.Parse(valueRange[0]);
-                }
-                else
-                {
-                    int min = int.Parse(valueRange[0]);
-                    int max = int.Parse(valueRange[1]) + 1;
-                    value = new Random().Next(min, max);
-                }
-                switch (effect[0])
-                {
-                    case "coin":
-                        {
-                            if (value < 0)
-                            {
-                                if (info.coin + value < 0)
-                                    value = (int)-info.coin;
-                                info.coin -= (uint)Math.Abs(value);
-                            }
-                            else
-                            {
-                                info.coin += (uint)value;
-                            }
-                            reply.AppendLine($"内存{(value > 0 ? "增加了" : "减少了")} {(UserInfoManager.CoinToString((uint)Math.Abs(value)))}");
-                            break;
-                        }
-
-                    case "exp":
-                        {
-                            info.exp += value;
-                            while (info.exp >= UserInfoManager.LevelToExp(info.level))
-                            {
-                                info.exp -= UserInfoManager.LevelToExp(info.level);
-                                info.level++;
-                            }
-                            reply.AppendLine($"经验{(value > 0 ? "增加了" : "减少了")} {(uint)Math.Abs(value)} exp");
-                            break;
-                        }
-
-                    case "fav":
-                        {
-                            info.favorability += value;
-                            reply.AppendLine($"铃酱对你的好感度{(value > 0 ? "增加了" : "减少了")} {(uint)Math.Abs(value)}");
-                            break;
-                        }
-                    default: break;
-                }
+                advState = AdventureManager.ExecEvent(advState.NextEventID ,ref info);
+                var timeDelta = advState.CoolDown - DateTime.Now;
+                messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
+                        .Text(advState.Content.Replace("{name}", messageEvent.MemberCard))
+                        .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}.")); ;
             }
+            advStates.Remove(messageEvent.MemberUin);
+            advStates.Add(messageEvent.MemberUin, advState);
             UserInfoManager.UpdateUserInfo(info);
-            messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
-                    .Text(reply.ToString()));
-            return;
+            Save();
         }
-    }
-
-    internal class AdvEvent
-    {
-        [JsonProperty("content")]
-        public string Content;
-        [JsonProperty("effect")]
-        public string Effect;
     }
 }

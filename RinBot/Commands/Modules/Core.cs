@@ -517,31 +517,10 @@ namespace RinBot.Commands.Modules
         }
 
 #if DEBUG
-        [GroupMessageCommand("Test", new[] { @"^test" }, Permission.Admin)]
-        public void OnTest(Bot bot, GroupMessageEvent messageEvent)
+        [GroupMessageCommand("Eval", new[] { @"^eval\s?([0-9]+)?" }, Permission.Admin)]
+        public void OnTest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            var image = ImageChain.Create(File.ReadAllBytes(Path.Combine(BotManager.resourcePath, "test.png")));
-            bot.UploadGroupImage(image, messageEvent.GroupUin).Wait();
-            byte[]? bytes = null;
-            using (var generator = new QRCodeGenerator())
-            {
-                var qr = generator.CreateQrCode(image.ImageUrl, ECCLevel.M);
-                var info = new SKImageInfo(512, 512);
-                using (var surface = SKSurface.Create(info))
-                {
-                    var canvas = surface.Canvas;
-                    canvas.Render(qr, info.Width, info.Height);
-
-                    using (var qrImage = surface.Snapshot())
-                    using (var data = qrImage.Encode(SKEncodedImageFormat.Png, 100))
-                    {
-                        bytes = data.ToArray();
-                    }
-                }
-            }
-            messageEvent.Reply(bot, new MessageBuilder()
-                .Add(ReplyChain.Create(messageEvent.Message))
-                .Image(bytes));
+            messageEvent.Reply(bot, MessageBuilder.Eval(String.Join(' ', args)));
             return;
         }
 #endif

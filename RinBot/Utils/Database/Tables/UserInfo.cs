@@ -88,11 +88,11 @@ namespace RinBot.Utils.Database.Tables
         [Column("exp")]
         public int exp { get; set; }
 
+        [Column("flags")]
+        public string flags { get; set; }
+
         [Column("last_sign")]
         public DateTime lastSign { get; set; }
-
-        [Column("nextAdventure")]
-        public DateTime nextAdventure { get; set; }
 
         [Column("is_banned")]
         public bool isBanned { get; set; }

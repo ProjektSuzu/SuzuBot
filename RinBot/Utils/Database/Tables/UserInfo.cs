@@ -46,7 +46,7 @@ namespace RinBot.Utils.Database.Tables
             }
             return info.flags.Split('|').ToList().Contains(flag);
         }
-        
+
         public static void AddFlag(UserInfo info, string flag)
         {
             if (info.flags == null)

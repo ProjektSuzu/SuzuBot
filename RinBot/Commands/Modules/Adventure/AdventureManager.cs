@@ -2,9 +2,7 @@
 using Microsoft.CodeAnalysis.Scripting;
 using NLog;
 using RinBot.Core.Components;
-using RinBot.Utils.Database;
 using RinBot.Utils.Database.Tables;
-using System.Text;
 
 namespace RinBot.Commands.Modules.Adventure
 {
@@ -47,7 +45,7 @@ namespace RinBot.Commands.Modules.Adventure
             {
                 info = info,
                 state = new AdvState()
-            }; 
+            };
 
             script = script.ContinueWith("Event000();");
             script.RunAsync(data).Wait();

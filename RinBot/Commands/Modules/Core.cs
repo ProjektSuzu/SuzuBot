@@ -10,8 +10,6 @@ using RinBot.Core.Components;
 using RinBot.Utils;
 using RinBot.Utils.BuildStamp;
 using RinBot.Utils.Database.Tables;
-using SkiaSharp;
-using SkiaSharp.QrCode;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -481,7 +479,7 @@ namespace RinBot.Commands.Modules
             return;
         }
 
-        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?" , @"^v-me\s?([0-9]+)?" , @"^v我\s?([0-9]+)?" }, Permission.Admin)]
+        [GroupMessageCommand("打钱", new[] { @"^give\s?([0-9]+)?", @"^v-me\s?([0-9]+)?", @"^v我\s?([0-9]+)?" }, Permission.Admin)]
         public void OnGive(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             string? reply = "";

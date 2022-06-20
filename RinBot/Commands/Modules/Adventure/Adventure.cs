@@ -8,7 +8,6 @@ using RinBot.Core.Attributes.CommandSet;
 using RinBot.Core.Components;
 using RinBot.Utils;
 using RinBot.Utils.Database.Tables;
-using System.Text;
 
 namespace RinBot.Commands.Modules.Adventure
 {
@@ -68,7 +67,7 @@ namespace RinBot.Commands.Modules.Adventure
                     NextEventID = ""
                 };
             }
-            
+
             if (advState.NextEventID == "")
             {
                 advState = AdventureManager.StartNewEvent(ref info);
@@ -79,7 +78,7 @@ namespace RinBot.Commands.Modules.Adventure
             }
             else
             {
-                advState = AdventureManager.ExecEvent(advState.NextEventID ,ref info);
+                advState = AdventureManager.ExecEvent(advState.NextEventID, ref info);
                 var timeDelta = advState.CoolDown - DateTime.Now;
                 messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
                         .Text(advState.Content.Replace("{name}", messageEvent.MemberCard))

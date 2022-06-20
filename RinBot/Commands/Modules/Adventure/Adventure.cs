@@ -46,7 +46,6 @@ namespace RinBot.Commands.Modules.Adventure
         {
             var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
             AdvState? advState;
-            
             //存在进行中的事件链或冷却
             if (advStates.ContainsKey(messageEvent.MemberUin))
             {
@@ -76,7 +75,7 @@ namespace RinBot.Commands.Modules.Adventure
                 var timeDelta = advState.CoolDown - DateTime.Now;
                 messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
                         .Text(advState.Content.Replace("{name}", messageEvent.MemberCard))
-                        .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}.")); ;
+                        .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}."));
             }
             else
             {
@@ -84,12 +83,44 @@ namespace RinBot.Commands.Modules.Adventure
                 var timeDelta = advState.CoolDown - DateTime.Now;
                 messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
                         .Text(advState.Content.Replace("{name}", messageEvent.MemberCard))
-                        .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}.")); ;
+                        .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}."));
             }
             advStates.Remove(messageEvent.MemberUin);
             advStates.Add(messageEvent.MemberUin, advState);
             UserInfoManager.UpdateUserInfo(info);
             Save();
         }
+#if DEBUG
+        [GroupMessageCommand("探险冷却重置", new[] { @"^adventure-reset" })]
+        public void OnAdventureReset(Bot bot, GroupMessageEvent messageEvent)
+        {
+            if (advStates.ContainsKey(messageEvent.MemberUin))
+            {
+                advStates[messageEvent.MemberUin].CoolDown = DateTime.Now;
+            }
+        }
+
+        [GroupMessageCommand("探险触发", new[] { @"^adventure-event\s?([\s\S]+)?" })]
+        public void OnAdventureEvent(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            if (args.Count == 0)
+                return;
+
+            Console.WriteLine(args[0]);
+            var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
+            AdvState? advState;
+
+            advState = AdventureManager.ExecEvent(args[0], ref info);
+            var timeDelta = advState.CoolDown - DateTime.Now;
+            messageEvent.Reply(bot, new MessageBuilder().Add(ReplyChain.Create(messageEvent.Message))
+                    .Text(advState.Content.Replace("{name}", messageEvent.MemberCard))
+                    .Text($"\n\n下一次探险还需要 {((int)timeDelta.TotalMinutes > 0 ? $"{(int)timeDelta.TotalMinutes} 分钟" : $"{(int)timeDelta.TotalSeconds} 秒")}."));
+
+            advStates.Remove(messageEvent.MemberUin);
+            advStates.Add(messageEvent.MemberUin, advState);
+            UserInfoManager.UpdateUserInfo(info);
+            Save();
+        }
+#endif
     }
 }

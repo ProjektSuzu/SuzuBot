@@ -78,26 +78,13 @@ namespace RinBot.Commands.Modules.Adventure
             return events.First().Key;
         }
 
-        public bool HasFlag(string flag)
-        {
-            return info.flags.Split(';').Contains(flag);
-        }
+        public string CoinToString(uint coin) => UserInfoManager.CoinToString(coin);
 
-        public void AddFlag(string flag)
-        {
-            var flags = info.flags.Split(';').ToList();
-            if (!flags.Contains(flag))
-                flags.Append(flag);
-            info.flags = String.Join(';', flags);
-        }
+        public bool HasFlag(string flag) => UserInfoManager.HasFlag(info, flag);
 
-        public void RemoveFlag(string flag)
-        {
-            var flags = info.flags.Split(';').ToList();
-            if (flags.Contains(flag))
-                flags.Remove(flag);
-            info.flags = String.Join(';', flags);
-        }
+        public void AddFlag(string flag) => UserInfoManager.AddFlag(info, flag);
+
+        public void RemoveFlag(string flag) => UserInfoManager.RemoveFlag(info, flag);
     }
 
     public class AdvState

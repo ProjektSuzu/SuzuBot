@@ -37,6 +37,42 @@ namespace RinBot.Utils.Database.Tables
             }
         }
 
+        public static bool HasFlag(UserInfo info, string flag)
+        {
+            if (info.flags == null)
+            {
+                info.flags = "";
+                UpdateUserInfo(info);
+            }
+            return info.flags.Split('|').ToList().Contains(flag);
+        }
+        
+        public static void AddFlag(UserInfo info, string flag)
+        {
+            if (info.flags == null)
+            {
+                info.flags = "";
+                UpdateUserInfo(info);
+            }
+            var flags = info.flags.Split('|').ToList();
+            if (!flags.Contains(flag))
+                flags.Add(flag);
+            info.flags = String.Join('|', flags);
+        }
+
+        public static void RemoveFlag(UserInfo info, string flag)
+        {
+            if (info.flags == null)
+            {
+                info.flags = "";
+                UpdateUserInfo(info);
+            }
+            var flags = info.flags.Split('|').ToList();
+            if (flags.Contains(flag))
+                flags.Remove(flag);
+            info.flags = String.Join('|', flags);
+        }
+
         public static bool UpdateUserInfo(UserInfo info)
         {
             int result = db

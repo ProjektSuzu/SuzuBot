@@ -394,6 +394,14 @@ namespace RinBot.Commands.Modules
                 return;
             }
 
+            while (info.exp >= UserInfoManager.LevelToExp(info.level))
+            {
+                info.exp -= UserInfoManager.LevelToExp(info.level);
+                info.level++;
+            }
+
+            UserInfoManager.UpdateUserInfo(info);
+
             reply =
                 $"[UserInfo]用户信息" + "\n" +
                 $"用户名: {info.uin}" + "\n" +
@@ -516,9 +524,21 @@ namespace RinBot.Commands.Modules
 
 #if DEBUG
         [GroupMessageCommand("Eval", new[] { @"^eval\s?([0-9]+)?" }, Permission.Admin)]
-        public void OnTest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        public void OnEval(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             messageEvent.Reply(bot, MessageBuilder.Eval(String.Join(' ', args)));
+            return;
+        }
+
+        [GroupMessageCommand("Test", new[] { @"^test" }, Permission.Admin)]
+        public void OnTest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            foreach (var member in bot.GetGroupMemberList(955578812, true).Result)
+            {
+                var info = UserInfoManager.GetUserInfo(member.Uin);
+                info.favorability = 100;
+                UserInfoManager.UpdateUserInfo(info);
+            }
             return;
         }
 #endif

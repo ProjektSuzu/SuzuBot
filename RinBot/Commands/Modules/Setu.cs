@@ -207,7 +207,7 @@ namespace RinBot.Commands.Modules
                     }
                 }
 
-                MessageBuilder message = new MessageBuilder(reply).Image(bytes);
+                MessageBuilder message = new MessageBuilder().Text(reply).Image(bytes);
 
                 multiReply
                     .AddMessage(

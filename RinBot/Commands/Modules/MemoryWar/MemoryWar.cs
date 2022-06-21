@@ -120,10 +120,10 @@ namespace RinBot.Commands.Modules.MemoryWar
             {
                 sb.AppendLine($"{memory.attacker} 个战斗单元随时准备出发");
 
-                if ((DateTime.Now - memory.lastWar) < new TimeSpan(1, 0, 0))
+                if ((DateTime.Now - memory.lastWar) < new TimeSpan(0, 30, 0))
                 {
                     sb.AppendLine($"上一次攻击令我们的战斗单元元气大伤 我们还需要一段时间整备");
-                    sb.AppendLine($"预计在 {memory.lastWar.AddHours(1):g} 时整备完毕\n");
+                    sb.AppendLine($"预计在 {memory.lastWar.AddMinutes(30):g} 时整备完毕\n");
                 }
                 else
                 {
@@ -308,11 +308,11 @@ namespace RinBot.Commands.Modules.MemoryWar
             var info = UserInfoManager.GetUserInfo(uin);
             var memory = db.GetUserInfo(uin);
 
-            if ((DateTime.Now - memory.lastWar) < new TimeSpan(1, 0, 0))
+            if ((DateTime.Now - memory.lastWar) < new TimeSpan(0, 30, 0))
             {
                 messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"上一次攻击令我们的战斗单元元气大伤 我们还需要一段时间整备\n预计在 {memory.lastWar.AddHours(1):g} 时可以准备完毕"));
+                            .Text($"上一次攻击令我们的战斗单元元气大伤 我们还需要一段时间整备\n预计在 {memory.lastWar.AddMinutes(30):g} 时可以准备完毕"));
                 return;
             }
 

@@ -475,13 +475,16 @@ namespace RinBot.Commands.Modules.MemoryWar
                 targetInfo.coin -= loot;
                 info.coin += loot;
                 sb.AppendLine($"我们的 {memory.attacker} 个战斗单元成功洗劫了对方 并且带走了 {UserInfoManager.CoinToString(loot)}");
-                
-                sb.AppendLine($"在战斗单元驶离后 {targetName} 启动了紧急防御系统");
             }
             else
             {
                 memory.isProtected = true;
                 sb.AppendLine($"最后一架战斗单元在被摧毁前传来战败的信息 我们启动了紧急防御系统");
+            }
+
+            if (targetMemory.attacker == 0)
+            {
+                sb.AppendLine($"在战斗单元消耗殆尽后 {targetName} 启动了紧急防御系统");
             }
 
             memory.lastWar = DateTime.Now;

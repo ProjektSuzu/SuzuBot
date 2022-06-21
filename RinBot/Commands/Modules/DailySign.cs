@@ -33,7 +33,7 @@ namespace RinBot.Commands.Modules
             }
             else
             {
-                uint coin = (uint)new Random().Next(1000, 10001);
+                int coin = new Random().Next(1000, 10001);
                 int exp = new Random().Next(5, 51);
 
                 info.exp += exp;

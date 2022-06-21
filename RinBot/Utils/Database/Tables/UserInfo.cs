@@ -4,7 +4,7 @@ namespace RinBot.Utils.Database.Tables
 {
     public static class UserInfoManager
     {
-        private static readonly SQLiteConnection db = DatabaseManager.Instance.dbConnection;
+        internal static readonly SQLiteConnection db = DatabaseManager.Instance.dbConnection;
 
         public static int LevelToExp(int level)
         {
@@ -17,7 +17,7 @@ namespace RinBot.Utils.Database.Tables
             return (int)Math.Floor(Math.Sqrt(exp / 5));
         }
 
-        public static string CoinToString(uint coin)
+        public static string CoinToString(int coin)
         {
             if (coin < 1000)
             {
@@ -113,7 +113,7 @@ namespace RinBot.Utils.Database.Tables
         public uint uin { get; set; }
 
         [Column("coin")]
-        public uint coin { get; set; }
+        public int coin { get; set; }
 
         [Column("level")]
         public int level { get; set; }

@@ -469,19 +469,19 @@ namespace RinBot.Commands.Modules
             {
                 reply =
                     $"你的内存不足\n" +
-                    $"尝试支付 {UserInfoManager.CoinToString(amount)}, 而你只有 {UserInfoManager.CoinToString(info.coin)}.";
+                    $"尝试支付 {UserInfoManager.CoinToString((int)amount)}, 而你只有 {UserInfoManager.CoinToString(info.coin)}.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
 
-            info.coin -= amount;
-            targetInfo.coin += amount;
+            info.coin -= (int)amount;
+            targetInfo.coin += (int)amount;
 
             UserInfoManager.UpdateUserInfo(info);
             UserInfoManager.UpdateUserInfo(targetInfo);
 
             reply =
-                    $"转账成功: {UserInfoManager.CoinToString(amount)} => U{target}\n" +
+                    $"转账成功: {UserInfoManager.CoinToString((int)amount)} => U{target}\n" +
                     $"当前余额: {UserInfoManager.CoinToString(info.coin)}.";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
             return;
@@ -494,10 +494,10 @@ namespace RinBot.Commands.Modules
             uint uin = messageEvent.MemberUin;
             UserInfo? info = UserInfoManager.GetUserInfo(uin);
 
-            uint coin = 0u;
+            int coin = 0;
             if (args.Count > 0)
             {
-                if (!uint.TryParse(args[0], out coin))
+                if (!int.TryParse(args[0], out coin) && coin <= 0)
                 {
                     reply = $"错误: 参数非法: \"{args[0]}\" => <amount>.";
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -505,9 +505,9 @@ namespace RinBot.Commands.Modules
                 }
             }
 
-            info.coin += coin;
+            info.coin += (int)coin;
             UserInfoManager.UpdateUserInfo(info);
-            reply = $"已经向 U{uin} 的账户添加 {UserInfoManager.CoinToString(coin)}.";
+            reply = $"已经向 U{uin} 的账户添加 {UserInfoManager.CoinToString((int)coin)}.";
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
             return;
         }

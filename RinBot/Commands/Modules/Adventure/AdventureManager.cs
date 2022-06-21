@@ -76,7 +76,7 @@ namespace RinBot.Commands.Modules.Adventure
             return events.First().Key;
         }
 
-        public string CoinToString(uint coin) => UserInfoManager.CoinToString(coin);
+        public string CoinToString(int coin) => UserInfoManager.CoinToString(coin);
 
         public bool HasFlag(string flag) => UserInfoManager.HasFlag(info, flag);
 

@@ -410,11 +410,11 @@ namespace RinBot.Commands.Modules.MemoryWar
             {
                 counter++;
 
-                int defense_loss = memory.attacker * new Random().Next((int)Math.Round(memory.attacker * accuracy), memory.attacker);
+                int defense_loss = new Random().Next((int)Math.Round(memory.attacker * accuracy), memory.attacker);
                 if (defense_loss > memory.attacker)
                     defense_loss = memory.attacker;
 
-                int attack_loss = targetMemory.attacker * new Random().Next((int)Math.Round(targetMemory.attacker * accuracy), targetMemory.attacker);
+                int attack_loss = new Random().Next((int)Math.Round(targetMemory.attacker * accuracy), targetMemory.attacker);
                 if (attack_loss > memory.attacker)
                     attack_loss = memory.attacker;
 

@@ -108,7 +108,7 @@ namespace RinBot.Commands.Modules.MemoryWar
             else
             {
                 sb.AppendLine($"{memory.engineer} 个工程单元正在努力工作");
-                sb.AppendLine($"单元平均制造时间：{(int)((float)build_cooldown_minute / (memory.engineer + 1))} 秒");
+                sb.AppendLine($"单元平均制造时间：{(int)((float)build_cooldown_minute / (memory.engineer + 1) * 60)} 秒");
                 sb.AppendLine($"每小时内存产出：{UserInfoManager.CoinToString(memory.engineer * collect_per_unit)}\n");
             }
 

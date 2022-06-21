@@ -30,19 +30,21 @@ namespace RinBot.Commands.Modules.MemoryWar
         int cost_protect = 125;
 
         int collect_per_unit = 200;
-        int cost_per_attacker = 100;
+        int maintain_cost_per_attacker = 100;
 
         int loot_per_attacker = 10000;
+
+        int build_cooldown_minute = 5;
 
         private static readonly string TAG = "MEMWAR";
         private static readonly Logger Logger = LogManager.GetLogger(TAG);
 
-        Timer timer;
+        Timer memoryTimer;
 
         public override void OnInit()
         {
-            timer = new Timer(new TimerCallback(CalcMemoryChange), null, Timeout.Infinite, (int)new TimeSpan(1, 0, 0).TotalMilliseconds);
-            timer.Change((60 - DateTime.Now.Minute) * 60 * 1000, (int)new TimeSpan(1, 0, 0).TotalMilliseconds);
+            memoryTimer = new Timer(new TimerCallback(CalcMemoryChange), null, Timeout.Infinite, (int)new TimeSpan(1, 0, 0).TotalMilliseconds);
+            memoryTimer.Change((60 - DateTime.Now.Minute) * 60 * 1000, (int)new TimeSpan(1, 0, 0).TotalMilliseconds);
         }
 
         private void CalcMemoryChange(object value)
@@ -60,9 +62,9 @@ namespace RinBot.Commands.Modules.MemoryWar
             foreach (var memory in memoryList)
             {
                 int total_change = 0;
-                total_change += memory.collector * collect_per_unit;
-                total_change -= memory.attacker * cost_per_attacker;
-                total_change -= (memory.attacker + memory.collector) * cost_protect;
+                total_change += memory.engineer * collect_per_unit;
+                total_change -= memory.attacker * maintain_cost_per_attacker;
+                total_change -= (memory.attacker + memory.engineer) * cost_protect;
                 
                 var info = infoList.First(x => x.uin == memory.uin);
                 if (info.coin + total_change < 0)
@@ -99,14 +101,15 @@ namespace RinBot.Commands.Modules.MemoryWar
             sb.AppendLine($"[内存信息]{messageEvent.MemberCard}");
             sb.AppendLine($"拥有内存：{UserInfoManager.CoinToString(info.coin)}\n");
 
-            if (memory.collector == 0)
+            if (memory.engineer == 0)
             {
-                sb.AppendLine($"目前没有任何采集单元正在工作\n");
+                sb.AppendLine($"目前没有任何工程单元正在工作\n");
             }
             else
             {
-                sb.AppendLine($"{memory.collector} 个采集单元正在努力工作");
-                sb.AppendLine($"每小时内存产出：{UserInfoManager.CoinToString(memory.collector * collect_per_unit)}\n");
+                sb.AppendLine($"{memory.engineer} 个工程单元正在努力工作");
+                sb.AppendLine($"单元平均制造时间：{(int)((float)build_cooldown_minute / (memory.engineer + 1))} 秒");
+                sb.AppendLine($"每小时内存产出：{UserInfoManager.CoinToString(memory.engineer * collect_per_unit)}\n");
             }
 
             if (memory.attacker == 0)
@@ -115,7 +118,7 @@ namespace RinBot.Commands.Modules.MemoryWar
             }
             else
             {
-                sb.AppendLine($"{memory.attacker} 个战斗单元向你报道");
+                sb.AppendLine($"{memory.attacker} 个战斗单元随时准备出发");
 
                 if ((DateTime.Now - memory.lastWar) < new TimeSpan(1, 0, 0))
                 {
@@ -126,21 +129,21 @@ namespace RinBot.Commands.Modules.MemoryWar
                 {
                     sb.AppendLine(ready_for_attack[new Random().Next(ready_for_attack.Count)] + "\n");
                 }
-                sb.AppendLine($"每小时内存消耗：{UserInfoManager.CoinToString(memory.attacker * cost_per_attacker)}\n");
+                sb.AppendLine($"每小时内存消耗：{UserInfoManager.CoinToString(memory.attacker * maintain_cost_per_attacker)}\n");
 
             }
 
             if (memory.isProtected)
             {
-                sb.AppendLine($"防御系统已开启 正在为 {memory.attacker + memory.collector} 个单元提供保护");
-                sb.AppendLine($"每小时内存消耗：{UserInfoManager.CoinToString((memory.attacker + memory.collector) * cost_protect)}\n");
+                sb.AppendLine($"防御系统已开启 正在为 {memory.attacker + memory.engineer} 个单元提供保护");
+                sb.AppendLine($"每小时内存消耗：{UserInfoManager.CoinToString((memory.attacker + memory.engineer) * cost_protect)}\n");
             }
 
             int total_change = 0;
-            total_change += memory.collector * collect_per_unit;
-            total_change -= memory.attacker * cost_per_attacker;
+            total_change += memory.engineer * collect_per_unit;
+            total_change -= memory.attacker * maintain_cost_per_attacker;
             if (memory.isProtected)
-                total_change -= (memory.attacker + memory.collector) * cost_protect;
+                total_change -= (memory.attacker + memory.engineer) * cost_protect;
             sb.AppendLine($"基地总内存收支：{UserInfoManager.CoinToString(total_change)}");
 
 
@@ -169,37 +172,60 @@ namespace RinBot.Commands.Modules.MemoryWar
                             .Text($"防御系统已{(memory.isProtected ? "开启" : "关闭")}"));
         }
 
-        [GroupMessageCommand("购买战斗单元", new[] { @"^buy-attacker", @"^购买战斗单元" })]
-        public void OnBuyAttacker(Bot bot, GroupMessageEvent messageEvent)
+        [GroupMessageCommand("制造战斗单元", new[] { @"^build-attacker\s?([\s\S]+)?", @"^制造战斗单元\s?([\s\S]+)?" })]
+        public void OnBuyAttacker(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
             var memory = db.GetUserInfo(messageEvent.MemberUin);
 
-            if (DateTime.Now - memory.lastBuy < new TimeSpan(0, 10, 0))
+            var num = 1;
+
+            if (args.Count > 0)
+            {
+                if (!int.TryParse(args[0], out num) || num <= 0)
+                {
+                    var reply = $"错误: 参数非法: \"{args[0]}\" => <num>";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+
+
+            if (memory.nextBuild > DateTime.Now)
             {
                 messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"拒绝 还需等待 {(int)(memory.lastBuy.AddMinutes(10) - DateTime.Now).TotalMinutes} 分钟才能进行购买"));
+                            .Text($"拒绝 还需等待 {(int)(memory.nextBuild - DateTime.Now).TotalSeconds} 秒才能进行制造"));
                 return;
             }
             else
             {
-                if (info.coin < cost_per_unit)
+                if (info.coin < cost_per_unit * num)
                 {
                     messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"拒绝 购买一个战斗单元需要 {UserInfoManager.CoinToString(cost_per_unit)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                            .Text($"拒绝 制造{num}架战斗单元需要 {UserInfoManager.CoinToString(cost_per_unit)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                    return;
+                }
+                else if (num > memory.engineer + 1)
+                {
+                    messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"拒绝 制造{num}架战斗单元超过了最大产能上限: {memory.engineer + 1}"));
                     return;
                 }
                 else
                 {
+                    info.coin -= cost_per_unit * num;
+                    memory.nextBuild = DateTime.Now.AddMinutes((float)build_cooldown_minute * num / (memory.engineer + 1));
+                    memory.attacker += num;
+
                     messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"引擎呼啸 一架全新的战斗单元从工厂中驶出\n" +
-                            $"它已经准备好保卫一切资产 或是侵略..."));
-                    info.coin -= 5000;
-                    memory.attacker += 1;
-                    memory.lastBuy = DateTime.Now;
+                            .Text($"最后的组装工作已经完成 {num}架全新的战斗单元离开了船坞\n" +
+                            $"它已经准备好保卫一切资产 或是侵略...\n" +
+                            $"下一次制造将在 {(int)(memory.nextBuild - DateTime.Now).TotalSeconds} 秒后可用"));
+                    
 
                     UserInfoManager.UpdateUserInfo(info);
                     db.UpdateUserInfo(memory);
@@ -208,37 +234,60 @@ namespace RinBot.Commands.Modules.MemoryWar
             }
         }
 
-        [GroupMessageCommand("购买采集单元", new[] { @"^buy-collector", @"^购买采集单元" })]
-        public void OnBuyCollector(Bot bot, GroupMessageEvent messageEvent)
+        [GroupMessageCommand("制造工程单元", new[] { @"^build-engineer\s?([\s\S]+)?", @"^制造工程单元\s?([\s\S]+)?" })]
+        public void OnBuyEngineer(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
             var memory = db.GetUserInfo(messageEvent.MemberUin);
 
-            if (DateTime.Now - memory.lastBuy < new TimeSpan(0, 10, 0))
+            var num = 1;
+
+            if (args.Count > 0)
+            {
+                if (!int.TryParse(args[0], out num) || num <= 0)
+                {
+                    var reply = $"错误: 参数非法: \"{args[0]}\" => <num>";
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
+                    return;
+                }
+            }
+
+
+            if (memory.nextBuild > DateTime.Now)
             {
                 messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"拒绝 还需等待 {(int)(memory.lastBuy.AddMinutes(10) - DateTime.Now).TotalMinutes} 分钟才能进行购买"));
+                            .Text($"拒绝 还需等待 {(int)(memory.nextBuild - DateTime.Now).TotalSeconds} 秒才能进行制造"));
                 return;
             }
             else
             {
-                if (info.coin < cost_per_unit)
+                if (info.coin < cost_per_unit * num)
                 {
                     messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"拒绝 购买一个收集单元需要 {UserInfoManager.CoinToString(cost_per_unit)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                            .Text($"拒绝 制造{num}架工程单元需要 {UserInfoManager.CoinToString(cost_per_unit)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                    return;
+                }
+                else if (num > memory.engineer + 1)
+                {
+                    messageEvent.Reply(bot, new MessageBuilder()
+                            .Add(ReplyChain.Create(messageEvent.Message))
+                            .Text($"拒绝 制造{num}架工程单元超过了最大产能上限: {memory.engineer + 1}"));
                     return;
                 }
                 else
                 {
+                    info.coin -= cost_per_unit * num;
+                    memory.nextBuild = DateTime.Now.AddMinutes((float)build_cooldown_minute * num / (memory.engineer + 1));
+                    memory.engineer += num;
+
                     messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"引擎轰鸣 一架全新的采集单元从工厂中驶出\n" +
-                            $"很快它就会带来源源不断的内存收益"));
-                    info.coin -= 5000;
-                    memory.collector += 1;
-                    memory.lastBuy = DateTime.Now;
+                            .Text($"引擎轰鸣 {num}架全新的工程单元从工厂中驶出\n" +
+                            $"很快它就会带来源源不断的内存收益 并且辅助其余单位的建设\n" +
+                            $"下一次制造将在 {(int)(memory.nextBuild - DateTime.Now).TotalSeconds} 秒后可用"));
+                    
 
                     UserInfoManager.UpdateUserInfo(info);
                     db.UpdateUserInfo(memory);
@@ -246,7 +295,7 @@ namespace RinBot.Commands.Modules.MemoryWar
                 }
             }
         }
-
+        
         //To war!
         [GroupMessageCommand("进攻", new[] { @"^attack\s?([\s\S]+)?", @"^攻击\s?([\s\S]+)?" })]
         public void OnAttack(Bot bot, GroupMessageEvent messageEvent, List<string> args)
@@ -332,7 +381,7 @@ namespace RinBot.Commands.Modules.MemoryWar
                 {
                     int loss = new Random().Next(0, (int)(memory.attacker * 0.8f));
                     memory.attacker -= loss;
-                    sb.AppendLine($"我们的战斗单元强行突破了防御系统 但是损失了 {loss} 架战斗单元");
+                    sb.AppendLine($"我们的战斗单元强行突破了防御系统 但是有 {loss} 架战斗单元被击落");
 
                 }
                 else
@@ -402,10 +451,10 @@ namespace RinBot.Commands.Modules.MemoryWar
 
             if (memory.attacker > 0)
             {
-                int collector_loss = new Random().Next(targetMemory.collector);
+                int collector_loss = new Random().Next(targetMemory.engineer);
                 if (collector_loss > 0)
                 {
-                    targetMemory.collector -= collector_loss;
+                    targetMemory.engineer -= collector_loss;
                     sb.AppendLine($"有 {collector_loss} 个采集单元尝试抵抗 被无情的摧毁了");
                     var collector_revolt = new Random().Next(collector_loss);
                     if (collector_revolt > 0)

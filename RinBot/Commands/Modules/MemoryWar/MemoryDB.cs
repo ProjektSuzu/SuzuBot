@@ -38,7 +38,7 @@ namespace RinBot.Commands.Modules.MemoryWar
             {
                 if (create)
                 {
-                    MemoryInfo? record = new MemoryInfo { uin = uin, collector = 0, attacker = 0, lastWar = new DateTime(1927, 8, 17), isProtected = false };
+                    MemoryInfo? record = new MemoryInfo { uin = uin, engineer = 0, attacker = 0, lastWar = new DateTime(1927, 8, 17), isProtected = false };
                     dbConnection.Insert(record);
                     return GetUserInfo(uin);
                 }
@@ -68,8 +68,8 @@ namespace RinBot.Commands.Modules.MemoryWar
         [Column("uin")]
         public uint uin { get; set; }
 
-        [Column("collector")]
-        public int collector { get; set; }
+        [Column("engineer")]
+        public int engineer { get; set; }
 
         [Column("attacker")]
         public int attacker { get; set; }
@@ -80,7 +80,7 @@ namespace RinBot.Commands.Modules.MemoryWar
         [Column("lastWar")]
         public DateTime lastWar { get; set; }
 
-        [Column("lastBuy")]
-        public DateTime lastBuy { get; set; }
+        [Column("nextBuild")]
+        public DateTime nextBuild { get; set; }
     }
 }

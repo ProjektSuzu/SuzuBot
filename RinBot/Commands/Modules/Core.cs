@@ -4,6 +4,7 @@ using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using NLog;
+using RinBot.Commands.Modules.MemoryWar;
 using RinBot.Core.Attributes.Command.Modules;
 using RinBot.Core.Attributes.CommandSet;
 using RinBot.Core.Components;
@@ -535,9 +536,14 @@ namespace RinBot.Commands.Modules
         {
             foreach (var member in bot.GetGroupMemberList(955578812, true).Result)
             {
-                var info = UserInfoManager.GetUserInfo(member.Uin);
-                info.favorability = 100;
-                UserInfoManager.UpdateUserInfo(info);
+                //var info = UserInfoManager.GetUserInfo(member.Uin);
+                //info.favorability = 100;
+                //UserInfoManager.UpdateUserInfo(info);
+
+                var info = MemoryDB.Instance.GetUserInfo(member.Uin);
+                info.attacker = 5;
+                info.engineer = 3;
+                MemoryDB.Instance.UpdateUserInfo(info);
             }
             return;
         }

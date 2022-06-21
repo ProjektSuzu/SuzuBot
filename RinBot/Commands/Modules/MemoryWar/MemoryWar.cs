@@ -204,7 +204,7 @@ namespace RinBot.Commands.Modules.MemoryWar
                 {
                     messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"拒绝 制造{num}架战斗单元需要 {UserInfoManager.CoinToString(cost_per_unit)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                            .Text($"拒绝 制造{num}架战斗单元需要 {UserInfoManager.CoinToString(cost_per_unit * num)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
                     return;
                 }
                 else if (num > memory.engineer + 1)
@@ -266,7 +266,7 @@ namespace RinBot.Commands.Modules.MemoryWar
                 {
                     messageEvent.Reply(bot, new MessageBuilder()
                             .Add(ReplyChain.Create(messageEvent.Message))
-                            .Text($"拒绝 制造{num}架工程单元需要 {UserInfoManager.CoinToString(cost_per_unit)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                            .Text($"拒绝 制造{num}架工程单元需要 {UserInfoManager.CoinToString(cost_per_unit * num)}\n而你只有 {UserInfoManager.CoinToString(info.coin)}"));
                     return;
                 }
                 else if (num > memory.engineer + 1)
@@ -410,22 +410,19 @@ namespace RinBot.Commands.Modules.MemoryWar
             {
                 counter++;
 
-                int attack_loss = targetMemory.attacker * new Random().Next((int)Math.Round(targetMemory.attacker * accuracy), targetMemory.attacker);
                 int defense_loss = memory.attacker * new Random().Next((int)Math.Round(memory.attacker * accuracy), memory.attacker);
-
-                if (attack_loss > memory.attacker)
-                    attack_loss = memory.attacker;
-
                 if (defense_loss > memory.attacker)
                     defense_loss = memory.attacker;
-
-                memory.attacker -= attack_loss;
-                if (memory.attacker < 0)
-                    memory.attacker = 0;
-
                 targetMemory.attacker -= defense_loss;
                 if (targetMemory.attacker < 0)
                     targetMemory.attacker = 0;
+
+                int attack_loss = targetMemory.attacker * new Random().Next((int)Math.Round(targetMemory.attacker * accuracy), targetMemory.attacker);
+                if (attack_loss > memory.attacker)
+                    attack_loss = memory.attacker;
+                memory.attacker -= attack_loss;
+                if (memory.attacker < 0)
+                    memory.attacker = 0;
 
                 if (accuracy < 1f)
                     accuracy += 0.1f;

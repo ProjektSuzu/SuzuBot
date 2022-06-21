@@ -379,10 +379,13 @@ namespace RinBot.Commands.Modules.MemoryWar
                 sb.AppendLine($"对方的防御系统正在运行");
                 if (memory.attacker > 10)
                 {
-                    int loss = new Random().Next(0, (int)(memory.attacker * 0.8f));
+                    int loss = new Random().Next((int)(memory.attacker * 0.25f), (int)(memory.attacker * 0.8f));
                     memory.attacker -= loss;
-                    sb.AppendLine($"我们的战斗单元强行突破了防御系统 但是有 {loss} 架战斗单元被击落");
-
+                    sb.AppendLine($"我们的战斗单元强行突破了防御系统");
+                    if (loss > 0)
+                    {
+                        sb.AppendLine($"{loss} 架战斗单元被击落");
+                    }
                 }
                 else
                 {

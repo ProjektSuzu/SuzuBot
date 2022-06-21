@@ -455,7 +455,7 @@ namespace RinBot.Commands.Modules.MemoryWar
                 if (collector_loss > 0)
                 {
                     targetMemory.engineer -= collector_loss;
-                    sb.AppendLine($"有 {collector_loss} 个采集单元尝试抵抗 被无情的摧毁了");
+                    sb.AppendLine($"有 {collector_loss} 个工程单元尝试抵抗 被无情的摧毁了");
                     var collector_revolt = new Random().Next(collector_loss);
                     if (collector_revolt > 0)
                     {

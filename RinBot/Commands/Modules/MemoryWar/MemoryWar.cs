@@ -413,16 +413,18 @@ namespace RinBot.Commands.Modules.MemoryWar
                 int defense_loss = memory.attacker * new Random().Next((int)Math.Round(memory.attacker * accuracy), memory.attacker);
                 if (defense_loss > memory.attacker)
                     defense_loss = memory.attacker;
-                targetMemory.attacker -= defense_loss;
-                if (targetMemory.attacker < 0)
-                    targetMemory.attacker = 0;
 
                 int attack_loss = targetMemory.attacker * new Random().Next((int)Math.Round(targetMemory.attacker * accuracy), targetMemory.attacker);
                 if (attack_loss > memory.attacker)
                     attack_loss = memory.attacker;
+
                 memory.attacker -= attack_loss;
                 if (memory.attacker < 0)
                     memory.attacker = 0;
+
+                targetMemory.attacker -= defense_loss;
+                if (targetMemory.attacker < 0)
+                    targetMemory.attacker = 0;
 
                 if (accuracy < 1f)
                     accuracy += 0.1f;

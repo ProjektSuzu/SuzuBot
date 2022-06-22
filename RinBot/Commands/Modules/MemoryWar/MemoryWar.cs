@@ -64,8 +64,9 @@ namespace RinBot.Commands.Modules.MemoryWar
                 int total_change = 0;
                 total_change += memory.engineer * collect_per_unit;
                 total_change -= memory.attacker * maintain_cost_per_attacker;
-                total_change -= (memory.attacker + memory.engineer) * cost_protect;
-                
+                if (memory.isProtected)
+                    total_change -= (memory.attacker + memory.engineer) * cost_protect;
+
                 var info = infoList.First(x => x.uin == memory.uin);
                 if (info.coin + total_change < 0)
                 {

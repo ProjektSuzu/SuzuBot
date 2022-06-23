@@ -32,7 +32,7 @@ namespace RinBot.Commands.Modules.MemoryWar
         int collect_per_unit = 200;
         int maintain_cost_per_attacker = 100;
 
-        int loot_per_attacker = 10000;
+        int loot_per_attacker = 50000;
 
         int build_cooldown_minute = 5;
 

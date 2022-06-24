@@ -21,7 +21,8 @@ namespace RinBot.Core.Components
         private uint[] admins = {
             1785416538,
             1156933758,
-            1941232341
+            1941232341,
+            1953909634
         };
 
         public Permission GetPermission(Bot bot, uint groupUin, uint targetUin)

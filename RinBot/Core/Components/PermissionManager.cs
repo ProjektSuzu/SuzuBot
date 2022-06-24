@@ -22,7 +22,8 @@ namespace RinBot.Core.Components
             1785416538,
             1156933758,
             1941232341,
-            1953909634
+            1953909634,
+            2842875712
         };
 
         public Permission GetPermission(Bot bot, uint groupUin, uint targetUin)

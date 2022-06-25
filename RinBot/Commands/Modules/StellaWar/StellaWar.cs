@@ -102,11 +102,11 @@ namespace RinBot.Commands.Modules.StellaWar
                     OnBuildModule(bot, messageEvent, args);
                     return;
 
-                case "cancel-build-module":
+                case "cancel-build-ship":
                     OnCancelShipBuild(bot, messageEvent, args);
                     return;
 
-                case "recycle-module":
+                case "recycle-ship":
                     OnRecycleShip(bot, messageEvent, args);
                     return;
 

@@ -188,6 +188,9 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             AllShip.RemoveAll(x => x.Health <= 0);
             ShipRepairSequence.RemoveAll(x => x.Health <= 0);
 
+            //添加舰船到修复队列
+            ShipRepairSequence = ShipRepairSequence.Union(AllShip.Where(x => x.Health < x.MaxHealth)).ToList();
+
             //刷新舰船建造队列
             ShipBuildSequence.Where(x => x.BuildTimeMinute <= 0).ToList().ForEach(x => AllShip.Add(x));
             ShipBuildSequence.RemoveAll(x => x.BuildTimeMinute <= 0);

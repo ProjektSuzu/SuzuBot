@@ -16,6 +16,7 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
         public List<BaseShip> AttackerFleet;
         public List<BaseShip> DefenderFleet;
 
+        public StarBase AttackerStarBase;
         public StarBase DefenderStarBase;
 
         public List<BaseShip> AttackerLost = new();
@@ -29,12 +30,14 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
         public bool IsOver = false;
         public bool IsSuccess = false;
 
-        public AggressiveWar(uint attacker, uint defender, List<BaseShip> attackerFleet, StarBase defenderStarBase)
+        public AggressiveWar(uint attacker, uint defender, StarBase attackerStarBase, StarBase defenderStarBase)
         {
             Attacker = attacker;
             Defender = defender;
 
-            AttackerFleet = attackerFleet;
+            AttackerStarBase = attackerStarBase;
+            AttackerFleet = attackerStarBase.AllShip;
+
             DefenderStarBase = defenderStarBase;
             DefenderFleet = defenderStarBase.AllShip;
 
@@ -100,13 +103,12 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
 
                 }
             }
-            //计算防守方损失
-            DefenderLost = DefenderLost.Concat(DefenderFleet.Where(x => x.Health <= 0)).ToList();
-            DefenderFleet.RemoveAll(x => x.Health <= 0);
-            DefenderRetreat = DefenderRetreat.Concat(DefenderFleet.Where(x => x.Health <= x.MaxHealth * 0.2f)).ToList();
+            //计算防守方撤退
+            DefenderRetreat = DefenderRetreat.Union(DefenderFleet.Where(x => x.Health <= x.MaxHealth * 0.2f)).ToList();
             DefenderFleet.RemoveAll(x => x.Health <= x.MaxHealth * 0.2f);
 
-            //防守方回合
+            
+            //防守方回合      
             foreach (var ship in DefenderFleet)
             {
                 //如果对方没有剩余舰船了就break
@@ -126,6 +128,9 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
                     target.Evasion - ship.Tracking
                     );
 
+                if (DefenderStarBase.Modules.Any(x => x.ID == "fire-control-computer"))
+                    realAccuracy = Math.Clamp(ship.Accuracy * 1.2f, 0f, 1f);
+
                 if (random.NextSingle() > realAccuracy)
                 {
                     //没中
@@ -136,6 +141,9 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
                     //噫 好了 我中了
                     //计算伤害
                     int damage = random.Next(ship.MinAttack, ship.MaxAttack);
+
+
+                    
                     //先减护盾
                     if (target.Shield > damage)
                         target.Shield -= damage;
@@ -158,10 +166,8 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
 
                 }
             }
-            //计算进攻方损失
-            AttackerLost = AttackerLost.Concat(AttackerFleet.Where(x => x.Health <= 0)).ToList();
-            AttackerFleet.RemoveAll(x => x.Health <= 0);
-            AttackerRetreat = AttackerRetreat.Concat(AttackerFleet.Where(x => x.Health <= x.MaxHealth * 0.3f)).ToList();
+            //计算进攻方撤退
+            AttackerRetreat = AttackerRetreat.Union(AttackerFleet.Where(x => x.Health <= x.MaxHealth * 0.3f)).ToList();
             AttackerFleet.RemoveAll(x => x.Health <= x.MaxHealth * 0.2f);
 
             //判断一方是否兵力耗尽
@@ -174,7 +180,9 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
                 AttackerRetreat.ForEach(x => AttackerFleet.Add(x));
                 DefenderRetreat.ForEach(x => DefenderFleet.Add(x));
 
+                AttackerStarBase.Flush();
                 DefenderStarBase.Flush();
+
 
                 if (AttackerFleet.Count > 0)
                 {

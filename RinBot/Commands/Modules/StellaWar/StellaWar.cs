@@ -36,6 +36,7 @@ namespace RinBot.Commands.Modules.StellaWar
             {
                 starBases.Add(new StarBase(info));
             }
+            starBases.ForEach(x => x.Flush());
             dayLoopTimer = new Timer(new TimerCallback(Loop));
             dayLoopTimer.Change((60 - DateTime.Now.Second) * 1000, 60000);
         }
@@ -93,8 +94,20 @@ namespace RinBot.Commands.Modules.StellaWar
                     OnBuildShip(bot, messageEvent, args);
                     return;
 
+                case "cancel-build-ship":
+                    OnCancelShipBuild(bot, messageEvent, args);
+                    return;
+
+                case "base-rename":
+                    OnBaseRename(bot, messageEvent, args);
+                    return;
+
                 case "simulate":
                     OnSimulate(bot, messageEvent);
+                    return;
+
+                case "instant-build":
+                    OnInstantBuild(bot, messageEvent);
                     return;
 
                 default:
@@ -222,9 +235,7 @@ namespace RinBot.Commands.Modules.StellaWar
                 starBases.Add(starbase);
             }
 
-            var ship = starbase.ShipBlueprint.FirstOrDefault(x => x.Code == code);
-            if (ship == null)
-                ship = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.Code == code || x.Name == code).ToList().First() ?? null;
+            var ship = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.Code == code || x.Name == code).ToList().First() ?? null;
             var result = starbase.BuildShip(code, num);
             switch (result)
             {
@@ -318,11 +329,20 @@ namespace RinBot.Commands.Modules.StellaWar
                                 .Text($"错误：攻击目标不存在"));
                     return;
                 }
+
+                if (targetBase.EmergencyShield > DateTime.Now)
+                {
+                    messageEvent.Reply(bot, new MessageBuilder()
+                                .Add(ReplyChain.Create(messageEvent.Message))
+                                .Text($"错误：目标基地已开启屏障 无法进攻"));
+                    return;
+                }
             }
             var targetInfo = UserInfoManager.GetUserInfo(target);
             targetName = bot.GetGroupMemberList(messageEvent.GroupUin).Result.First(x => x.Uin == target).NickName;
-            
-            AggressiveWar war = new(messageEvent.MemberUin, target, starbase.AllShip, targetBase);
+
+            starbase.EmergencyShield = DateTime.Now;
+            AggressiveWar war = new(messageEvent.MemberUin, target, starbase, targetBase);
             
             StringBuilder sb = new();
             sb.AppendLine("[群星争霸]侵略战争");
@@ -514,8 +534,53 @@ namespace RinBot.Commands.Modules.StellaWar
             }
         }
 
+        public void OnCancelShipBuild(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var num = 1;
+            var starbase = starBases.First(x => x.Owner == messageEvent.MemberUin);
+            var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
+
+            if (args.Count > 0)
+            {
+                if (!int.TryParse(args[1], out num) || num < 1)
+                {
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text($"错误: 参数错误: {args[0]} => [<num>]."));
+                    return;
+                }
+            }
+
+            if (num > starbase.ShipBuildSequence.Count)
+                num = starbase.ShipBuildSequence.Count;
+
+            var cancelList = starbase.ShipBuildSequence.Reverse<BaseShip>().ToList().Take(num);
+            starbase.ShipBuildSequence = starbase.ShipBuildSequence.Take(starbase.ShipBuildSequence.Count - num).ToList();
+
+            foreach (var ship in cancelList)
+            {
+                info.coin += ship.BuildCostKB;
+            }
+
+            UserInfoManager.UpdateUserInfo(info);
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text($"已取消了 {num} 个建造队列."));
+            return;
+        }
+
+        public void OnBaseRename(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var starbase = starBases.First(x => x.Owner == messageEvent.MemberUin);
+            starbase.Name = String.Join(' ', args);
+            bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text($"已将基地更名为 {String.Join(' ', args)}"));
+            return;
+        }
+
         public void OnSimulate(Bot bot, GroupMessageEvent messageEvent)
-        {   
+        {
             if (PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin) < Permission.Admin)
             {
                 messageEvent.Reply(bot, new MessageBuilder()
@@ -533,6 +598,25 @@ namespace RinBot.Commands.Modules.StellaWar
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                         .Add(ReplyChain.Create(messageEvent.Message))
                         .Text($"Simulate Completed.({(after - before).TotalMilliseconds}ms)"));
+            return;
+        }
+
+        public void OnInstantBuild(Bot bot, GroupMessageEvent messageEvent)
+        {
+            if (PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin) < Permission.Admin)
+            {
+                messageEvent.Reply(bot, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text(
+                        $"你没有权限使用此命令\n" +
+                        $"此命令需要的权限等级为 {Permission.Admin}\n" +
+                        $"你的权限等级为 {PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin)}"));
+                return;
+            }
+
+            var starbase = starBases.First(x => x.Owner == messageEvent.MemberUin);
+            starbase.ShipBuildSequence.ForEach(x => x.BuildTimeMinute = 0);
+            starbase.Flush();
             return;
         }
     }

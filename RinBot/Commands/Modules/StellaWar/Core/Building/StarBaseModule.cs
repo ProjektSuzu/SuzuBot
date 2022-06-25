@@ -1,4 +1,5 @@
 ﻿using RinBot.Commands.Modules.StellaWar.Core.War;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,21 +8,38 @@ using System.Threading.Tasks;
 
 namespace RinBot.Commands.Modules.StellaWar.Core.Building
 {
+    [Table("T_MODULE_TECH")]
     internal abstract class StarBaseModule
     {
         /// <summary>
         /// 模块唯一ID
         /// </summary>
+        [Column("id")]
         public string ID { get; set; }
+        /// <summary>
+        /// 模块名称
+        /// </summary>
+        [Column("name")]
+        public string Name { get; set; }
+        /// <summary>
+        /// 模块描述
+        /// </summary>
+        [Column("description")]
+        public string Description { get; set; }
         /// <summary>
         /// 模块是否唯一 (只能修一个)
         /// </summary>
+        [Column("singleton")]
         public bool Singleton { get; set; }
         /// <summary>
         /// 模块维护内存耗费 KB
         /// </summary>
+        [Column("maintain_cost")]
         public int MaintainCostKB { get; set; }
-
-        public abstract void Encounter(AggressiveWar battle);
+        /// <summary>
+        /// 模块解锁需要基地等级
+        /// </summary>
+        [Column("unlock_level")]
+        public StarBaseLevel UnlockLevel { get; set; }
     }
 }

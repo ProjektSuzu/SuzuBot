@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using RinBot.Commands.Modules.StellaWar.Core.Building;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +83,12 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Ship
         /// </summary>
         [Column("build_cost_kb")]
         public int BuildCostKB { get; set; }
-   
+        /// <summary>
+        /// 模块解锁需要基地等级
+        /// </summary>
+        [Column("unlock_level")]
+        public StarBaseLevel UnlockLevel { get; set; }
+
         public BaseShip Clone()
         {
             return (BaseShip)this.MemberwiseClone();

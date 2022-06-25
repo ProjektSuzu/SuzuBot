@@ -34,6 +34,7 @@ namespace RinBot.Commands.Modules.StellaWar
         {
             dbConnection.CreateTable<StarBaseInfo>();
             dbConnection.CreateTable<BaseShip>();
+            dbConnection.CreateTable<StarBaseModule>();
         }
         #endregion
     }
@@ -68,9 +69,5 @@ namespace RinBot.Commands.Modules.StellaWar
 
         [Column("all_ship")]
         public string AllShip { get; set; }
-
-        [Column("ship_blueprint")]
-        public string ShipBlueprint { get; set; }
-
     }
 }

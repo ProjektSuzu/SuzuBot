@@ -84,8 +84,30 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
                 return 0;
             }
         }
+        public int DefensiveGunGroupAttack
+        {
+            get
+            {
+                switch (Level)
+                {
+                    case StarBaseLevel.Outpost:
+                        return 10;
+                    case StarBaseLevel.Starport:
+                        return 20;
+                    case StarBaseLevel.Starhold:
+                        return 40;
+                    case StarBaseLevel.StarFortress:
+                        return 80;
+                    case StarBaseLevel.Citadel:
+                        return 160;
+                }
+                return 0;
+            }
+        }
 
         public bool UnderAttack = false;
+
+        public DateTime EmergencyShield = DateTime.Now;
 
         public List<StarBaseModule> Modules = new();
 
@@ -96,14 +118,10 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
         public List<BaseShip> AllShip = new();
         public List<BaseShip> ShipInBase = new();
 
-        public List<BaseShip> ShipBlueprint = new();
-
         public StarBase(uint owner, string name)
         {
             this.Owner = owner;
             this.Name = name;
-
-            this.ShipBlueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().ToList();
         }
 
         public StarBase(StarBaseInfo info)
@@ -119,8 +137,6 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             this.ShipBuildSequence = JsonConvert.DeserializeObject<List<BaseShip>>(info.ShipBuildSequence) ?? new();
 
             this.AllShip = JsonConvert.DeserializeObject<List<BaseShip>>(info.AllShip) ?? new();
-
-            this.ShipBlueprint = JsonConvert.DeserializeObject<List<BaseShip>>(info.ShipBlueprint) ?? new();
         }
 
         public StarBaseInfo Save()
@@ -137,17 +153,14 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             info.ShipBuildSequence = JsonConvert.SerializeObject(ShipBuildSequence);
 
             info.AllShip = JsonConvert.SerializeObject(AllShip);
-            info.ShipBlueprint = JsonConvert.SerializeObject(ShipBlueprint);
-
             return info;
         }
 
         public ShipBuildResult BuildShip(string shipCode, uint num = 1)
         {
-            if (AllShip.Count + num > MaxShipCapacity)
+            if (ShipBuildSequence.Count + AllShip.Count + num > MaxShipCapacity)
                 return ShipBuildResult.ShipCapacityFull;
-
-            var blueprint = ShipBlueprint.FirstOrDefault(x => x.Code == shipCode || x.Name == shipCode);
+            var blueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.UnlockLevel <= Level).FirstOrDefault(x => x.Code == shipCode || x.Name == shipCode);
             if (blueprint == null)
             {
                 blueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.Code == shipCode || x.Name == shipCode).ToList().First() ?? null;
@@ -174,6 +187,10 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             //移除在战斗中被击毁的舰船
             AllShip.RemoveAll(x => x.Health <= 0);
             ShipRepairSequence.RemoveAll(x => x.Health <= 0);
+
+            //刷新舰船建造队列
+            ShipBuildSequence.Where(x => x.BuildTimeMinute <= 0).ToList().ForEach(x => AllShip.Add(x));
+            ShipBuildSequence.RemoveAll(x => x.BuildTimeMinute <= 0);
         }
 
         public void Simulate()
@@ -283,7 +300,7 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             int dockModuleCount = Modules.Where(x => x.ID == "dock").Count();
 
             var ship = ShipRepairSequence.OrderBy(x => (float)x.Health / x.MaxHealth).First();
-            date.AddMinutes(Math.Round((float)ship.Health / (0.01f * ship.MaxHealth * (4 * repairModuleCount + engineerCount + dockModuleCount))));
+            date.AddMinutes(Math.Round((float)ship.Health / (0.01f * ship.MaxHealth * (4 * repairModuleCount + engineerCount + dockModuleCount + 1))));
             return date;
         }
     }

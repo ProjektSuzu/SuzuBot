@@ -4,7 +4,6 @@ using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using NLog;
-using RinBot.Commands.Modules.MemoryWar;
 using RinBot.Core.Attributes.Command.Modules;
 using RinBot.Core.Attributes.CommandSet;
 using RinBot.Core.Components;
@@ -427,7 +426,7 @@ namespace RinBot.Commands.Modules
 
             if (args.Count < 2)
             {
-                reply = $"错误: 参数不足: <targetUin> <amount>.";
+                reply = $"错误: 缺少参数: <targetUin> <amount>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
                 return;
             }
@@ -459,7 +458,7 @@ namespace RinBot.Commands.Modules
                 return;
             }
 
-            if (!uint.TryParse(args[1], out uint amount))
+            if (!long.TryParse(args[1], out long amount) || amount <= 0)
             {
                 reply = $"错误: 参数错误: {args[1]} => <amount>.";
                 bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder(reply));
@@ -534,18 +533,7 @@ namespace RinBot.Commands.Modules
         [GroupMessageCommand("Test", new[] { @"^test" }, Permission.Admin)]
         public void OnTest(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
-            foreach (var member in bot.GetGroupMemberList(955578812, true).Result)
-            {
-                //var info = UserInfoManager.GetUserInfo(member.Uin);
-                //info.favorability = 100;
-                //UserInfoManager.UpdateUserInfo(info);
-
-                var info = MemoryDB.Instance.GetUserInfo(member.Uin);
-                info.attacker = 5;
-                info.engineer = 3;
-                MemoryDB.Instance.UpdateUserInfo(info);
-            }
-            return;
+            
         }
 #endif
     }

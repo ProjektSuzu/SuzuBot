@@ -6,7 +6,7 @@ namespace RinBot.Utils.Database.Tables
     {
         internal static readonly SQLiteConnection db = DatabaseManager.Instance.dbConnection;
 
-        public static int LevelToExp(int level)
+        public static int LevelToExp(uint level)
         {
             //return level * (level + 5) * 10;
             return 5 * (int)Math.Pow(level, 2);
@@ -17,7 +17,7 @@ namespace RinBot.Utils.Database.Tables
             return (int)Math.Floor(Math.Sqrt(exp / 5));
         }
 
-        public static string CoinToString(int coin)
+        public static string CoinToString(long coin)
         {
             if (coin < 1000)
             {
@@ -35,42 +35,6 @@ namespace RinBot.Utils.Database.Tables
             {
                 return $"{(float)coin / 1000000000:f3} TB";
             }
-        }
-
-        public static bool HasFlag(UserInfo info, string flag)
-        {
-            if (info.flags == null)
-            {
-                info.flags = "";
-                UpdateUserInfo(info);
-            }
-            return info.flags.Split('|').ToList().Contains(flag);
-        }
-
-        public static void AddFlag(UserInfo info, string flag)
-        {
-            if (info.flags == null)
-            {
-                info.flags = "";
-                UpdateUserInfo(info);
-            }
-            var flags = info.flags.Split('|').ToList();
-            if (!flags.Contains(flag))
-                flags.Add(flag);
-            info.flags = String.Join('|', flags);
-        }
-
-        public static void RemoveFlag(UserInfo info, string flag)
-        {
-            if (info.flags == null)
-            {
-                info.flags = "";
-                UpdateUserInfo(info);
-            }
-            var flags = info.flags.Split('|').ToList();
-            if (flags.Contains(flag))
-                flags.Remove(flag);
-            info.flags = String.Join('|', flags);
         }
 
         public static bool UpdateUserInfo(UserInfo info)
@@ -113,19 +77,16 @@ namespace RinBot.Utils.Database.Tables
         public uint uin { get; set; }
 
         [Column("coin")]
-        public int coin { get; set; }
+        public long coin { get; set; }
 
         [Column("level")]
-        public int level { get; set; }
+        public uint level { get; set; }
 
         [Column("favorability")]
         public int favorability { get; set; }
 
         [Column("exp")]
         public int exp { get; set; }
-
-        [Column("flags")]
-        public string flags { get; set; }
 
         [Column("last_sign")]
         public DateTime lastSign { get; set; }

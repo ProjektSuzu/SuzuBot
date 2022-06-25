@@ -11,7 +11,7 @@ using RinBot.Utils.Database.Tables;
 
 namespace RinBot.Commands.Modules.Adventure
 {
-    [CommandSet("探险", "com.akulak.adventure")]
+    [CommandSet("探险", "com.akulak.adventure", false)]
     internal class Adventure : BaseCommand
     {
         private readonly string advStatesPath = Path.Combine(BotManager.configPath, "advStates.json");

@@ -77,12 +77,6 @@ namespace RinBot.Commands.Modules.Adventure
         }
 
         public string CoinToString(int coin) => UserInfoManager.CoinToString(coin);
-
-        public bool HasFlag(string flag) => UserInfoManager.HasFlag(info, flag);
-
-        public void AddFlag(string flag) => UserInfoManager.AddFlag(info, flag);
-
-        public void RemoveFlag(string flag) => UserInfoManager.RemoveFlag(info, flag);
     }
 
     public class AdvState

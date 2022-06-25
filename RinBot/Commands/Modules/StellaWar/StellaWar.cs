@@ -94,12 +94,28 @@ namespace RinBot.Commands.Modules.StellaWar
                     OnBuildShip(bot, messageEvent, args);
                     return;
 
-                case "cancel-build-ship":
+                case "module-info":
+                    OnModuleInfo(bot, messageEvent, args);
+                    return;
+
+                case "build-module":
+                    OnBuildModule(bot, messageEvent, args);
+                    return;
+
+                case "cancel-build-module":
                     OnCancelShipBuild(bot, messageEvent, args);
+                    return;
+
+                case "recycle-module":
+                    OnRecycleShip(bot, messageEvent, args);
                     return;
 
                 case "base-rename":
                     OnBaseRename(bot, messageEvent, args);
+                    return;
+
+                case "base-upgrade":
+                    OnBaseUpgrade(bot, messageEvent);
                     return;
 
                 case "simulate":
@@ -130,13 +146,41 @@ namespace RinBot.Commands.Modules.StellaWar
             }
             StringBuilder sb = new();
             starbase.Flush();
+            int engineerCount = starbase.AllShip.Where(x => x.Code == "engineer").Count();
+            int dockModuleCount = starbase.Modules.Where(x => x.ID == "dock").Count();
+
             sb.AppendLine("[群星争霸]基地信息");
             sb.AppendLine($"{starbase.Name}");
             sb.AppendLine($"基地等级: {starbase.Level}");
             sb.AppendLine($"内存储量: {UserInfoManager.CoinToString(info.coin)}");
             sb.AppendLine($"内存收支: {UserInfoManager.CoinToString(starbase.CalcMemoryBalance())}");
-
             sb.AppendLine($"模块容量: {starbase.Modules.Count()}/{starbase.MaxModuleCapacity}");
+            if (starbase.Modules.Count > 0)
+            {
+                foreach (var module in starbase.Modules)
+                {
+                    sb.AppendLine($"--{module.Name}");
+                }
+            }
+            sb.AppendLine($"模块建造队列: {starbase.StarBaseBuildSequence.Count}");
+            if (starbase.StarBaseBuildSequence.Count > 0)
+            {
+                List<StarBaseModule> temp = new();
+                foreach (var module in starbase.StarBaseBuildSequence)
+                {
+                    temp.Add(module);
+                }
+
+                var first = temp.First();
+                temp = temp.Skip(1).ToList();
+
+                sb.AppendLine($"--{first.Name}  ETA: {first.BuildTimeMinute / (1 + engineerCount)} min");
+                foreach (var module in temp)
+                {
+                    sb.AppendLine($"--{module.Name}  WAITING");
+                }
+            }
+            sb.AppendLine();
 
             sb.AppendLine($"舰船容量: {starbase.AllShip.Count()}/{starbase.MaxShipCapacity}");
             if (starbase.AllShip.Count > 0)
@@ -178,11 +222,9 @@ namespace RinBot.Commands.Modules.StellaWar
                 sb.AppendLine();
             }
 
-            sb.AppendLine($"舰船制造队列: {starbase.ShipBuildSequence.Count}");
+            sb.AppendLine($"舰船建造队列: {starbase.ShipBuildSequence.Count}");
             if (starbase.ShipBuildSequence.Count > 0)
             {
-                int engineerCount = starbase.AllShip.Where(x => x.Code == "engineer").Count();
-                int dockModuleCount = starbase.Modules.Where(x => x.ID == "dock").Count();
                 var buildList = starbase.ShipBuildSequence.Take(1 + dockModuleCount + engineerCount / 4).ToList();
                 var waitList = starbase.ShipBuildSequence.Skip(1 + dockModuleCount + engineerCount / 4).ToList();
                 foreach (var ship in buildList)
@@ -276,6 +318,82 @@ namespace RinBot.Commands.Modules.StellaWar
                         bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                         .Add(ReplyChain.Create(messageEvent.Message))
                         .Text($"错误: 舰船 \"{code}\" 不存在"));
+                        return;
+                    }
+            }
+        }
+
+        public void OnBuildModule(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var id = "";
+
+            if (args.Count <= 0)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text("错误: 缺少参数: <moduleID>"));
+                return;
+            }
+            else
+            {
+                id = args[0];
+            }
+            var starbase = starBases.FirstOrDefault(x => x.Owner == messageEvent.MemberUin);
+            if (starbase == null)
+            {
+                starbase = new StarBase(messageEvent.MemberUin, $"{messageEvent.MemberCard} 的基地");
+                starBases.Add(starbase);
+            }
+
+            var module = StellaWarDB.Instance.dbConnection.Table<StarBaseModule>().Where(x => x.ID == id || x.Name == id).ToList().First() ?? null;
+            var result = starbase.BuildModule(id);
+            switch (result)
+            {
+                case ModuleBuildResult.OK:
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"{module.Name} 已加入建造队列"));
+                        return;
+                    }
+
+                case ModuleBuildResult.SingletonModule:
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"基地只能建造一个 {module.Name}"));
+                        return;
+                    }
+
+                case ModuleBuildResult.InsufficientFunds:
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 内存不足\n需要 {UserInfoManager.CoinToString((long)module.BuildCostKB)}"));
+                        return;
+                    }
+
+                case ModuleBuildResult.ModuleCapacityFull:
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 基地模块容量已满"));
+                        return;
+                    }
+
+                case ModuleBuildResult.ModuleTechLocked:
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 尚未解锁关于 {module.Name} 的科技"));
+                        return;
+                    }
+
+                case ModuleBuildResult.ModuleNotExist:
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 模块 \"{id}\" 不存在"));
                         return;
                     }
             }
@@ -516,6 +634,7 @@ namespace RinBot.Commands.Modules.StellaWar
                 {
                     sb.AppendLine($"舰船名称: {ship.Name}");
                     sb.AppendLine($"舰船代码: {ship.Code}");
+                    sb.AppendLine($"解锁等级: {ship.UnlockLevel}");
                     sb.AppendLine($"最大船体值: {ship.MaxHealth}");
                     sb.AppendLine($"最大护盾值: {ship.MaxShield}");
                     sb.AppendLine($"攻击: {ship.MinAttack}~{ship.MaxAttack}");
@@ -531,6 +650,181 @@ namespace RinBot.Commands.Modules.StellaWar
                         .Add(ReplyChain.Create(messageEvent.Message))
                         .Text(sb.ToString()));
                 }
+            }
+        }
+
+        public void OnModuleInfo(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            StringBuilder sb = new();
+            var id = "";
+            if (args.Count <= 0)
+            {
+                foreach (var module in StellaWarDB.Instance.dbConnection.Table<StarBaseModule>().ToList())
+                {
+                    sb.AppendLine($"{module.ID}: {module.Name}");
+                }
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text(sb.ToString()));
+                return;
+            }
+            else
+            {
+                id = args[0];
+                StarBaseModule module;
+                module = StellaWarDB.Instance.dbConnection.Table<StarBaseModule>().Where(x => x.ID == id || x.Name == id).FirstOrDefault();
+                if (module == null)
+                {
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 模块 \"{id}\" 不存在"));
+                    return;
+                }
+                else
+                {
+                    sb.AppendLine($"模块名称: {module.Name}");
+                    sb.AppendLine($"模块代码: {module.ID}");
+                    sb.AppendLine($"解锁等级: {module.UnlockLevel}");
+                    sb.AppendLine($"维护耗费: {UserInfoManager.CoinToString(module.MaintainCostKB)}");
+                    sb.AppendLine($"造价: {UserInfoManager.CoinToString(module.BuildCostKB)}");
+                    sb.AppendLine($"耗时: {module.BuildTimeMinute} 分钟");
+                    sb.AppendLine();
+                    sb.AppendLine(module.Description);
+
+                    bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text(sb.ToString()));
+                }
+            }
+        }
+
+        public void OnBaseUpgrade(Bot bot, GroupMessageEvent messageEvent)
+        {
+            var starbase = starBases.FirstOrDefault(x => x.Owner == messageEvent.MemberUin);
+            var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
+
+            if (starbase.Level == StarBaseLevel.Citadel)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text("已升至最高级"));
+                return;
+            }
+
+            if (starbase.Modules.Count < starbase.MaxModuleCapacity)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text("只有模块容量为满时才能升级基地"));
+                return;
+            }
+
+            long upgradeCost = 0L;
+            switch (starbase.Level)
+            {
+                case StarBaseLevel.Outpost:
+                    upgradeCost = 500000L;
+                    break;
+
+                case StarBaseLevel.Starport:
+                    upgradeCost = 1000000L;
+                    break;
+
+                case StarBaseLevel.Starhold:
+                    upgradeCost = 5000000L;
+                    break;
+
+                case StarBaseLevel.StarFortress:
+                    upgradeCost = 10000000L;
+                    break;
+
+                case StarBaseLevel.Citadel:
+                    upgradeCost = 50000000L;
+                    break;
+            }
+
+            if (info.coin < upgradeCost)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"你没有足够的内存\n升级到 {starbase.Level + 1} 需要 {UserInfoManager.CoinToString(upgradeCost)}\n" +
+                        $"而你只有 {UserInfoManager.CoinToString(info.coin)}"));
+                return;
+            }
+            else
+            {
+                info.coin -= upgradeCost;
+                starbase.Level++;
+                UserInfoManager.UpdateUserInfo(info);
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"{starbase.Name} 已升级至 {starbase.Level}"));
+                return;
+            }
+        }
+
+        public void OnRecycleShip(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            var num = 1u;
+            var code = "";
+
+            if (args.Count <= 0)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text("错误: 缺少参数: <shipCode>"));
+                return;
+            }
+            else
+            {
+                code = args[0];
+                if (args.Count > 1)
+                {
+                    if (!uint.TryParse(args[1], out num) || num < 1)
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 参数错误: {args[0]} => [<num>]."));
+                        return;
+                    }
+                }
+            }
+            var starbase = starBases.FirstOrDefault(x => x.Owner == messageEvent.MemberUin);
+            if (starbase == null)
+            {
+                starbase = new StarBase(messageEvent.MemberUin, $"{messageEvent.MemberCard} 的基地");
+                starBases.Add(starbase);
+            }
+
+            var ship = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.Code == code || x.Name == code).ToList().First() ?? null;
+            if (ship == null)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 舰船 \"{code}\" 不存在"));
+                return;
+            }
+            if (starbase.AllShip.Where(x => x.Code == ship.Code).Count() < num)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 基地中并不含有 {num} 艘 {ship.Name}"));
+                return;
+            }
+            else
+            {
+                var recycleList = starbase.AllShip.Where(x => x.Code == ship.Code).OrderBy(x => x.Health).Take((int)num).ToList();
+                recycleList.ForEach(x => { starbase.ShipRepairSequence.Remove(x); starbase.AllShip.Remove(x); });
+                var info = UserInfoManager.GetUserInfo(messageEvent.MemberUin);
+                var recycleMemory = 0L;
+                recycleList.ForEach(x => recycleMemory += (int)(x.BuildCostKB * 0.1f));
+                info.coin += recycleMemory;
+                UserInfoManager.UpdateUserInfo(info);
+
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"已回收 {num} 艘 {ship.Name}\n回收内存 {UserInfoManager.CoinToString(recycleMemory)}"));
+                return;
             }
         }
 

@@ -27,6 +27,16 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
         ShipNotExist
     }
 
+    public enum ModuleBuildResult
+    {
+        OK,
+        InsufficientFunds,
+        ModuleCapacityFull,
+        ModuleTechLocked,
+        SingletonModule,
+        ModuleNotExist
+    }
+
     internal class StarBase
     {
         public uint Owner;
@@ -106,6 +116,7 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
         }
 
         public bool UnderAttack = false;
+        
 
         public DateTime EmergencyShield = DateTime.Now;
 
@@ -149,7 +160,6 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
 
             info.Modules = JsonConvert.SerializeObject(Modules);
             info.StarBaseBuildSequence = JsonConvert.SerializeObject(StarBaseBuildSequence);
-
             info.ShipBuildSequence = JsonConvert.SerializeObject(ShipBuildSequence);
 
             info.AllShip = JsonConvert.SerializeObject(AllShip);
@@ -180,6 +190,32 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
                 ShipBuildSequence.Add(blueprint.Clone());
             }
             return ShipBuildResult.OK;
+        }
+
+        public ModuleBuildResult BuildModule(string moduleID)
+        {
+            if (StarBaseBuildSequence.Count + Modules.Count > MaxModuleCapacity)
+                return ModuleBuildResult.ModuleCapacityFull;
+            var blueprint = StellaWarDB.Instance.dbConnection.Table<StarBaseModule>().Where(x => x.UnlockLevel <= Level).FirstOrDefault(x => x.ID == moduleID || x.Name == moduleID);
+            if (blueprint == null)
+            {
+                blueprint = StellaWarDB.Instance.dbConnection.Table<StarBaseModule>().FirstOrDefault(x => x.ID == moduleID || x.Name == moduleID) ?? null;
+                if (blueprint == null)
+                    return ModuleBuildResult.ModuleNotExist;
+                else
+                    return ModuleBuildResult.ModuleTechLocked;
+            }
+
+            if (StarBaseBuildSequence.Any(x => x.ID == moduleID) || Modules.Any(x => x.ID == moduleID))
+                return ModuleBuildResult.SingletonModule;
+
+            long cost = (long)blueprint.BuildCostKB;
+            var info = UserInfoManager.GetUserInfo(Owner);
+            if (info.coin <= cost)
+                return ModuleBuildResult.InsufficientFunds;
+
+            StarBaseBuildSequence.Add(blueprint.Clone());
+            return ModuleBuildResult.OK; 
         }
 
         public void Flush()
@@ -258,7 +294,13 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
                 if (StarBaseBuildSequence.Count > 0)
                 {
                     var module = StarBaseBuildSequence.First();
-                    
+                    module.BuildTimeMinute -= (1 + engineerCount);
+
+                    if (module.BuildTimeMinute <= 0)
+                    {
+                        StarBaseBuildSequence.Remove(module);
+                        Modules.Add(module);
+                    }
                 }
 
                 //工程船采集内存 基础值为 200 KB

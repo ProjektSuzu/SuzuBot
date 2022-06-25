@@ -108,7 +108,52 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
             DefenderFleet.RemoveAll(x => x.Health <= x.MaxHealth * 0.2f);
 
             
-            //防守方回合      
+            //防守方回合
+            //基地炮组
+            if (AttackerFleet.Count > 0)
+            {
+                var target = AttackerFleet[random.Next(AttackerFleet.Count)];
+                //计算是否命中
+                //真实命中率 = 命中率 - (对方闪避率 - 索敌率)
+                //如果索敌率大等于对方闪避率 则真实命中率 = 命中率
+                
+                //基地炮组命中率恒为60%
+                float realAccuracy = 0.6f;
+
+                if (random.NextSingle() > realAccuracy)
+                {
+
+                }
+                else
+                {
+                    //噫 好了 我中了
+                    //计算伤害
+                    int damage = DefenderStarBase.DefensiveGunGroupAttack;
+
+
+
+                    //先减护盾
+                    if (target.Shield > damage)
+                        target.Shield -= damage;
+                    else
+                    {
+                        //破盾
+                        damage -= target.Shield;
+                        if (target.Shield != 0) target.Shield = 0;
+
+                        if (target.Health > damage)
+                            target.Health -= damage;
+                        else
+                        {
+                            //击毁
+                            target.Health = 0;
+                            AttackerLost.Add(target);
+                            AttackerFleet.Remove(target);
+                        }
+                    }
+
+                }
+            }
             foreach (var ship in DefenderFleet)
             {
                 //如果对方没有剩余舰船了就break

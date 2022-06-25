@@ -152,7 +152,7 @@ namespace RinBot.Commands.Modules.StellaWar
                     var ship = temp.First();
                     var count = temp.RemoveAll(x => x.Code == ship.Code);
 
-                    sb.Append($"--{ship.Name}: {count}");
+                    sb.AppendLine($"--{ship.Name}: {count}");
                 }
                 sb.AppendLine(); 
             }
@@ -171,7 +171,7 @@ namespace RinBot.Commands.Modules.StellaWar
                     var ship = temp.First();
                     var count = temp.RemoveAll(x => x.Code == ship.Code);
 
-                    sb.Append($"--{ship.Name}: {count}");
+                    sb.AppendLine($"--{ship.Name}: {count}");
                 }
                 sb.AppendLine();
                 sb.AppendLine($"预计在 {starbase.CalcRepairCompleteDate():g} 全部维修完成");

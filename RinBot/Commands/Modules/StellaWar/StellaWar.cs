@@ -346,7 +346,7 @@ namespace RinBot.Commands.Modules.StellaWar
             
             StringBuilder sb = new();
             sb.AppendLine("[群星争霸]侵略战争");
-            sb.AppendLine($"{messageEvent.MemberCard} 对 {targetName}");
+            sb.AppendLine($"{starbase.Name} 对 {targetBase.Name}");
             sb.AppendLine();
 
             sb.AppendLine("进攻方舰队");

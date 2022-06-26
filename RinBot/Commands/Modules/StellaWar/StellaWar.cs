@@ -126,6 +126,10 @@ namespace RinBot.Commands.Modules.StellaWar
                     OnInstantBuild(bot, messageEvent);
                     return;
 
+                case "give-ship":
+                    OnGiveShip(bot, messageEvent, args);
+                    return;
+
                 default:
                     {
                         reply = $"错误: 找不到功能: \"{funcName}\"";

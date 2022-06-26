@@ -968,7 +968,7 @@ namespace RinBot.Commands.Modules.StellaWar
                 return;
             for (var i = 0; i < num; i++)
             {
-                starbase.ShipBuildSequence.Add(ship.Clone());
+                starbase.AllShip.Add(ship.Clone());
             }
             starbase.Flush();
             return;

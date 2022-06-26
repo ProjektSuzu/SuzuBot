@@ -910,6 +910,7 @@ namespace RinBot.Commands.Modules.StellaWar
 
             var starbase = starBases.First(x => x.Owner == messageEvent.MemberUin);
             starbase.ShipBuildSequence.ForEach(x => x.BuildTimeMinute = 0);
+            starbase.StarBaseBuildSequence.ForEach(x => x.BuildTimeMinute = 0);
             starbase.Flush();
             return;
         }

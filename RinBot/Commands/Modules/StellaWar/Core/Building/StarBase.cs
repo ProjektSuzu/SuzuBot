@@ -230,6 +230,10 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             //刷新舰船建造队列
             ShipBuildSequence.Where(x => x.BuildTimeMinute <= 0).ToList().ForEach(x => AllShip.Add(x));
             ShipBuildSequence.RemoveAll(x => x.BuildTimeMinute <= 0);
+
+            //刷新模块建造队列
+            StarBaseBuildSequence.Where(x => x.BuildTimeMinute <= 0).ToList().ForEach(x => Modules.Add(x));
+            StarBaseBuildSequence.RemoveAll(x => x.BuildTimeMinute <= 0);
         }
 
         public void Simulate()

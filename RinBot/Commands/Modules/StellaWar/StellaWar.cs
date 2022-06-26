@@ -852,8 +852,8 @@ namespace RinBot.Commands.Modules.StellaWar
             if (num > starbase.ShipBuildSequence.Count)
                 num = starbase.ShipBuildSequence.Count;
 
-            var cancelList = starbase.ShipBuildSequence.Reverse<BaseShip>().ToList().Take(num);
-            starbase.ShipBuildSequence = starbase.ShipBuildSequence.Take(starbase.ShipBuildSequence.Count - num).ToList();
+            var cancelList = starbase.ShipBuildSequence.Take(num);
+            starbase.ShipBuildSequence = starbase.ShipBuildSequence.Skip(starbase.ShipBuildSequence.Count - num).ToList();
 
             foreach (var ship in cancelList)
             {

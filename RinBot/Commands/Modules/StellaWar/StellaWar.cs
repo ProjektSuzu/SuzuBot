@@ -914,5 +914,60 @@ namespace RinBot.Commands.Modules.StellaWar
             starbase.Flush();
             return;
         }
+
+        public void OnGiveShip(Bot bot, GroupMessageEvent messageEvent, List<string> args)
+        {
+            if (PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin) < Permission.Admin)
+            {
+                messageEvent.Reply(bot, new MessageBuilder()
+                    .Add(ReplyChain.Create(messageEvent.Message))
+                    .Text(
+                        $"你没有权限使用此命令\n" +
+                        $"此命令需要的权限等级为 {Permission.Admin}\n" +
+                        $"你的权限等级为 {PermissionManager.Instance.GetPermission(bot, messageEvent.GroupUin, messageEvent.MemberUin)}"));
+                return;
+            }
+
+            var num = 1u;
+            var code = "";
+
+            if (args.Count <= 0)
+            {
+                bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text("错误: 缺少参数: <shipCode>"));
+                return;
+            }
+            else
+            {
+                code = args[0];
+                if (args.Count > 1)
+                {
+                    if (!uint.TryParse(args[1], out num) || num < 1)
+                    {
+                        bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
+                        .Add(ReplyChain.Create(messageEvent.Message))
+                        .Text($"错误: 参数错误: {args[0]} => [<num>]."));
+                        return;
+                    }
+                }
+            }
+            var starbase = starBases.FirstOrDefault(x => x.Owner == messageEvent.MemberUin);
+            if (starbase == null)
+            {
+                starbase = new StarBase(messageEvent.MemberUin, $"{messageEvent.MemberCard} 的基地");
+                starBases.Add(starbase);
+            }
+
+            var ship = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.Code == code || x.Name == code).ToList().First() ?? null;
+            if (ship == null)
+                return;
+            for (var i = 0; i < num; i++)
+            {
+                starbase.ShipBuildSequence.Add(ship.Clone());
+            }
+            starbase.Flush();
+            return;
+        }
     }
 }

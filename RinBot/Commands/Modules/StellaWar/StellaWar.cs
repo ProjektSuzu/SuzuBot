@@ -836,7 +836,7 @@ namespace RinBot.Commands.Modules.StellaWar
 
             if (args.Count > 0)
             {
-                if (!int.TryParse(args[1], out num) || num < 1)
+                if (!int.TryParse(args[0], out num) || num < 1)
                 {
                     bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                     .Add(ReplyChain.Create(messageEvent.Message))

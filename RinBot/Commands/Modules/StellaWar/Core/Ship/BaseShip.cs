@@ -89,6 +89,9 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Ship
         [Column("unlock_level")]
         public StarBaseLevel UnlockLevel { get; set; }
 
+        [Column("can_build")]
+        public bool CanBuild { get; set; }
+        
         public BaseShip Clone()
         {
             return (BaseShip)this.MemberwiseClone();

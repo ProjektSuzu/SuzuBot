@@ -170,10 +170,10 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
         {
             if (ShipBuildSequence.Count + AllShip.Count + num > MaxShipCapacity)
                 return ShipBuildResult.ShipCapacityFull;
-            var blueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.UnlockLevel <= Level).FirstOrDefault(x => x.Code == shipCode || x.Name == shipCode);
+            var blueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.CanBuild).Where(x => x.UnlockLevel <= Level).FirstOrDefault(x => x.Code == shipCode || x.Name == shipCode);
             if (blueprint == null)
             {
-                blueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.Code == shipCode || x.Name == shipCode).ToList().First() ?? null;
+                blueprint = StellaWarDB.Instance.dbConnection.Table<BaseShip>().Where(x => x.CanBuild).Where(x => x.Code == shipCode || x.Name == shipCode).ToList().First() ?? null;
                 if (blueprint == null)
                     return ShipBuildResult.ShipNotExist;
                 else
@@ -213,7 +213,7 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             var info = UserInfoManager.GetUserInfo(Owner);
             if (info.coin <= cost)
                 return ModuleBuildResult.InsufficientFunds;
-
+            UserInfoManager.UpdateUserInfo(info);
             StarBaseBuildSequence.Add(blueprint.Clone());
             return ModuleBuildResult.OK; 
         }

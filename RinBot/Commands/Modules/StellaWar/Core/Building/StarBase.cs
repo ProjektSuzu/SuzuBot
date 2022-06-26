@@ -184,7 +184,7 @@ namespace RinBot.Commands.Modules.StellaWar.Core.Building
             var info = UserInfoManager.GetUserInfo(Owner);
             if (info.coin <= cost)
                 return ShipBuildResult.InsufficientFunds;
-
+            UserInfoManager.UpdateUserInfo(info);
             for (uint i = num; i > 0; i--)
             {
                 ShipBuildSequence.Add(blueprint.Clone());

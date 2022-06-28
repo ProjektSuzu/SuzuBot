@@ -221,19 +221,19 @@ namespace RinBot.Commands.Modules.StellaWar.Core.War
                 IsOver = true;
                 DefenderStarBase.UnderAttack = false;
 
+                if (AttackerFleet.Count > 0)
+                {
+                    IsSuccess = true;
+                    MemoryRobbed = AttackerFleet.Count * 50000;
+                    DefenderStarBase.EmergencyShield = DateTime.Now.AddHours(2);
+                }
+
                 //撤退的舰船归队
                 AttackerRetreat.ForEach(x => AttackerFleet.Add(x));
                 DefenderRetreat.ForEach(x => DefenderFleet.Add(x));
 
                 AttackerStarBase.Flush();
                 DefenderStarBase.Flush();
-
-
-                if (AttackerFleet.Count > 0)
-                {
-                    IsSuccess = true;
-                    MemoryRobbed = AttackerFleet.Count * 50000;
-                }
             }
         }
     }

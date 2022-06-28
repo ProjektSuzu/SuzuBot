@@ -256,6 +256,8 @@ namespace RinBot.Commands.Modules.StellaWar
                 sb.AppendLine();
             }
 
+            sb.AppendLine($"紧急护盾已开启，将保护我们直至{starbase.EmergencyShield:g}");
+
             bot.SendGroupMessage(messageEvent.GroupUin, new MessageBuilder()
                         .Add(ReplyChain.Create(messageEvent.Message))
                         .Text(sb.ToString()));

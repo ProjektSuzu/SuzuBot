@@ -161,9 +161,17 @@ namespace RinBot.Commands.Modules.StellaWar
             sb.AppendLine($"模块容量: {starbase.Modules.Count()}/{starbase.MaxModuleCapacity}");
             if (starbase.Modules.Count > 0)
             {
-                foreach (var module in starbase.Modules)
+                List<StarBaseModule> temp = new();
+                foreach (var module in starbase.StarBaseBuildSequence)
                 {
-                    sb.AppendLine($"--{module.Name}");
+                    temp.Add(module);
+                }
+                while (temp.Count > 0)
+                {
+                    var module = temp.First();
+                    var count = temp.RemoveAll(x => x.ID == module.ID);
+
+                    sb.AppendLine($"--{module.Name}: {count}");
                 }
             }
             sb.AppendLine($"模块建造队列: {starbase.StarBaseBuildSequence.Count}");
@@ -179,9 +187,12 @@ namespace RinBot.Commands.Modules.StellaWar
                 temp = temp.Skip(1).ToList();
 
                 sb.AppendLine($"--{first.Name}  ETA: {first.BuildTimeMinute / (1 + engineerCount)} min");
-                foreach (var module in temp)
+                while (temp.Count > 0)
                 {
-                    sb.AppendLine($"--{module.Name}  WAITING");
+                    var module = temp.First();
+                    var count = temp.RemoveAll(x => x.ID == module.ID);
+
+                    sb.AppendLine($"--{module.Name}: {count} WAITING");
                 }
             }
             sb.AppendLine();
@@ -235,9 +246,12 @@ namespace RinBot.Commands.Modules.StellaWar
                 {
                     sb.AppendLine($"--{ship.Name}  ETA: {ship.BuildTimeMinute} min");
                 }
-                foreach (var ship in waitList)
+                while (waitList.Count > 0)
                 {
-                    sb.AppendLine($"--{ship.Name}  WAITING");
+                    var ship = waitList.First();
+                    var count = waitList.RemoveAll(x => x.Code == ship.Code);
+
+                    sb.AppendLine($"--{ship.Name}: {count} WAITING");
                 }
                 sb.AppendLine();
             }

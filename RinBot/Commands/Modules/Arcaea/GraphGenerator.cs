@@ -1411,9 +1411,7 @@ namespace RinBot.Commands.Modules.Arcaea
 
         private SKColor GetAverageColor(SKBitmap bitmap)
         {
-            int width = bitmap.Width;
-            int height = bitmap.Height;
-            int[] pixels = new int[width * height];
+            var pixelCount = bitmap.Width * bitmap.Height;
 
             int r = 0, g = 0, b = 0;
             foreach (SKColor pixel in bitmap.Pixels)
@@ -1422,15 +1420,15 @@ namespace RinBot.Commands.Modules.Arcaea
                 {
                     continue;
                 }
-
+                
                 r += pixel.Red & 0xff;
                 g += pixel.Green & 0xff;
                 b += pixel.Blue & 0xff;
             }
 
-            r /= pixels.Length;
-            g /= pixels.Length;
-            b /= pixels.Length;
+            r /= pixelCount;
+            g /= pixelCount;
+            b /= pixelCount;
 
             return new SKColor((byte)r, (byte)g, (byte)b);
         }

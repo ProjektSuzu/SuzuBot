@@ -1,54 +1,59 @@
-﻿using Konata.Core.Interfaces.Api;
-using NLog;
-using RinBot.Core.Components;
-using RinBot.Utils.BuildStamp;
-using RinBot.Utils.Database;
+﻿using NLog;
+using RinBot.BuildStamp;
+using RinBot.Core;
+using RinBot.Core.Component.Command;
+using RinBot.Core.KonataCore;
 
-namespace RinBot;
-
-public static class Program
+namespace RinBot
 {
-    private static readonly string TAG = "Main";
-    private static readonly Logger Logger = LogManager.GetLogger(TAG);
-
-    public static int Main()
+    internal class Program
     {
-        Console.WriteLine(
-    @"=================================" + "\n" +
-    @"    ____  _       ____        __ " + "\n" +
-    @"   / __ \(_)___  / __ )____  / /_" + "\n" +
-    @"  / /_/ / / __ \/ __  / __ \/ __/" + "\n" +
-    @" / _, _/ / / / / /_/ / /_/ / /_  " + "\n" +
-    @"/_/ |_/_/_/ /_/_____/\____/\__/  " + "\n" +
-    @"=================================" + "\n" +
-    $"RinBot {RinBuildStamp.Version}" + "\n" +
-    $"Build: {RinBuildStamp.Branch}@{RinBuildStamp.CommitHash}" + "\n" +
-    $"Time: {RinBuildStamp.BuildTime}" + "\n\n" +
-    $"Konata.Core: {CoreBuildStamp.Version} {CoreBuildStamp.Branch}@{CoreBuildStamp.CommitHash}" + "\n" +
-    @"Powered by Konata (C)" + "\n" +
-    "\n"
-    );
-        Logger.Info("\n\n\n\n");
-        Logger.Info("Initializing Bot.");
-        BotManager.Instance.InitBot();
-        Logger.Info("Initializing Database.");
-        DatabaseManager.Instance.OpenConnection();
-        Logger.Info("Loading CommandSets.");
-        CommandManager.Instance.LoadCommandSets();
-
-        Logger.Info("Logging in.");
-        var result = BotManager.Instance.Bot.Login().Result;
-        if (result)
+        private static Logger Logger = LogManager.GetLogger("BOOT");
+        public static void Main()
         {
-            Logger.Info("Bot online.");
-        }
-        else
-        {
-            Logger.Info("Bot login failed.");
-            Environment.Exit(-1);
-        }
+            Console.WriteLine(@"    ____  _       ____        __ ");
+            Console.WriteLine(@"   / __ \(_)___  / __ )____  / /_");
+            Console.WriteLine(@"  / /_/ / / __ \/ __  / __ \/ __/");
+            Console.WriteLine(@" / _, _/ / / / / /_/ / /_/ / /_  ");
+            Console.WriteLine(@"/_/ |_/_/_/ /_/_____/\____/\__/  ");
+            Console.WriteLine(@"=================================");
+            Console.WriteLine("RinBot  Copyright (C) 2020  AkulaKirov\n");
 
-        return 0;
+            Logger.Info($"RinBot-{RinBotBuildStamp.Version}");
+            Logger.Info($"{RinBotBuildStamp.CommitHash.Substring(RinBotBuildStamp.CommitHash.Length - 8)}@{RinBotBuildStamp.Branch}");
+
+            Logger.Info("Checking directory structure.");
+            if (!Directory.Exists(Global.configPath))
+            {
+                Logger.Info("Mkdir: config.");
+                Directory.CreateDirectory(Global.configPath);
+            }
+            if (!Directory.Exists(Global.resourcePath))
+            {
+                Logger.Info("Mkdir: resource.");
+                Directory.CreateDirectory(Global.resourcePath);
+            }
+            if (!Directory.Exists(Global.databasePath))
+            {
+                Logger.Info("Mkdir: database.");
+                Directory.CreateDirectory(Global.databasePath);
+            }
+
+            Logger.Info($"Initializing modules.");
+            CommandManager.Instance.RegisterCommands();
+
+            KonataBot konataBot = KonataBot.Instance;
+            konataBot.InitializeBot();
+            Logger.Info($"All set, ready to take off.");
+
+            if (!konataBot.LoginBot())
+            {
+                konataBot.Bot.Dispose();
+                return;
+            }
+
+            Logger.Info("Program startup complete.");
+            return;
+        }
     }
-
 }

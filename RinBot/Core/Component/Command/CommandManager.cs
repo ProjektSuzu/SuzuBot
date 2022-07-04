@@ -54,6 +54,9 @@ namespace RinBot.Core.Component.Command
 
         private List<Module> modules = new();
 
+        public int ModuleCount => modules.Count;
+        public int CommandCount => modules.Sum(x => x.Commands.Count);
+
         internal void RegisterCommands()
         {
             Type[] types = Assembly.GetExecutingAssembly().GetTypes();

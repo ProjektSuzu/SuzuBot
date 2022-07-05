@@ -61,7 +61,7 @@ namespace RinBot.Core.Component.Permission
             return UserRole.User;
         }
 
-        public bool IsQQGroupWhiteListed(uint groupId)
+        public QQGroupInfo GetQQGroupInfo(uint groupId)
         {
             QQGroupInfo? info = database.dbConnection
                 .Table<QQGroupInfo>()
@@ -73,36 +73,21 @@ namespace RinBot.Core.Component.Permission
                 {
                     GroupId = groupId,
                     InviterId = 114514,
-                    DisableModules = "",
+                    DisableModuleIds = new(),
                     WhiteListed = false,
                     BlackListed = false,
                 };
                 database.dbConnection.Insert(info);
-                return false;
+                return info;
             }
-            return info.WhiteListed;
+            return info;
         }
+
+        public bool IsQQGroupWhiteListed(uint groupId)
+            => GetQQGroupInfo(groupId).WhiteListed;
 
         public bool IsQQGroupBlackListed(uint groupId)
-        {
-            QQGroupInfo? info = database.dbConnection
-                .Table<QQGroupInfo>()
-                .FirstOrDefault(x => x.GroupId == groupId);
+            => GetQQGroupInfo(groupId).BlackListed;
 
-            if (info == null)
-            {
-                info = new()
-                {
-                    GroupId = groupId,
-                    InviterId = 114514,
-                    DisableModules = "",
-                    WhiteListed = false,
-                    BlackListed = false,
-                };
-                database.dbConnection.Insert(info);
-                return false;
-            }
-            return info.BlackListed;
-        }
     }
 }

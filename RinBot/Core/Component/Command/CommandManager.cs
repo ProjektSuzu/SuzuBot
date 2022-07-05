@@ -8,19 +8,29 @@ using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
 using RinBot.Core.Component.Permission;
+using SQLite;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using AtChain = Konata.Core.Message.Model.AtChain;
 
 namespace RinBot.Core.Component.Command
 {
+    [Table("T_MODULE_INFO")]
+    class ModuleInfo
+    {
+        [PrimaryKey]
+        [Column("module_id")]
+        public string ModuleId { get; set; }
+        [Column("is_enable")]
+        public bool IsEnable { get; set; }
+    }
+
     class Module
     {
         public object ModuleClass { get; set; }
         public ModuleAttribute ModuleAttribute { get; set; }
-        public bool GloballyEnabled { get; set; }
-
-        public List<Command> Commands = new();
+        public bool IsEnable { get; set; }
+        public List<Command> Commands { get; set; }
     }
 
     class Command
@@ -42,7 +52,10 @@ namespace RinBot.Core.Component.Command
                 return instance;
             }
         }
-        private CommandManager() { }
+        private CommandManager() 
+        {
+            RinDatabase.Instance.dbConnection.CreateTable<ModuleInfo>();
+        }
         #endregion
 
         readonly Logger Logger = LogManager.GetLogger("CMD");
@@ -70,10 +83,12 @@ namespace RinBot.Core.Component.Command
                 Module module = new()
                 {
                     ModuleAttribute = moduleAttribute,
-                    GloballyEnabled = true,
+                    IsEnable = true,
+                    Commands = new(),
                 };
 
                 var methods = type.GetMethods();
+
                 foreach (var method in methods)
                 {
                     var commandAttributes = method.GetCustomAttributes<CommandAttribute>();
@@ -88,9 +103,18 @@ namespace RinBot.Core.Component.Command
                 module.ModuleClass = Activator.CreateInstance(type);
                 modules.Add(module);
             }
-            int commandCount = 0;
-            foreach (var module in modules)
-                commandCount += module.Commands.Count;
+            int commandCount = modules.Sum(x => x.Commands.Count);
+            var moduleIds = modules.Select(x => x.ModuleAttribute.ModuleID).ToList();
+            RinDatabase.Instance.dbConnection
+                .Table<ModuleInfo>()
+                .ToList()
+                .ForEach(x => modules.First(y => y.ModuleAttribute.ModuleID == x.ModuleId).IsEnable = x.IsEnable);
+            modules.ForEach(x =>
+            {
+                RinDatabase.Instance.dbConnection
+                .InsertOrReplace(new ModuleInfo() { ModuleId = x.ModuleAttribute.ModuleID, IsEnable = x.IsEnable});
+            });
+
             Logger.Info($"Total {modules.Count} Module(s), {commandCount} Command(s).");
         }
 
@@ -175,19 +199,20 @@ namespace RinBot.Core.Component.Command
             }
 
             List<string> disabled = new();
-            if (rinEvent.EventSubjectType == EventSubjectType.Group && rinEvent.EventSourceType == EventSourceType.QQ)
+            if (rinEvent.EventSubjectType == EventSubjectType.Group)
             {
-                var groupId = uint.Parse(rinEvent.SubjectId);
-                var info = RinDatabase.Instance.dbConnection
-                    .Table<QQGroupInfo>()
-                    .FirstOrDefault(x => x.GroupId == groupId);
+                if (rinEvent.EventSourceType == EventSourceType.QQ)
+                {
+                    var groupId = uint.Parse(rinEvent.SubjectId);
+                    var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
 
-                disabled = JsonConvert.DeserializeObject<List<string>>(info.DisableModules) ?? new();
+                    disabled = info.DisableModuleIds;
+                }
             }
 
             foreach (var module in modules)
             {
-                if (!module.GloballyEnabled) continue;
+                if (!module.IsEnable) continue;
                 if (disabled.Contains(module.ModuleAttribute.ModuleID)) continue;
 
                 foreach (var command in module.Commands)
@@ -255,12 +280,23 @@ namespace RinBot.Core.Component.Command
                     {
                         if (PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId)) < attr.Role)
                         {
-                            Logger.Warn($"Permission denied: U{rinEvent.SenderId} Require {attr.Role}");
-                            var messageChain = new RinMessageChain();
-                            messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
-                            messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
-                            rinEvent.Reply(messageChain);
-                            return;
+                            if (rinEvent.EventSubjectType != EventSubjectType.Group)
+                            {
+                                if (rinEvent.EventSourceType == EventSourceType.QQ 
+                                    && PermissionManager.Instance.GetQQUserRoleInGroup(uint.Parse(rinEvent.SenderId), uint.Parse(rinEvent.SubjectId)) >= attr.Role)
+                                {
+                                    // 无事发生
+                                }
+                                else
+                                {
+                                    Logger.Warn($"Permission denied: U{rinEvent.SenderId} Require {attr.Role}");
+                                    var messageChain = new RinMessageChain();
+                                    messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
+                                    messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
+                                    rinEvent.Reply(messageChain);
+                                    return;
+                                }
+                            }
                         }
 
                         Logger.Info($"Command {attr.Name} Invoked: {rinEvent.SenderId} at {rinEvent.SubjectId}");

@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using Newtonsoft.Json;
+using SQLite;
 
 namespace RinBot.Core.Component.Database
 {
@@ -13,7 +14,20 @@ namespace RinBot.Core.Component.Database
         public uint InviterId { get; set; }
 
         [Column("disable_modules")]
-        public string DisableModules { get; set; }
+        private string DisableModuleIdsJson { get; set; }
+        public List<string> DisableModuleIds
+        {
+            get
+            {
+                if (DisableModuleIdsJson == null)
+                    return new();
+                return JsonConvert.DeserializeObject<List<string>>(DisableModuleIdsJson);
+            }
+            set
+            {
+                DisableModuleIdsJson = JsonConvert.SerializeObject(value);
+            }
+        }
 
         [Column("white_listed")]
         public bool WhiteListed { get; set; }

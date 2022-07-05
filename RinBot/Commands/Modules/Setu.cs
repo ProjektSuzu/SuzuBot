@@ -60,7 +60,7 @@ namespace RinBot.Commands.Modules
                 .Image(bytes));
         }
 
-        [GroupMessageCommand("色图", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
+        //[GroupMessageCommand("色图", new[] { @"^setu\s?([\s\S]+)?", @"^色图\s?([\s\S]+)?" })]
         public void OnSetu(Bot bot, GroupMessageEvent messageEvent, List<string> args)
         {
             if (cooldownList.Any(x => x.Key == messageEvent.GroupUin))

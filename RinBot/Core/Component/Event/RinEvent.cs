@@ -40,6 +40,11 @@ namespace RinBot.Core.Component.Event
             SubjectId = subjectID;
         }
 
+        public Task<bool> Reply(string text)
+        {
+            return Reply(new RinMessageChain(TextChain.Create(text)));
+        }
+
         public Task<bool> Reply(RinMessageChain chains)
         {
             switch (EventSourceType)

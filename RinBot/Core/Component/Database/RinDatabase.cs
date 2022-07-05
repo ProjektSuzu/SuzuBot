@@ -24,7 +24,7 @@ namespace RinBot.Core.Component.Database
             }
         }
         #endregion
-        public static readonly string rinDBPath = Path.Combine(Global.databasePath, "rin.db");
+        public static readonly string rinDBPath = Path.Combine(Global.DB_PATH, "rin.db");
         public SQLiteConnection dbConnection = new(rinDBPath);
     }
 }

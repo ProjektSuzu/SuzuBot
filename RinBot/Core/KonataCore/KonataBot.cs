@@ -23,7 +23,7 @@ namespace RinBot.Core.KonataCore
         }
         private KonataBot()
         {
-            konataConfigDirectory = Path.Combine(Global.configPath, "Konata");
+            konataConfigDirectory = Path.Combine(Global.CONFIG_PATH, "Konata");
             if (!Directory.Exists(konataConfigDirectory)) Directory.CreateDirectory(konataConfigDirectory);
 
             konataDevicePath = Path.Combine(konataConfigDirectory, "device.json");

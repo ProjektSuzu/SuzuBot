@@ -23,20 +23,20 @@ namespace RinBot
             Logger.Info($"{RinBotBuildStamp.CommitHash.Substring(RinBotBuildStamp.CommitHash.Length - 8)}@{RinBotBuildStamp.Branch}");
 
             Logger.Info("Checking directory structure.");
-            if (!Directory.Exists(Global.configPath))
+            if (!Directory.Exists(Global.CONFIG_PATH))
             {
                 Logger.Info("Mkdir: config.");
-                Directory.CreateDirectory(Global.configPath);
+                Directory.CreateDirectory(Global.CONFIG_PATH);
             }
-            if (!Directory.Exists(Global.resourcePath))
+            if (!Directory.Exists(Global.RESOURCE_PATH))
             {
                 Logger.Info("Mkdir: resource.");
-                Directory.CreateDirectory(Global.resourcePath);
+                Directory.CreateDirectory(Global.RESOURCE_PATH);
             }
-            if (!Directory.Exists(Global.databasePath))
+            if (!Directory.Exists(Global.DB_PATH))
             {
                 Logger.Info("Mkdir: database.");
-                Directory.CreateDirectory(Global.databasePath);
+                Directory.CreateDirectory(Global.DB_PATH);
             }
 
             Logger.Info($"Initializing modules.");

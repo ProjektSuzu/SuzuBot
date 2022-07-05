@@ -74,9 +74,9 @@ namespace RinBot.Command
         {
             var chain = new RinMessageChain();
             chain.Add(TextChain.Create("文字和图片"));
-            chain.Add(ImageChain.Create(File.ReadAllBytes(Path.Combine(Global.resourcePath, "test1.jpg"))));
+            chain.Add(ImageChain.Create(File.ReadAllBytes(Path.Combine(Global.RESOURCE_PATH, "test1.jpg"))));
             chain.Add(TextChain.Create("合并发送"));
-            chain.Add(ImageChain.Create(File.ReadAllBytes(Path.Combine(Global.resourcePath, "test2.gif"))));
+            chain.Add(ImageChain.Create(File.ReadAllBytes(Path.Combine(Global.RESOURCE_PATH, "test2.gif"))));
             chain.Add(TextChain.Create("测试\n"));
             chain.Add(TextChain.Create($"参数测试: {String.Join(' ', args)}"));
 

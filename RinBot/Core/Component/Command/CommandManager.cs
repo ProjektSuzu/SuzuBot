@@ -226,7 +226,7 @@ namespace RinBot.Core.Component.Command
 
                     if ((attr.MatchingMask & (int)MatchingType.Always) > 1)
                     {
-                        invoke = true;
+                        invoke = method.GetParameters().Count() > 0 && method.GetParameters().First().ParameterType == rinEvent.OriginalEvent.GetType();
                     }
                     else
                     {
@@ -352,7 +352,9 @@ namespace RinBot.Core.Component.Command
                             }
 
 
-                            if (returnValue != null)
+                            if (method.GetParameters().FirstOrDefault() != null 
+                                && method.GetParameters().FirstOrDefault().ParameterType == typeof(RinEvent) 
+                                && returnValue != null)
                             {
                                 invokeRecord.IsInvoked = true;
                                 var messageChain = new RinMessageChain();

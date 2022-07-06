@@ -123,6 +123,11 @@ namespace RinBot.Core.Component.Command
             modules.Clear();
         }
 
+        public Module? GetModule(string moduleId)
+        {
+            return modules.FirstOrDefault(x => x.ModuleAttribute.ModuleID == moduleId);
+        }
+
         internal bool LeadCharCheck(RinEvent rinMessageEvent)
         {
             if (rinMessageEvent.EventSourceType == EventSourceType.QQ)

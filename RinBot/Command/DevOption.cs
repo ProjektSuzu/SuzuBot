@@ -130,5 +130,47 @@ namespace RinBot.Command
             CommandManager.Instance.RegisterCommands();
             return $"[CMD]\n载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.";
         }
+        [Command("封禁", "ban", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
+        public string OnBan(RinEvent e, List<string> args)
+        {
+            if (args.Count <= 0)
+                return "[DevOptions]\n缺少参数 <userId>";
+            var userId = args[0];
+            if (userId == e.SenderId)
+                return "[DevOptions]\n不能封禁自己";
+            if (e.EventSourceType == EventSourceType.QQ)
+            {
+                var uin = uint.Parse(userId);
+                var info = PermissionManager.Instance.GetQQUserInfo(uin);
+                info.UserRole = UserRole.Banned;
+                PermissionManager.Instance.UpdateQQUserInfo(info);
+                return $"[DevOptions]\n已封禁 {userId}";
+            }
+            else
+            {
+                return null;
+            }
+        }
+        [Command("解封", "unban", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
+        public string OnUnBan(RinEvent e, List<string> args)
+        {
+            if (args.Count <= 0)
+                return "[DevOptions]\n缺少参数 <userId>";
+            var userId = args[0];
+            if (userId == e.SenderId)
+                return "[DevOptions]\n不能解封自己";
+            if (e.EventSourceType == EventSourceType.QQ)
+            {
+                var uin = uint.Parse(userId);
+                var info = PermissionManager.Instance.GetQQUserInfo(uin);
+                info.UserRole = UserRole.User;
+                PermissionManager.Instance.UpdateQQUserInfo(info);
+                return $"[DevOptions]\n已解封 {userId}";
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

@@ -2,11 +2,11 @@ name: .NET
 
 on:
   push:
-    branches: [ master ]
     tags: '[0-9].[0-9]+.[0-9]+-[0-9a-zA-Z]*'
 
 jobs:
   Publish:
+    if: github.event.base_ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

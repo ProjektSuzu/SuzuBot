@@ -14,7 +14,7 @@ using Konata.Core.Message;
 
 namespace RinBot.Command
 {
-    [Module("Core", "org.akulak.interact")]
+    [Module("互动", "org.akulak.interact")]
 
     internal class Interact
     {

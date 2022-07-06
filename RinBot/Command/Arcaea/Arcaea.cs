@@ -74,7 +74,7 @@ namespace RinBot.Command.Arcaea
             var result = ArcaeaUnlimitedAPI.Instance.GetBest30Result(info.UserCode).Result;
             if (result == null)
             {
-                chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n远端服务器连接超时\n如果你是第一次查询 请几分钟后再重试"));
+                chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n服务器连接错误\n如果你是第一次查询 请几分钟后再重试"));
                 return chain;
             }
 
@@ -103,7 +103,7 @@ namespace RinBot.Command.Arcaea
             var result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfo(info.UserCode).Result;
             if (result == null)
             {
-                chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n远端服务器连接超时\n如果你是第一次查询 请几分钟后再重试"));
+                chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n服务器连接错误\n如果你是第一次查询 请几分钟后再重试"));
                 return chain;
             }
 
@@ -256,7 +256,7 @@ namespace RinBot.Command.Arcaea
             if (result == null || result.Status != 0) result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfoByName(userCodeOrUserName).Result;
             if (result == null)
             {
-                chain.Add(TextChain.Create($"[Arcaea]\n服务器回报错误\n连接超时"));
+                chain.Add(TextChain.Create($"[Arcaea]\n服务器回报错误\n服务器连接错误"));
                 return chain;
             }
 
@@ -355,7 +355,7 @@ namespace RinBot.Command.Arcaea
             var bytes = ArcaeaUnlimitedAPI.Instance.GetChartPreview(sample.SongId, difficulty).Result;
             if (bytes == null)
             {
-                chain.Add(TextChain.Create($"[Arcaea]\n服务器回报错误\n连接超时或目标铺面不存在"));
+                chain.Add(TextChain.Create($"[Arcaea]\n服务器回报错误\n服务器连接错误或目标铺面不存在"));
                 return chain;
             }
 

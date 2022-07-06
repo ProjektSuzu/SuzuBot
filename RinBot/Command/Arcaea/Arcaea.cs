@@ -65,7 +65,7 @@ namespace RinBot.Command.Arcaea
             else if (args.Count() > 0) userCode = args[0];
             else
             {
-                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定"));
+                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
                 return chain;
             }
 
@@ -94,7 +94,7 @@ namespace RinBot.Command.Arcaea
 
             if (info == null)
             {
-                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定"));
+                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
                 return chain;
             }
 
@@ -225,7 +225,7 @@ namespace RinBot.Command.Arcaea
             if (result == null || result.Status != 0) result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfoByName(userCodeOrUserName).Result;
             if (result == null)
             {
-                chain.Add(TextChain.Create($"[Arcaea]\n找不到指定用户 {userCodeOrUserName}\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
+                chain.Add(TextChain.Create($"[Arcaea]\n服务器回报错误\n连接超时"));
                 return chain;
             }
 
@@ -249,7 +249,7 @@ namespace RinBot.Command.Arcaea
 
             if (info == null)
             {
-                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定"));
+                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
                 return chain;
             }
 

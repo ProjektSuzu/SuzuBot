@@ -36,7 +36,28 @@ namespace RinBot.Command
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]
         public string OnPing(RinEvent e)
         {
-            return "(ᗜˬᗜ)";
+            return "FUMO (ᗜˬᗜ) FUNKY";
+        }
+
+        [Command("用户信息", new[] { "info" , "信息"}, (int)MatchingType.Exact, ReplyType.Reply)]
+        public string OnInfo(RinEvent e)
+        {
+            StringBuilder stringBuilder = new();
+            stringBuilder.AppendLine("[UserInfo]");
+            if (e.EventSourceType == EventSourceType.QQ)
+            {
+                var info = PermissionManager.Instance.GetQQUserInfo(uint.Parse(e.SenderId));
+                stringBuilder.AppendLine($"用户Id: {info.UserId}");
+                stringBuilder.AppendLine($"权限: {info.UserRole}");
+                stringBuilder.AppendLine($"经验: {info.Exp} exp");
+                stringBuilder.AppendLine($"内存: {info.MemoryStr}");
+
+            }
+            else if (e.EventSourceType == EventSourceType.Telegram)
+            {
+
+            }
+            return stringBuilder.ToString();
         }
 
         [Command("状态汇报", "status", (int)MatchingType.StartsWith, ReplyType.Reply)]

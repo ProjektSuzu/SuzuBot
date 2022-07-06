@@ -83,6 +83,27 @@ namespace RinBot.Core.Component.Permission
             return info;
         }
 
+        public QQUserInfo GetQQUserInfo(uint userId)
+        {
+            QQUserInfo? info = database.dbConnection
+                .Table<QQUserInfo>()
+                .FirstOrDefault(x => x.UserId == userId);
+
+            if (info == null)
+            {
+                info = new()
+                {
+                    UserId = userId,
+                    UserRole = UserRole.User,
+                    Exp = 0,
+                    Memory = 0,
+                };
+                database.dbConnection.Insert(info);
+                return info;
+            }
+            return info;
+        }
+
         public bool IsQQGroupWhiteListed(uint groupId)
             => GetQQGroupInfo(groupId).WhiteListed;
 

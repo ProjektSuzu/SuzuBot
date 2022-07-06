@@ -26,33 +26,33 @@ namespace RinBot.Core.Component.Message
 
         public void OnKonataGroupMessage(object sender, GroupMessageEvent e)
         {
+            Logger.Info($"QQ {e.GroupName}(G{e.GroupUin}) {e.MemberCard}(U{e.MemberUin})\n{e.Message.Chain}");
             if (e.MemberUin == (sender as Bot).Uin) return;
             var rinMessageEvent = e.ToRinEvent((Bot)sender);
-            Logger.Info($"QQ {e.GroupName}(G{e.GroupUin}) {e.MemberCard}(U{e.MemberUin})\n{e.Message.Chain}");
             Task.Run(() => CommandManager.Instance.CommandInvoke(rinMessageEvent));
         }
 
         public void OnKonataFriendMessage(object sender, FriendMessageEvent e)
         {
+            Logger.Info($"QQ DM {e.FriendUin}\n{e.Message.Chain}");
             if (e.FriendUin == (sender as Bot).Uin) return;
             var rinMessageEvent = e.ToRinEvent((Bot)sender);
-            Logger.Info($"QQ DM {e.FriendUin}\n{e.Message.Chain}");
             Task.Run(() => CommandManager.Instance.CommandInvoke(rinMessageEvent));
         }
 
         public void OnKonataGroupPoke(object sender, GroupPokeEvent e)
         {
+            Logger.Info($"QQ {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
             if (e.OperatorUin == (sender as Bot).Uin) return;
             var rinMessageEvent = e.ToRinEvent((Bot)sender);
-            Logger.Info($"QQ {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
             Task.Run(() => CommandManager.Instance.CommandInvoke(rinMessageEvent));
         }
 
         public void OnKonataFriendPoke(object sender, FriendPokeEvent e)
         {
+            Logger.Info($"QQ {e.FriendUin} {e.ActionPrefix} {e.SelfUin} {e.ActionSuffix}");
             if (e.FriendUin == (sender as Bot).Uin) return;
             var rinMessageEvent = e.ToRinEvent((Bot)sender);
-            Logger.Info($"QQ {e.FriendUin} {e.ActionPrefix} {e.SelfUin} {e.ActionSuffix}");
             Task.Run(() => CommandManager.Instance.CommandInvoke(rinMessageEvent));
         }
 

@@ -75,7 +75,7 @@ namespace RinBot.Command.Arcaea
         public AccountInfo AccountInfo { get; set; }
         [JsonProperty("best30_list")]
         public List<SongResult> B30List { get; set; }
-        [JsonProperty("account_inbest30_overflowfo")]
+        [JsonProperty("best30_overflow")]
         public List<SongResult> B30Overflow { get; set; }
     }
 

@@ -1,10 +1,12 @@
 ﻿using NLog;
 using RinBot.BuildStamp;
+using RinBot.Core.Component.Command;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Database;
 using RinBot.Core.Component.ENV;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
+using RinBot.Core.Component.Permission;
 using System.Text;
 
 namespace RinBot.Command
@@ -14,7 +16,7 @@ namespace RinBot.Command
     {
         private Logger Logger = LogManager.GetLogger("DEV");
 
-        [Command("环境变量", "env", MatchingType.StartsWith, ReplyType.Reply, RinBot.Core.Component.Permission.UserRole.Admin)]
+        [Command("环境变量", "env", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
         public string OnEnv(RinEvent e, List<string> args)
         {
             StringBuilder stringBuilder = new();
@@ -119,6 +121,14 @@ namespace RinBot.Command
                     stringBuilder.AppendLine($"找不到功能: {funcName}");
                     return stringBuilder.ToString();
             }
+        }
+
+        [Command("模块重载", "reload", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
+        public string OnReload(RinEvent e)
+        {
+            CommandManager.Instance.ClearCommands();
+            CommandManager.Instance.RegisterCommands();
+            return $"[CMD]\n载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.";
         }
     }
 }

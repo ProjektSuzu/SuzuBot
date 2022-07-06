@@ -1,4 +1,6 @@
-﻿using Konata.Core.Interfaces.Api;
+﻿using Konata.Core;
+using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
 using RinBot.BuildStamp;
 using RinBot.Core.Component.Command;
 using RinBot.Core.Component.Command.CustomAttribute;
@@ -18,14 +20,6 @@ namespace RinBot.Command
         public string OnHelp(RinEvent e)
         {
             return $"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
-        }
-
-        [Command("模块重载", "reload", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
-        public string OnReload(RinEvent e)
-        {
-            CommandManager.Instance.ClearCommands();
-            CommandManager.Instance.RegisterCommands();
-            return $"[CMD]\n载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.";
         }
 
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]

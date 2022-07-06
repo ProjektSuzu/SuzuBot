@@ -10,7 +10,7 @@ on:
     
 jobs:
   Publish:
-    if: github.event.base_ref == 'refs/heads/master'
+    if: github.event.base_ref == 'master'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout

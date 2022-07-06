@@ -333,6 +333,7 @@ namespace RinBot.Core.Component.Command
                                 for (int i = 1; i < split.Length; i++)
                                     args.Add(split[i]);
                             }
+                            args.RemoveAll(x => x.Trim() == "");
 
                             object? returnValue = null;
 

@@ -67,23 +67,5 @@ namespace RinBot.Command
 
             return stringBuilder.ToString();
         }
-
-#if DEBUG
-        [Command("测试", @"test\s?(.+)?", MatchingType.Regex, ReplyType.Reply)]
-        public RinMessageChain OnTest(RinEvent e, List<string> args)
-        {
-            var chain = new RinMessageChain();
-            chain.Add(TextChain.Create("文字和图片"));
-            chain.Add(ImageChain.Create(File.ReadAllBytes(Path.Combine(Global.RESOURCE_PATH, "test1.jpg"))));
-            chain.Add(TextChain.Create("合并发送"));
-            chain.Add(ImageChain.Create(File.ReadAllBytes(Path.Combine(Global.RESOURCE_PATH, "test2.gif"))));
-            chain.Add(TextChain.Create("测试\n"));
-            chain.Add(TextChain.Create($"参数测试: {String.Join(' ', args)}"));
-
-            return chain;
-        }
-#endif
-
-
     }
 }

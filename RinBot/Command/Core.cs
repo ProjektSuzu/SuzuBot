@@ -36,7 +36,7 @@ namespace RinBot.Command
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]
         public string OnPing(RinEvent e)
         {
-            return "Pong!";
+            return "(ᗜˬᗜ)";
         }
 
         [Command("状态汇报", "status", (int)MatchingType.StartsWith, ReplyType.Reply)]

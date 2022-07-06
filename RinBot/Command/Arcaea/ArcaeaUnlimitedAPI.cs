@@ -170,6 +170,35 @@ namespace RinBot.Command.Arcaea
                 return null;
             }
         }
+
+        public async Task<byte[]?> GetChartPreview(string songId, SongDifficulty difficulty)
+        {
+            Logger.Info($"Downloading chart preview: {songId} {difficulty}");
+            try
+            {
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/preview?songid={songId}&difficulty={difficulty}").Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    Logger.Error($"Http connection failed: {response.StatusCode}");
+                    return null;
+                }
+                else
+                {
+                    Logger.Info($"Download chart preview success: {songId} {difficulty}");
+                    return response.Content.ReadAsByteArrayAsync().Result;
+                }
+            }
+            catch (TaskCanceledException taskCanceled)
+            {
+                Logger.Error($"Timeout when downloading chart preview: {songId} {difficulty}");
+                return null;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                return null;
+            }
+        }
         public async Task<byte[]?> GetSongCover(string sid, bool beyond = false)
         {
             Logger.Info($"Downloading song cover: {sid} {(beyond ? "BYD" : "")}");

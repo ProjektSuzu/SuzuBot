@@ -39,7 +39,7 @@ namespace RinBot.Command.Arcaea
 
                 case "recent":
                 case "r":
-                    return OnRecent(e, args);
+                    return OnRecent(e);
 
                 case "best":
                 case "info":
@@ -47,6 +47,12 @@ namespace RinBot.Command.Arcaea
 
                 case "b30":
                     return OnBest30(e, args);
+
+                case "chart":
+                    return OnChartPreview(e, args);
+
+                case "song":
+                    return OnChartPreview(e, args);
 
                 default:
                     var chain = new RinMessageChain();
@@ -83,6 +89,36 @@ namespace RinBot.Command.Arcaea
             }
             var bytes = GraphGenerator.Instance.GenerateBest30(result);
             chain.Add(TextChain.Create("[Arcaea]Best30"));
+            chain.Add(ImageChain.Create(bytes));
+            return chain;
+        }
+
+        public RinMessageChain OnRecent(RinEvent e)
+        {
+            RinMessageChain chain = new RinMessageChain();
+            ArcaeaBindInfo info = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
+
+            if (info == null)
+            {
+                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
+                return chain;
+            }
+
+            var result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfo(info.UserCode).Result;
+            if (result == null)
+            {
+                chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n远端服务器连接超时\n如果你是第一次查询 请几分钟后再重试"));
+                return chain;
+            }
+
+            if (result.Status != 0)
+            {
+                chain.Add(TextChain.Create($"[Arcaea]\n查询时发生了错误\n{ArcaeaUnlimitedAPI.Instance.GetStatusTranslation(result.Status)}"));
+                return chain;
+            }
+
+            var bytes = GraphGenerator.Instance.GeneratePlayerResult(result);
+            chain.Add(TextChain.Create("[Arcaea]Recent"));
             chain.Add(ImageChain.Create(bytes));
             return chain;
         }
@@ -242,34 +278,87 @@ namespace RinBot.Command.Arcaea
             return chain;
         }
 
-        public RinMessageChain OnRecent(RinEvent e, List<string> args = null)
+        public RinMessageChain OnChartPreview(RinEvent e, List<string> args)
         {
             RinMessageChain chain = new RinMessageChain();
-            ArcaeaBindInfo info = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
 
-            if (info == null)
+            SongResult.SongDifficulty difficulty = SongResult.SongDifficulty.Future;
+            if (args.Count() <= 0)
             {
-                chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
+                chain.Add(TextChain.Create($"[Arcaea]\n缺少参数 <songName>"));
+                return chain;
+            }
+            if (args.Count() > 1)
+            {
+                var difficultyStr = args.Last();
+                args.RemoveAt(args.Count() - 1);
+                switch (difficultyStr.ToLower())
+                {
+                    case "0":
+                    case "past":
+                    case "pst":
+                        difficulty = SongResult.SongDifficulty.Past;
+                        break;
+
+                    case "1":
+                    case "present":
+                    case "prs":
+                        difficulty = SongResult.SongDifficulty.Present;
+                        break;
+
+                    case "2":
+                    case "future":
+                    case "ftr":
+                        difficulty = SongResult.SongDifficulty.Future;
+                        break;
+
+                    case "3":
+                    case "beyond":
+                    case "byd":
+                    case "byn":
+                        difficulty = SongResult.SongDifficulty.Beyond;
+                        break;
+
+                    default:
+                        chain.Add(TextChain.Create($"[Arcaea]\n非法参数\n\"{difficultyStr}\" => <difficulty>"));
+                        return chain;
+                }
+            }
+            string songName = String.Join(' ', args);
+
+            var songList = ArcaeaSongDB.Instance.TryGetSong(songName);
+            if (songList.Count <= 0)
+            {
+                chain.Add(TextChain.Create($"[Arcaea]\n未找到歌曲\n{songName}"));
+                return chain;
+            }
+            var sample = songList.First();
+            if (!songList.All(x => x.SongId == sample.SongId))
+            {
+                int index = 0;
+                while (index < songList.Count - 1)
+                {
+                    if (songList[index + 1].SongId == songList[index].SongId)
+                    {
+                        songList.RemoveAt(index);
+                    }
+                    else
+                    {
+                        index++;
+                    }
+                }
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index} 个结果"));
                 return chain;
             }
 
-            var result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfo(info.UserCode).Result;
-            if (result == null)
-            {
-                chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n远端服务器连接超时\n如果你是第一次查询 请几分钟后再重试"));
-                return chain;
-            }
+            
 
-            if (result.Status != 0)
-            {
-                chain.Add(TextChain.Create($"[Arcaea]\n查询时发生了错误\n{ArcaeaUnlimitedAPI.Instance.GetStatusTranslation(result.Status)}"));
-                return chain;
-            }
-
-            var bytes = GraphGenerator.Instance.GeneratePlayerResult(result);
-            chain.Add(TextChain.Create("[Arcaea]Recent"));
+            var bytes = ArcaeaUnlimitedAPI.Instance.GetChartPreview(sample.SongId, difficulty).Result;
+            chain.Add(TextChain.Create("[Arcaea]Best"));
             chain.Add(ImageChain.Create(bytes));
             return chain;
         }
+
+        
     }
 }

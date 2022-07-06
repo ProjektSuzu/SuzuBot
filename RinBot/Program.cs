@@ -9,7 +9,7 @@ namespace RinBot
     internal class Program
     {
         private static Logger Logger = LogManager.GetLogger("BOOT");
-        public static void Main()
+        public static int Main()
         {
             Console.WriteLine(@"    ____  _       ____        __ ");
             Console.WriteLine(@"   / __ \(_)___  / __ )____  / /_");
@@ -48,12 +48,13 @@ namespace RinBot
 
             if (!konataBot.LoginBot())
             {
+                Logger.Fatal("Bot login failed.");
                 konataBot.Bot.Dispose();
-                return;
+                return 1;
             }
 
             Logger.Info("Program startup complete.");
-            return;
+            return 0;
         }
     }
 }

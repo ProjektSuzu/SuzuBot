@@ -1,6 +1,5 @@
 ﻿using Konata.Core;
 using Konata.Core.Events.Model;
-using Newtonsoft.Json;
 using NLog;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Database;
@@ -52,7 +51,7 @@ namespace RinBot.Core.Component.Command
                 return instance;
             }
         }
-        private CommandManager() 
+        private CommandManager()
         {
             RinDatabase.Instance.dbConnection.CreateTable<ModuleInfo>();
             RinDatabase.Instance.dbConnection.CreateTable<CommandInvokeRecord>();
@@ -113,7 +112,7 @@ namespace RinBot.Core.Component.Command
             modules.ForEach(x =>
             {
                 RinDatabase.Instance.dbConnection
-                .InsertOrReplace(new ModuleInfo() { ModuleId = x.ModuleAttribute.ModuleID, IsEnable = x.IsEnable});
+                .InsertOrReplace(new ModuleInfo() { ModuleId = x.ModuleAttribute.ModuleID, IsEnable = x.IsEnable });
             });
 
             Logger.Info($"Total {modules.Count} Module(s), {commandCount} Command(s).");
@@ -295,7 +294,7 @@ namespace RinBot.Core.Component.Command
                         {
                             if (rinEvent.EventSubjectType != EventSubjectType.Group)
                             {
-                                if (rinEvent.EventSourceType == EventSourceType.QQ 
+                                if (rinEvent.EventSourceType == EventSourceType.QQ
                                     && PermissionManager.Instance.GetQQUserRoleInGroup(uint.Parse(rinEvent.SenderId), uint.Parse(rinEvent.SubjectId)) >= attr.Role)
                                 {
                                     // 无事发生

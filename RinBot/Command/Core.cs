@@ -1,13 +1,8 @@
-﻿using Konata.Core;
-using Konata.Core.Events.Model;
-using Konata.Core.Interfaces.Api;
+﻿using Konata.Core.Interfaces.Api;
 using RinBot.BuildStamp;
-using RinBot.Core;
 using RinBot.Core.Component.Command;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
-using RinBot.Core.Component.Message;
-using RinBot.Core.Component.Message.Model;
 using RinBot.Core.Component.Permission;
 using RinBot.Core.KonataCore;
 using System.Diagnostics;
@@ -39,7 +34,7 @@ namespace RinBot.Command
             return "FUMO (ᗜˬᗜ) FUNKY";
         }
 
-        [Command("用户信息", new[] { "info" , "信息"}, (int)MatchingType.Exact, ReplyType.Reply)]
+        [Command("用户信息", new[] { "info", "信息" }, (int)MatchingType.Exact, ReplyType.Reply)]
         public string OnInfo(RinEvent e)
         {
             StringBuilder stringBuilder = new();

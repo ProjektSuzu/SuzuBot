@@ -1,5 +1,4 @@
-﻿using RinBot.Core.Component.Event;
-using RinBot.Core.Component.Permission;
+﻿using RinBot.Core.Component.Permission;
 using SQLite;
 
 namespace RinBot.Core.Component.Database

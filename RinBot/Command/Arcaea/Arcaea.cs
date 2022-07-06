@@ -2,12 +2,7 @@
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command.Arcaea
 {
@@ -430,7 +425,7 @@ namespace RinBot.Command.Arcaea
             chain.Add(TextChain.Create("[Arcaea]Song"));
             chain.Add(ImageChain.Create(GraphGenerator.Instance.GetCoverImg(sample.SongId).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray()));
             chain.Add(TextChain.Create(stringBuilder.ToString()));
-            
+
             return chain;
         }
     }

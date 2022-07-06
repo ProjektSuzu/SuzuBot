@@ -24,9 +24,9 @@ namespace RinBot.Core.Component.Permission
                 return instance;
             }
         }
-        private PermissionManager() 
+        private PermissionManager()
         {
-            database.dbConnection.CreateTable<QQUserInfo>(); 
+            database.dbConnection.CreateTable<QQUserInfo>();
             database.dbConnection.CreateTable<QQGroupInfo>();
         }
         #endregion

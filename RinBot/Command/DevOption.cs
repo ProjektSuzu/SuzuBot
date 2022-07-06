@@ -1,9 +1,4 @@
 ﻿using RinBot.Core.Component.Command.CustomAttribute;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command
 {

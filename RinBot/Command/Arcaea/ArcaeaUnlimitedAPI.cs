@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NLog;
 using RinBot.Core;
-using RinBot.Core.Component.Permission;
-using System.Linq;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using static RinBot.Command.Arcaea.SongResult;
 
 namespace RinBot.Command.Arcaea

@@ -1,10 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command.Arcaea
 {
@@ -92,7 +86,7 @@ namespace RinBot.Command.Arcaea
         [JsonProperty("character")]
         public int Character { get; set; }
 
-    public int GetPlayerPTTType()
+        public int GetPlayerPTTType()
         {
             if (Rating >= 1250 || Rating < 0)
             {

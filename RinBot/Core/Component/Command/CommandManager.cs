@@ -55,6 +55,7 @@ namespace RinBot.Core.Component.Command
         private CommandManager() 
         {
             RinDatabase.Instance.dbConnection.CreateTable<ModuleInfo>();
+            RinDatabase.Instance.dbConnection.CreateTable<CommandInvokeRecord>();
         }
         #endregion
 
@@ -276,6 +277,18 @@ namespace RinBot.Core.Component.Command
                         }
                     }
 
+                    var invokeRecord = new CommandInvokeRecord()
+                    {
+                        Module = module.ModuleAttribute.ModuleID,
+                        Command = command.Attribute.Name,
+                        SourceType = rinEvent.EventSourceType,
+                        SenderId = rinEvent.SenderId,
+                        SubjectId = rinEvent.SubjectId,
+                        MessageContent = rinEvent.RawContent,
+                        Date = DateTime.Now,
+                        IsInvoked = false,
+                    };
+
                     if (invoke)
                     {
                         if (PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId)) < attr.Role)
@@ -300,6 +313,7 @@ namespace RinBot.Core.Component.Command
                         }
 
                         Logger.Info($"Command {attr.Name} Invoked: {rinEvent.SenderId} at {rinEvent.SubjectId}");
+
 
                         try
                         {
@@ -340,6 +354,7 @@ namespace RinBot.Core.Component.Command
 
                             if (returnValue != null)
                             {
+                                invokeRecord.IsInvoked = true;
                                 var messageChain = new RinMessageChain();
 
                                 switch (attr.ReplyType)
@@ -391,6 +406,11 @@ namespace RinBot.Core.Component.Command
                             var messageChain = new RinMessageChain();
                             messageChain.Add(TextChain.Create($"[CMD]\n执行 {module.ModuleAttribute.ModuleName}({module.ModuleAttribute.ModuleID}:{command.Attribute.Name}({command.Method.Name})时发生错误\n请检查日志文件\n{e.InnerException?.GetType().ToString() ?? e.GetType().ToString()}: {e.InnerException?.Message ?? e.Message}"));
                             rinEvent.Reply(messageChain);
+                        }
+                        finally
+                        {
+                            RinDatabase.Instance.dbConnection.Insert(invokeRecord);
+                            Logger.Info($"Command {attr.Name} completed");
                         }
                     }
                 }

@@ -25,7 +25,7 @@ namespace RinBot.Command
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]
         public string OnPing(RinEvent e)
         {
-            return "FUMO (ᗜˬᗜ) FUNKY";
+            return "Don`t\nCry\nI`m just a\nFUNKY (ᗜˬᗜ)";
         }
 
         [Command("用户信息", new[] { "info", "信息" }, (int)MatchingType.Exact, ReplyType.Reply)]

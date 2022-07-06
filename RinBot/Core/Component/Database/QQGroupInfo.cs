@@ -15,6 +15,7 @@ namespace RinBot.Core.Component.Database
 
         [Column("disable_modules")]
         private string DisableModuleIdsJson { get; set; }
+        [Ignore]
         public List<string> DisableModuleIds
         {
             get

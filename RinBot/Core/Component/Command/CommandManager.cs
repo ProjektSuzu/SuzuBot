@@ -388,6 +388,9 @@ namespace RinBot.Core.Component.Command
                         catch (Exception e)
                         {
                             Logger.Error($"{e.Message}\n{e.StackTrace}\n{e.InnerException?.Message}\n{e.InnerException?.StackTrace}");
+                            var messageChain = new RinMessageChain();
+                            messageChain.Add(TextChain.Create($"[CMD]\n执行 {module.ModuleAttribute.ModuleName}({module.ModuleAttribute.ModuleID}:{command.Attribute.Name}({command.Method.Name})时发生错误\n请检查日志文件\n{e.InnerException?.GetType().ToString() ?? e.GetType().ToString()}: {e.InnerException?.Message ?? e.Message}"));
+                            rinEvent.Reply(messageChain);
                         }
                     }
                 }

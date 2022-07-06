@@ -46,11 +46,11 @@ namespace RinBot
             konataBot.InitializeBot();
             Logger.Info($"All set, ready to take off.");
 
-            //if (!konataBot.LoginBot())
-            //{
-            //    konataBot.Bot.Dispose();
-            //    return;
-            //}
+            if (!konataBot.LoginBot())
+            {
+                konataBot.Bot.Dispose();
+                return;
+            }
 
             Logger.Info("Program startup complete.");
             return;

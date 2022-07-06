@@ -16,7 +16,7 @@ using System.Text;
 
 namespace RinBot.Command
 {
-    [Module("Core", "org.akulak.core")]
+    [Module("Core", "org.akulak.core", critical: true)]
     internal class Core
     {
         [Command("帮助", "help", MatchingType.StartsWith, ReplyType.Reply)]

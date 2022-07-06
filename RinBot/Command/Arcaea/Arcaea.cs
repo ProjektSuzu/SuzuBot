@@ -5,6 +5,7 @@ using RinBot.Core.Component.Message.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -52,7 +53,7 @@ namespace RinBot.Command.Arcaea
                     return OnChartPreview(e, args);
 
                 case "song":
-                    return OnChartPreview(e, args);
+                    return OnSongInfo(e, args);
 
                 default:
                     var chain = new RinMessageChain();
@@ -199,7 +200,7 @@ namespace RinBot.Command.Arcaea
                         index++;
                     }
                 }
-                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index} 个结果"));
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index + 1} 个结果"));
                 return chain;
             }
 
@@ -347,18 +348,91 @@ namespace RinBot.Command.Arcaea
                         index++;
                     }
                 }
-                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index} 个结果"));
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index + 1} 个结果"));
                 return chain;
             }
 
-            
+            if (songList.Count <= 3 && difficulty == SongResult.SongDifficulty.Beyond)
+            {
+                chain.Add(TextChain.Create($"[Arcaea]\n错误\n{sample.NameEN} 没有 Beyond 难度铺面"));
+                return chain;
+            }
 
             var bytes = ArcaeaUnlimitedAPI.Instance.GetChartPreview(sample.SongId, difficulty).Result;
+            if (bytes == null)
+            {
+                chain.Add(TextChain.Create($"[Arcaea]\n服务器回报错误\n连接超时或目标铺面不存在"));
+                return chain;
+            }
+
             chain.Add(TextChain.Create("[Arcaea]Best"));
             chain.Add(ImageChain.Create(bytes));
             return chain;
         }
 
-        
+        public RinMessageChain OnSongInfo(RinEvent e, List<string> args)
+        {
+            RinMessageChain chain = new RinMessageChain();
+
+            SongResult.SongDifficulty difficulty = SongResult.SongDifficulty.Future;
+            if (args.Count() <= 0)
+            {
+                chain.Add(TextChain.Create($"[Arcaea]\n缺少参数 <songName>"));
+                return chain;
+            }
+
+            string songName = String.Join(' ', args);
+
+            var songList = ArcaeaSongDB.Instance.TryGetSong(songName);
+            if (songList.Count <= 0)
+            {
+                chain.Add(TextChain.Create($"[Arcaea]\n未找到歌曲\n{songName}"));
+                return chain;
+            }
+            var sample = songList.First();
+            if (!songList.All(x => x.SongId == sample.SongId))
+            {
+                int index = 0;
+                while (index < songList.Count - 1)
+                {
+                    if (songList[index + 1].SongId == songList[index].SongId)
+                    {
+                        songList.RemoveAt(index);
+                    }
+                    else
+                    {
+                        index++;
+                    }
+                }
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index + 1} 个结果"));
+                return chain;
+            }
+
+            songList.Sort((a, b) => a.RatingClass.CompareTo(b.RatingClass));
+            var songId = songList.First().SongId;
+            var nameEN = songList.First().NameEN;
+            var nameJP = songList.First().NameJP;
+            var bpm = songList.First().BPM;
+            var pack = ArcaeaSongDB.Instance.GetPackName(songList.First().Set);
+            var side = songList.First().Side == 0 ? "光芒侧" : "纷争侧";
+
+            StringBuilder stringBuilder = new();
+            stringBuilder.AppendLine($"曲名: {nameEN}");
+            if (nameJP != "")
+                stringBuilder.AppendLine($"    {nameJP}");
+            stringBuilder.AppendLine($"BPM: {bpm}");
+            stringBuilder.AppendLine($"曲包: {pack} ({side})");
+            stringBuilder.AppendLine($"  PST/PRS/FTR{(songList.Count > 3 ? "/BYD" : "")}");
+            stringBuilder.AppendLine($"难度: {String.Join('/', songList.Select(x => x.GetDifficultyFriendly()).ToList())}");
+            stringBuilder.AppendLine($"定数: {String.Join('/', songList.Select(x => (float)x.Rating / 10).ToList())}");
+            stringBuilder.AppendLine($"物量: {String.Join('/', songList.Select(x => x.Note).ToList())}");
+
+
+            chain.Add(TextChain.Create("[Arcaea]Best"));
+            chain.Add(ImageChain.Create(GraphGenerator.Instance.GetCoverImg(sample.SongId).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray()));
+            chain.Add(TextChain.Create(stringBuilder.ToString()));
+            
+            return chain;
+        }
     }
 }

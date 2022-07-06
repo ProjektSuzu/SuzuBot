@@ -77,11 +77,11 @@ namespace RinBot.Command.Arcaea
                 .Where(x => list.Contains(x.SongId)).ToList();
         }
 
-        public List<Chart> GetSongs(string sid)
+        public List<Chart> GetSongs(string songId)
         {
             return arcSongDBConnection
                 .Table<Chart>()
-                .Where(s => s.SongId.ToLower().Contains(sid))
+                .Where(s => s.SongId.ToLower() == songId)
                 .ToList();
         }
         public List<string> GetAlias(string sid)
@@ -105,7 +105,7 @@ namespace RinBot.Command.Arcaea
     [Table("alias")]
     internal class Alias
     {
-        [Column("sid")]
+        [Column("songId")]
         public string SongId { get; set; }
         [Column("alias")]
         public string AliasName { get; set; }

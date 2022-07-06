@@ -144,25 +144,27 @@ namespace RinBot.Command.Arcaea
             if (args.Count() > 1)
             {
                 var difficultyStr = args.Last();
-                args.RemoveAt(args.Count() - 1);
                 switch (difficultyStr.ToLower())
                 {
                     case "0":
                     case "past":
                     case "pst":
                         difficulty = SongResult.SongDifficulty.Past;
+                        args.RemoveAt(args.Count() - 1);
                         break;
 
                     case "1":
                     case "present":
                     case "prs":
                         difficulty = SongResult.SongDifficulty.Present;
+                        args.RemoveAt(args.Count() - 1);
                         break;
 
                     case "2":
                     case "future":
                     case "ftr":
                         difficulty = SongResult.SongDifficulty.Future;
+                        args.RemoveAt(args.Count() - 1);
                         break;
 
                     case "3":
@@ -170,11 +172,8 @@ namespace RinBot.Command.Arcaea
                     case "byd":
                     case "byn":
                         difficulty = SongResult.SongDifficulty.Beyond;
+                        args.RemoveAt(args.Count() - 1);
                         break;
-
-                    default:
-                        chain.Add(TextChain.Create($"[Arcaea]\n非法参数\n\"{difficultyStr}\" => <difficulty>"));
-                        return chain;
                 }
             }
             string songName = String.Join(' ', args);
@@ -299,18 +298,21 @@ namespace RinBot.Command.Arcaea
                     case "past":
                     case "pst":
                         difficulty = SongResult.SongDifficulty.Past;
+                        args.RemoveAt(args.Count() - 1);
                         break;
 
                     case "1":
                     case "present":
                     case "prs":
                         difficulty = SongResult.SongDifficulty.Present;
+                        args.RemoveAt(args.Count() - 1);
                         break;
 
                     case "2":
                     case "future":
                     case "ftr":
                         difficulty = SongResult.SongDifficulty.Future;
+                        args.RemoveAt(args.Count() - 1);
                         break;
 
                     case "3":
@@ -318,11 +320,8 @@ namespace RinBot.Command.Arcaea
                     case "byd":
                     case "byn":
                         difficulty = SongResult.SongDifficulty.Beyond;
+                        args.RemoveAt(args.Count() - 1);
                         break;
-
-                    default:
-                        chain.Add(TextChain.Create($"[Arcaea]\n非法参数\n\"{difficultyStr}\" => <difficulty>"));
-                        return chain;
                 }
             }
             string songName = String.Join(' ', args);
@@ -428,7 +427,7 @@ namespace RinBot.Command.Arcaea
             stringBuilder.AppendLine($"物量: {String.Join('/', songList.Select(x => x.Note).ToList())}");
 
 
-            chain.Add(TextChain.Create("[Arcaea]Best"));
+            chain.Add(TextChain.Create("[Arcaea]Song"));
             chain.Add(ImageChain.Create(GraphGenerator.Instance.GetCoverImg(sample.SongId).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray()));
             chain.Add(TextChain.Create(stringBuilder.ToString()));
             

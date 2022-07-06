@@ -133,6 +133,11 @@ namespace RinBot.Core.KonataCore
                             break;
                     }
                 };
+
+                Bot.OnBotOffline += (s, e) =>
+                {
+                    Logger.Warn($"Bot offline. {e.Type}");
+                };
             }
 
             #region Konata

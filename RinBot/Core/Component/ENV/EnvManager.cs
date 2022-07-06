@@ -2,13 +2,13 @@
 using Newtonsoft.Json;
 using RinBot.Core.Component.Database;
 
-namespace RinBot.Core.Component.EnvVar
+namespace RinBot.Core.Component.ENV
 {
     internal class EnvManager
     {
         #region Singleton
-        private static ENVManager instance;
-        public static ENVManager Instance
+        private static EnvManager instance;
+        public static EnvManager Instance
         {
             get
             {
@@ -17,19 +17,24 @@ namespace RinBot.Core.Component.EnvVar
                 return instance;
             }
         }
-        private ENVManager()
+        private EnvManager()
         {
             database.dbConnection.CreateTable<EnvironmentVariable>();
         }
         #endregion
         private readonly RinDatabase database = RinDatabase.Instance;
 
-        public List<string>? GetEnv(string key)
+        public int GetEnvCount()
+            => database.dbConnection
+            .Table<EnvironmentVariable>()
+            .Count();
+
+        public List<string> GetEnv(string key)
         {
             return database.dbConnection
                 .Table<EnvironmentVariable>()
                 .FirstOrDefault(x => x.Key == key)
-                ?.Value ?? null;
+                .Value ?? new();
         }
 
         public bool SetEnv(string key, string value)
@@ -38,7 +43,7 @@ namespace RinBot.Core.Component.EnvVar
         }
 
         public bool SetEnv(string key, List<string> values)
-{
+        {
             return database.dbConnection.InsertOrReplace(new EnvironmentVariable() { Key = key, Value = values }) > 0;
         }
 

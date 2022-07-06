@@ -1,16 +1,124 @@
-﻿using RinBot.BuildStamp;
+﻿using NLog;
+using RinBot.BuildStamp;
 using RinBot.Core.Component.Command.CustomAttribute;
+using RinBot.Core.Component.Database;
+using RinBot.Core.Component.ENV;
 using RinBot.Core.Component.Event;
+using RinBot.Core.Component.Message;
+using System.Text;
 
 namespace RinBot.Command
 {
     [Module("开发者选项", "org.akulak.devOption")]
     internal class DevOption
     {
-        [Command("环境变量", "", MatchingType.StartsWith, ReplyType.Reply)]
-        public string OnHelp(RinEvent e)
+        private Logger Logger = LogManager.GetLogger("DEV");
+
+        [Command("环境变量", "env", MatchingType.StartsWith, ReplyType.Reply, RinBot.Core.Component.Permission.UserRole.Admin)]
+        public string OnEnv(RinEvent e, List<string> args)
         {
-            return $"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
+            StringBuilder stringBuilder = new();
+            stringBuilder.AppendLine("[Env]");
+            if (args.Count == 0)
+            {
+                stringBuilder.AppendLine($"Count: {EnvManager.Instance.GetEnvCount()}");
+                return stringBuilder.ToString();   
+            }
+            else if (args.Count < 1)
+            {
+                stringBuilder.AppendLine($"缺少参数 <funcName>");
+                return stringBuilder.ToString();
+            }
+            else if (args.Count < 2)
+            {
+                stringBuilder.AppendLine($"缺少参数 <key>");
+                return stringBuilder.ToString();
+            }
+
+            string funcName = args[0];
+            string key = args[1];
+            args = args.Skip(2).ToList();
+            if (args == null)
+                args = new();
+            switch (funcName)
+            {
+                case "get":
+                    {
+                        if (!EnvManager.Instance.HasEnv(key))
+                        {
+                            stringBuilder.AppendLine($"变量不存在 {key}");
+                        }
+                        else
+                        {
+                            var values = EnvManager.Instance.GetEnv(key);
+                            stringBuilder.AppendLine($"{key} =");
+                            foreach (var value in values)
+                            {
+                                stringBuilder.AppendLine($"    {value};");
+                            }
+                        }
+                        return stringBuilder.ToString();
+                    }
+
+                case "set":
+                    {
+                        if (!EnvManager.Instance.SetEnv(key, args))
+                        {
+                            stringBuilder.AppendLine($"设置变量时出错 {key}");
+                            return stringBuilder.ToString();
+                        }
+                        var values = EnvManager.Instance.GetEnv(key);
+                        stringBuilder.AppendLine($"{key} =");
+                        foreach (var value in values)
+                        {
+                            stringBuilder.AppendLine($"    {value};");
+                        }
+                        return stringBuilder.ToString();
+                    }
+
+                case "add":
+                    {
+                        if (!EnvManager.Instance.HasEnv(key))
+                        {
+                            stringBuilder.AppendLine($"变量不存在 {key}");
+                        }
+                        else
+                        {
+                            var values = EnvManager.Instance.GetEnv(key);
+                            values.AddRange(args);
+                            if (!EnvManager.Instance.SetEnv(key, values))
+                            {
+                                stringBuilder.AppendLine($"设置变量时出错 {key}");
+                                return stringBuilder.ToString();
+                            }
+                            values = EnvManager.Instance.GetEnv(key);
+                            stringBuilder.AppendLine($"{key} =");
+                            foreach (var value in values)
+                            {
+                                stringBuilder.AppendLine($"    {value};");
+                            }
+                        }
+                        return stringBuilder.ToString();
+                    }
+
+                case "del":
+                    {
+                        if (!EnvManager.Instance.HasEnv(key))
+                        {
+                            stringBuilder.AppendLine($"变量不存在 {key}");
+                        }
+                        else
+                        {
+                            EnvManager.Instance.DelEnv(key);
+                            stringBuilder.AppendLine($"变量已删除 {key}");
+                        }
+                        return stringBuilder.ToString();
+                    }
+
+                default:
+                    stringBuilder.AppendLine($"找不到功能: {funcName}");
+                    return stringBuilder.ToString();
+            }
         }
     }
 }

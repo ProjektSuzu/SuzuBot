@@ -11,14 +11,14 @@ namespace RinBot.Core.Component.Database
         public string Key { get; set; }
 
         [Column("value")]
-        private string ValueStr { get; set; }
+        public string ValueStr { get; set; }
 
         [Ignore]
         public List<string> Value
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<string>>(ValueStr) ?? new();
+                return JsonConvert.DeserializeObject<List<string>>(ValueStr ?? "") ?? new();
             }
 
             set

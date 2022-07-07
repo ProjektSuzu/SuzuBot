@@ -51,6 +51,7 @@ namespace RinBot.Command.Arcaea
                     return OnBest(e, args);
 
                 case "b30":
+                case "best30":
                     return OnBest30(e, args);
 
                 case "chart":
@@ -62,6 +63,10 @@ namespace RinBot.Command.Arcaea
                 case "linkplay":
                 case "ycm":
                     return OnLinkPlay(e, args);
+
+                case "calc":
+                case "calculate":
+                    return OnCalculate(e, args);
 
                 default:
                     var chain = new RinMessageChain();
@@ -501,5 +506,74 @@ namespace RinBot.Command.Arcaea
 
             return chain;
         }
+
+        private RinMessageChain OnCalculate(RinEvent e, List<string> args)
+        {
+            float rating;
+            uint score;
+            float result;
+
+            RinMessageChain chain = new RinMessageChain();
+            chain.Add(TextChain.Create("[Arcaea]Calculate\n"));
+            StringBuilder stringBuilder = new();
+            if (args.Count > 0)
+            {
+                if (!float.TryParse(args[0], out rating))
+                {
+                    stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <rating>.");
+                    chain.Add(TextChain.Create(stringBuilder.ToString()));
+                    return chain;
+                }
+            }
+            else
+            {
+                stringBuilder.AppendLine($"缺少参数: <rating>.");
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
+            }
+
+            args = args.Skip(1).ToList();
+
+            if (args.Count > 0)
+            {
+                if (!uint.TryParse(args[0], out score))
+                {
+                    stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <score>.");
+                    chain.Add(TextChain.Create(stringBuilder.ToString()));
+                    return chain;
+                }
+            }
+            else
+            {
+                stringBuilder.AppendLine($"缺少参数: <score>.");
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
+            }
+
+            if (score < 09_800_000)
+            {
+                if (score > 09_500_000)
+                    result = rating + (float)(score - 09_500_000) / 300_000;
+                else
+                    result = 0f;
+            }
+            else if (score < 10_000_000)
+            {
+                result = rating + 1 + (float)(score - 09_800_000) / 200_000;
+            }
+            else
+            {
+                result = rating + 2;
+            }
+
+            if (result < 0f)
+                result = 0f;
+
+            stringBuilder.AppendLine($"{rating:0.0000} <> {score:00000000}");
+            stringBuilder.AppendLine($"=> {result:0.0000}");
+            chain.Add(TextChain.Create(stringBuilder.ToString()));
+            return chain;
+        }
+
     }
 }

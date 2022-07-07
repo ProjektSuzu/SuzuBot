@@ -604,7 +604,7 @@ namespace RinBot.Command.Arcaea
             var song = ArcaeaSongDB.Instance.GetSongs(random.Item1).First(x => x.RatingClass == (int)random.Item2);
             var songName = song.NameEN;
             var setName = song.Set;
-            chain.Add(TextChain.Create($"[Arcaea]TestAquired\n{songName} ({random.Item2})\nAt {setName}"));
+            chain.Add(TextChain.Create($"[Arcaea]TestAquired\n{songName} ({random.Item2})\nAt {setName}\n\n{list.Count} Song(s) left."));
             return chain;
         }
 

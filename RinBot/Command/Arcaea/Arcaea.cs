@@ -304,7 +304,6 @@ namespace RinBot.Command.Arcaea
             if (args.Count() > 1)
             {
                 var difficultyStr = args.Last();
-                args.RemoveAt(args.Count() - 1);
                 switch (difficultyStr.ToLower())
                 {
                     case "0":

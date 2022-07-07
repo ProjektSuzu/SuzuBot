@@ -1,5 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Interfaces.Api;
+using Newtonsoft.Json;
+using RinBot.Core;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
@@ -12,11 +14,18 @@ namespace RinBot.Command
     [Module("签到", "org.akulak.sign")]
     internal class Sign
     {
-        private List<(string, EventSourceType)> checkInList = new();
+        private static readonly string CHECH_IN_LIST_PATH = Path.Combine(Global.RESOURCE_PATH);
+        private List<(string, EventSourceType)> checkInList;
         Timer clearTimer;
 
         public Sign()
         {
+            if (!File.Exists(CHECH_IN_LIST_PATH))
+                checkInList = new();
+            else
+                checkInList = JsonConvert.DeserializeObject<List<(string, EventSourceType)>>(File.ReadAllText(CHECH_IN_LIST_PATH)) ?? new();
+            File.WriteAllTextAsync(CHECH_IN_LIST_PATH, JsonConvert.SerializeObject(checkInList));
+
             clearTimer = new Timer(new TimerCallback(ClearCheckInList));
             clearTimer.Change(DateTime.Now - new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day), new TimeSpan(24, 0, 0));
         }

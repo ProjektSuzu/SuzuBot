@@ -40,6 +40,46 @@ namespace RinBot.Core.Component.Event
             SubjectId = subjectID;
         }
 
+        public string GetSenderName()
+        {
+            switch (EventSourceType)
+            {
+                case EventSourceType.QQ:
+                    {
+                        if (EventSubjectType == EventSubjectType.Group)
+                        {
+                            return (OriginalSender as Bot).GetGroupMemberInfo((OriginalEvent as GroupMessageEvent).GroupUin, (OriginalEvent as GroupMessageEvent).MemberUin).Result.NickName;
+                        }
+                        else
+                        {
+                            return (OriginalSender as Bot).GetFriendList().Result.First(x => x.Uin == (OriginalEvent as FriendMessageEvent).FriendUin).Name;
+                        }
+                    }
+
+                default: return "unknown";
+            }
+        }
+
+        public string GetSubjectName()
+        {
+            switch (EventSourceType)
+            {
+                case EventSourceType.QQ:
+                    {
+                        if (EventSubjectType == EventSubjectType.Group)
+                        {
+                            return (OriginalSender as Bot).GetGroupList().Result.First(x => x.Uin == (OriginalEvent as GroupMessageEvent).GroupUin).Name;
+                        }
+                        else
+                        {
+                            return GetSenderName();
+                        }
+                    }
+
+                default: return "unknown";
+            }
+        }
+
         public Task<bool> Reply(string text)
         {
             return Reply(new RinMessageChain(TextChain.Create(text)));

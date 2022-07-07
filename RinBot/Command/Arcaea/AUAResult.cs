@@ -90,7 +90,7 @@ namespace RinBot.Command.Arcaea
         {
             if (Rating < 0 || Rating >= 1300)
             {
-                return 6;
+                return 7;
             }
             else if (Rating >= 1250)
             {

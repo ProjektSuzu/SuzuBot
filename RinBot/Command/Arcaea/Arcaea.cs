@@ -70,7 +70,7 @@ namespace RinBot.Command.Arcaea
                 case "calculate":
                     return OnCalculate(e, args);
 
-                case "test":
+                case "aua-test":
                     return OnTestAquired(e);
 
                 default:

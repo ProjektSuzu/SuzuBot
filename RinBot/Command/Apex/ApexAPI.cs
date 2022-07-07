@@ -89,7 +89,7 @@ namespace RinBot.Command.Apex
 
         public async Task<PlayerStats?> GetPlayerStatsByUID(string playerId)
         {
-            var url = STATUS_NAME_API.Replace("{player}", playerId).Replace("{token}", config.Token);
+            var url = STATUS_UID_API.Replace("{player}", playerId).Replace("{token}", config.Token);
             var response = httpClient.GetAsync(url).Result;
             var responseString = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<PlayerStats>(responseString);

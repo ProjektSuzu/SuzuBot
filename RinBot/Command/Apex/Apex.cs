@@ -4,6 +4,7 @@ using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,11 @@ namespace RinBot.Command.Apex
                 case "stat":
                 case "status":
                     return OnUserStatus(e, args);
+
+                case "predator":
+                case "猎杀":
+                case "冲猎":
+                    return OnPredator(e);
 
                 case "bind":
                     return OnBind(e, args);
@@ -75,19 +81,20 @@ namespace RinBot.Command.Apex
             {
                 var userName = String.Join(' ', args);
                 playerQueryResult = ApexAPI.Instance.GetPlayerStatsByName(userName).Result;
-                if (playerQueryResult == null)
-                {
-                    stringBuilder.AppendLine("查询时发生了错误\n服务器连接错误");
-                    chain.Add(TextChain.Create(stringBuilder.ToString()));
-                    return chain;
-                }
-                else if (playerQueryResult.Error != null)
-                {
-                    stringBuilder.AppendLine("查询时发生了错误");
-                    stringBuilder.AppendLine(playerQueryResult.Error);
-                    chain.Add(TextChain.Create(stringBuilder.ToString()));
-                    return chain;
-                }
+            }
+
+            if (playerQueryResult == null)
+            {
+                stringBuilder.AppendLine("查询时发生了错误\n服务器连接错误");
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
+            }
+            else if (playerQueryResult.Error != null)
+            {
+                stringBuilder.AppendLine("查询时发生了错误");
+                stringBuilder.AppendLine(playerQueryResult.Error);
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
             }
 
             var legendName = playerQueryResult.legends.selected.LegendName;
@@ -172,6 +179,39 @@ namespace RinBot.Command.Apex
             }
             ApexUserDB.Instance.DeleteBindInfo(bindInfo);
             chain.Add(TextChain.Create($"[Apex]\n已解除绑定"));
+            return chain;
+        }
+
+        public RinMessageChain OnPredator(RinEvent e)
+        {
+            RinMessageChain chain = new RinMessageChain();
+            ApexBindInfo bindInfo = ApexUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
+
+            PredatorInfo result = ApexAPI.Instance.GetPredatorInfo().Result;
+
+            if (result == null)
+            {
+                chain.Add(TextChain.Create("查询时发生了错误\n服务器连接错误"));
+                return chain;
+            }
+
+            StringBuilder stringBuilder = new();
+            stringBuilder.AppendLine("[Apex]");
+            stringBuilder.AppendLine($"排位最低冲猎分数: {result.RankPoint} RP");
+            stringBuilder.AppendLine($"竞技场最低冲猎分数: {result.RankPoint} AP");
+            if (bindInfo != null)
+            {
+                var playerQueryResult = ApexAPI.Instance.GetPlayerStatsByUID(bindInfo.PlayerId).Result;
+                if (playerQueryResult != null && playerQueryResult.Error == null)
+                {
+                    stringBuilder.AppendLine($"============");
+                    stringBuilder.AppendLine($"{playerQueryResult.global.name}");
+                    stringBuilder.AppendLine($"排位分数: {playerQueryResult.global.rank.rankScore} RP");
+                    stringBuilder.AppendLine($"竞技场分数: {playerQueryResult.global.arena.rankName} AP");
+                }
+            }
+
+            chain.Add(TextChain.Create(stringBuilder.ToString()));
             return chain;
         }
 

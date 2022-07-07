@@ -43,7 +43,7 @@ namespace RinBot.Command.Apex
 
         public bool UpdateBindInfo(ApexBindInfo info)
         {
-            return dbConnection.Update(info) > 0;
+            return dbConnection.Update(info) > 0 || dbConnection.Insert(info) > 0;
         }
 
         public bool DeleteBindInfo(string userId, EventSourceType userType)
@@ -60,6 +60,7 @@ namespace RinBot.Command.Apex
     [Table("T_BIND_INFO")]
     internal class ApexBindInfo
     {
+        [PrimaryKey]
         [Column("user_id")]
         public string UserId { get; set; }
         [Column("user_type")]

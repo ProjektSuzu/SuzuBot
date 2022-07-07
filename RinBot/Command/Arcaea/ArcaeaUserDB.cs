@@ -59,10 +59,15 @@ namespace RinBot.Command.Arcaea
             return dbConnection.InsertOrReplace(new ArcaeaBindInfo() { UserId = userId, UserType = userType, UserCode = userCode }) > 0;
         }
 
-        public bool DeleteBindInfo(string userId)
+        public bool DeleteBindInfo(string userId, EventSourceType userType)
         {
-            return dbConnection.Delete<ArcaeaBindInfo>(userId) > 0;
+            var info = GetBindInfo(userId, userType);
+            if (info == null) return false;
+            return dbConnection.Delete(info) > 0;
         }
+
+        public bool DeleteBindInfo(ArcaeaBindInfo info)
+            => DeleteBindInfo(info.UserId, info.UserType);
     }
 
     [Table("T_BIND_INFO")]

@@ -240,11 +240,11 @@ namespace RinBot.Command.Arcaea
             ArcaeaBindInfo bindInfo = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
             if (bindInfo == null)
             {
-                chain.Add(TextChain.Create($"[Arcaea]\n未存在绑定信息"));
+                chain.Add(TextChain.Create($"[Apex]\n未存在绑定信息"));
                 return chain;
             }
-            ArcaeaUserDB.Instance.DeleteBindInfo(bindInfo.UserId);
-            chain.Add(TextChain.Create($"[Arcaea]\n已解除绑定"));
+            ArcaeaUserDB.Instance.DeleteBindInfo(bindInfo);
+            chain.Add(TextChain.Create($"[Apex]\n已解除绑定"));
             return chain;
         }
 

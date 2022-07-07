@@ -88,7 +88,7 @@ namespace RinBot.Command.Arcaea
 
         public int GetPlayerPTTType()
         {
-            if (Rating < 0)
+            if (Rating < 0 || Rating >= 1300)
             {
                 return 6;
             }

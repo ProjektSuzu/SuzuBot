@@ -141,7 +141,7 @@ namespace RinBot.Command.Arcaea
         }
         public async Task<PlayerInfoResult?> GetPlayerInfoByName(string userName)
         {
-            Logger.Info($"Querying PlayerInfo via UserName: {userName}");
+            Logger.Info($"Querying PlayerInfo via UserId: {userName}");
             try
             {
                 HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/info?user={userName}&withsonginfo=false").Result;
@@ -150,7 +150,7 @@ namespace RinBot.Command.Arcaea
                     Logger.Error($"Http connection failed: {response.StatusCode}");
                     return null;
                 }
-                Logger.Info($"Query PlayerInfo Success via UserName: {userName}");
+                Logger.Info($"Query PlayerInfo Success via UserId: {userName}");
                 var result = JsonConvert.DeserializeObject<PlayerInfoResult>(response.Content.ReadAsStringAsync().Result);
                 if (result != null && result.Status == 0)
                     ArcaeaUserDB.UpdatePlayerInfo(result.Content.AccountInfo.UserCode, result.Content.AccountInfo.UserName);
@@ -158,7 +158,7 @@ namespace RinBot.Command.Arcaea
             }
             catch (TaskCanceledException taskCanceled)
             {
-                Logger.Error($"Timeout when Querying PlayerInfo via UserName: {userName}");
+                Logger.Error($"Timeout when Querying PlayerInfo via UserId: {userName}");
                 return null;
             }
             catch (Exception e)

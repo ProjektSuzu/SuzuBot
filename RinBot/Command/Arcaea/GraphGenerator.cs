@@ -403,7 +403,7 @@ namespace RinBot.Command.Arcaea
             #region 绘制PTT边框
             using (SKPaint bgPaint = new SKPaint())
             {
-                SKBitmap bmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"ranks/rank_{playerInfo.GetPlayerPTTType()}.png")));
+                SKBitmap bmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"ratings/rating_{playerInfo.GetPlayerPTTType()}.png")));
                 SKBitmap scaledBitmap = new SKBitmap(260, 260);
                 bmp.ScalePixels(scaledBitmap, SKFilterQuality.Medium);
 
@@ -1096,7 +1096,7 @@ namespace RinBot.Command.Arcaea
             #region 绘制PTT边框
             using (SKPaint bgPaint = new SKPaint())
             {
-                SKBitmap pttBmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"ranks/rank_{accountInfo.GetPlayerPTTType()}.png")));
+                SKBitmap pttBmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"ratings/rating_{accountInfo.GetPlayerPTTType()}.png")));
                 SKBitmap scaledPTTBmp = new SKBitmap(160, 160);
                 pttBmp.ScalePixels(scaledPTTBmp, SKFilterQuality.Low);
 

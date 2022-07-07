@@ -1,8 +1,10 @@
-﻿using RinBot.Core.Component.Command.CustomAttribute;
+﻿using Newtonsoft.Json;
+using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
 using System.Text;
+using static RinBot.Command.Arcaea.SongResult;
 
 namespace RinBot.Command.Arcaea
 {
@@ -67,6 +69,9 @@ namespace RinBot.Command.Arcaea
                 case "calc":
                 case "calculate":
                     return OnCalculate(e, args);
+
+                case "test":
+                    return OnTestAquired(e);
 
                 default:
                     var chain = new RinMessageChain();
@@ -240,11 +245,11 @@ namespace RinBot.Command.Arcaea
             ArcaeaBindInfo bindInfo = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
             if (bindInfo == null)
             {
-                chain.Add(TextChain.Create($"[Apex]\n未存在绑定信息"));
+                chain.Add(TextChain.Create($"[Arcaea]\n未存在绑定信息"));
                 return chain;
             }
             ArcaeaUserDB.Instance.DeleteBindInfo(bindInfo);
-            chain.Add(TextChain.Create($"[Apex]\n已解除绑定"));
+            chain.Add(TextChain.Create($"[Arcaea]\n已解除绑定"));
             return chain;
         }
 
@@ -571,6 +576,35 @@ namespace RinBot.Command.Arcaea
             stringBuilder.AppendLine($"{rating:0.0000} <> {score:00000000}");
             stringBuilder.AppendLine($"=> {result:0.0000}");
             chain.Add(TextChain.Create(stringBuilder.ToString()));
+            return chain;
+        }
+
+        private RinMessageChain OnTestAquired(RinEvent e)
+        {
+            var chain = new RinMessageChain();
+            var httpClient = new HttpClient();
+            var url = @"https://server.awbugl.top/botarcapi/untested";
+
+            var json = httpClient.GetAsync(url).Result.Content.ReadAsStringAsync().Result;
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            var list = new List<(string, SongDifficulty)>();
+            foreach (var item in dict)
+            {
+                var diff = item.Value.Split(',');
+                if (diff.Any(x => x.Trim() != ""))
+                {
+                    foreach (var d in diff)
+                    {
+                        if (d.Trim() != "")
+                            list.Add((item.Key, (SongDifficulty)Enum.Parse(typeof(SongDifficulty), d.Trim())));
+                    }
+                }
+            }
+            var random = list[new Random().Next(list.Count - 1)];
+            var song = ArcaeaSongDB.Instance.GetSongs(random.Item1).First(x => x.RatingClass == (int)random.Item2);
+            var songName = song.NameEN;
+            var setName = song.Set;
+            chain.Add(TextChain.Create($"[Arcaea]TestAquired\n{songName} ({random.Item2})\nAt {setName}"));
             return chain;
         }
 

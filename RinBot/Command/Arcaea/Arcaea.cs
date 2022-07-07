@@ -9,6 +9,15 @@ namespace RinBot.Command.Arcaea
     [Module("Arcaea", "org.akulak.arcaea")]
     internal class Arcaea
     {
+        class LinkPlayRoom
+        {
+            public string RoomId { get; set; }
+            public string Host { get; set; }
+            public DateTime AnnounceTime { get; set; }
+        }
+        
+        private List<LinkPlayRoom> linkPlayList = new();
+        
         public Arcaea()
         {
             var instance = ArcaeaSongDB.Instance;
@@ -49,6 +58,10 @@ namespace RinBot.Command.Arcaea
 
                 case "song":
                     return OnSongInfo(e, args);
+
+                case "linkplay":
+                case "ycm":
+                    return OnLinkPlay(e, args);
 
                 default:
                     var chain = new RinMessageChain();
@@ -408,7 +421,13 @@ namespace RinBot.Command.Arcaea
             var nameJP = songList.First().NameJP;
             var bpm = songList.First().BPM;
             var pack = ArcaeaSongDB.Instance.GetPackName(songList.First().Set);
-            var side = songList.First().Side == 0 ? "光芒侧" : "纷争侧";
+            var side = songList.First().Side switch
+            {
+                0 => "光芒侧",
+                1 => "纷争侧",
+                2 => "Colorless",
+                _ => "???",
+            };
 
             StringBuilder stringBuilder = new();
             stringBuilder.AppendLine($"曲名: {nameEN}");
@@ -425,6 +444,60 @@ namespace RinBot.Command.Arcaea
             chain.Add(TextChain.Create("[Arcaea]Song"));
             chain.Add(ImageChain.Create(GraphGenerator.Instance.GetCoverImg(sample.SongId).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray()));
             chain.Add(TextChain.Create(stringBuilder.ToString()));
+
+            return chain;
+        }
+
+        public RinMessageChain OnLinkPlay(RinEvent e, List<string> args)
+        {
+            RinMessageChain chain = new RinMessageChain();
+            chain.Add(TextChain.Create("[Arcaea]LinkPlay\n"));
+            StringBuilder stringBuilder = new();
+            linkPlayList.RemoveAll(x => x.AnnounceTime.AddMinutes(10) < DateTime.Now);
+
+            if (args.Count <= 0)
+            {
+                if (linkPlayList.Count <= 0)
+                {
+                    stringBuilder.AppendLine("目前列表里没有最新的 LinkPlay 房间");
+                }
+                else
+                {
+                    foreach (var room in linkPlayList)
+                    {
+                        stringBuilder.AppendLine($"来自 {room.Host} 在 {(int)(room.AnnounceTime - DateTime.Now).TotalMinutes + " 分钟前"} 发起的 LinkPlay");
+                        stringBuilder.AppendLine(room.RoomId.ToUpper().PadLeft(12));
+                        stringBuilder.AppendLine();
+                    }
+                }
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+            }
+            else
+            {
+                var roomId = args[0].ToUpper();
+                if (linkPlayList.Any(x => x.RoomId == roomId))
+                {
+                    var room = linkPlayList.First(x => x.RoomId == roomId);
+                    room.AnnounceTime = DateTime.Now;
+                    chain.Add(TextChain.Create($"LinkPlay 房间信息已更新\n{roomId}"));
+                }
+                else
+                {
+                    var host = $"{e.GetSenderName()}({e.SenderId})";
+                    var room = new LinkPlayRoom()
+                    {
+                        RoomId = roomId,
+                        Host = host,
+                        AnnounceTime = DateTime.Now,
+                    };
+
+                    if (linkPlayList.Count > 5)
+                        linkPlayList = linkPlayList.OrderByDescending(x => x.AnnounceTime).Take(5).ToList();
+
+                    linkPlayList.Add(room);
+                    chain.Add(TextChain.Create($"LinkPlay 房间信息已更新\n{roomId}"));
+                }
+            }
 
             return chain;
         }

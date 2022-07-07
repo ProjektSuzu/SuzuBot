@@ -14,7 +14,7 @@ namespace RinBot.Command
     [Module("签到", "org.akulak.sign")]
     internal class Sign
     {
-        private static readonly string CHECH_IN_LIST_PATH = Path.Combine(Global.RESOURCE_PATH);
+        private static readonly string CHECH_IN_LIST_PATH = Path.Combine(Global.RESOURCE_PATH, "checkInList.json");
         private List<(string, EventSourceType)> checkInList;
         Timer clearTimer;
 

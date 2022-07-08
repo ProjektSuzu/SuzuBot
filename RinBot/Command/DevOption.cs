@@ -31,21 +31,22 @@ namespace RinBot.Command
                 stringBuilder.AppendLine($"缺少参数 <funcName>");
                 return stringBuilder.ToString();
             }
-            else if (args.Count < 2)
-            {
-                stringBuilder.AppendLine($"缺少参数 <key>");
-                return stringBuilder.ToString();
-            }
 
             string funcName = args[0];
-            string key = args[1];
-            args = args.Skip(2).ToList();
+            args = args.Skip(1).ToList();
             if (args == null)
                 args = new();
             switch (funcName)
             {
                 case "get":
                     {
+                        if (args.Count < 2)
+                        {
+                            stringBuilder.AppendLine($"缺少参数 <key>");
+                            return stringBuilder.ToString();
+                        }
+                        string key = args[1];
+                        args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.HasEnv(key))
                         {
                             stringBuilder.AppendLine($"变量不存在 {key}");
@@ -64,6 +65,13 @@ namespace RinBot.Command
 
                 case "set":
                     {
+                        if (args.Count < 2)
+                        {
+                            stringBuilder.AppendLine($"缺少参数 <key>");
+                            return stringBuilder.ToString();
+                        }
+                        string key = args[1];
+                        args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.SetEnv(key, args))
                         {
                             stringBuilder.AppendLine($"设置变量时出错 {key}");
@@ -80,6 +88,13 @@ namespace RinBot.Command
 
                 case "add":
                     {
+                        if (args.Count < 2)
+                        {
+                            stringBuilder.AppendLine($"缺少参数 <key>");
+                            return stringBuilder.ToString();
+                        }
+                        string key = args[1];
+                        args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.HasEnv(key))
                         {
                             stringBuilder.AppendLine($"变量不存在 {key}");
@@ -105,6 +120,13 @@ namespace RinBot.Command
 
                 case "del":
                     {
+                        if (args.Count < 2)
+                        {
+                            stringBuilder.AppendLine($"缺少参数 <key>");
+                            return stringBuilder.ToString();
+                        }
+                        string key = args[1];
+                        args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.HasEnv(key))
                         {
                             stringBuilder.AppendLine($"变量不存在 {key}");
@@ -114,6 +136,32 @@ namespace RinBot.Command
                             EnvManager.Instance.DelEnv(key);
                             stringBuilder.AppendLine($"变量已删除 {key}");
                         }
+                        return stringBuilder.ToString();
+                    }
+
+                case "list":
+                    {
+                        var envs = EnvManager.Instance.GetEnvs();
+                        var totalCount = envs.Count();
+                        var page = 0;
+                        if (args.Count > 0)
+                        {
+                            if (!int.TryParse(args[0], out page) || page < 0)
+                            {
+                                stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <page>.");
+                                return stringBuilder.ToString();
+                            }
+                            if (page + 1 > totalCount)
+                            {
+                                stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <page>.");
+                                return stringBuilder.ToString();
+                            }
+                        }
+                        envs = envs.Skip(page * 8).Take(8).ToList();
+                        foreach (var env in envs)
+                            stringBuilder.AppendLine($"{env.Key},");
+                        stringBuilder.AppendLine($"\n Page {page + 1} of {totalCount / 8 + 1}");
+
                         return stringBuilder.ToString();
                     }
 

@@ -37,6 +37,9 @@ namespace RinBot.Core.Component.ENV
                 .Value ?? new();
         }
 
+        public List<EnvironmentVariable> GetEnvs()
+            => database.dbConnection.Table<EnvironmentVariable>().ToList();
+
         public bool SetEnv(string key, string value)
         {
             return database.dbConnection.InsertOrReplace(new EnvironmentVariable() { Key = key, Value = new() { value } }) > 0;

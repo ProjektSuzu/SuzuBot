@@ -3,6 +3,7 @@ using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
+using RinBot.Core.Component.Permission;
 using System.Text;
 using static RinBot.Command.Arcaea.SongResult;
 
@@ -30,7 +31,7 @@ namespace RinBot.Command.Arcaea
         {
             if (args.Count == 0)
             {
-                return OnRecent(e);
+                return OnRecent(e, new());
             }
 
             string funcName = args[0];
@@ -46,7 +47,7 @@ namespace RinBot.Command.Arcaea
 
                 case "recent":
                 case "r":
-                    return OnRecent(e);
+                    return OnRecent(e, args);
 
                 case "best":
                 case "info":
@@ -110,18 +111,21 @@ namespace RinBot.Command.Arcaea
             return chain;
         }
 
-        public RinMessageChain OnRecent(RinEvent e)
+        public RinMessageChain OnRecent(RinEvent e, List<string> args)
         {
             RinMessageChain chain = new RinMessageChain();
             ArcaeaBindInfo info = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
-
-            if (info == null)
+            string userCode;
+            
+            if (info != null) userCode = info.UserCode;
+            else if (args.Count() > 0) userCode = args[0];
+            else
             {
                 chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
                 return chain;
             }
 
-            var result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfo(info.UserCode).Result;
+            var result = ArcaeaUnlimitedAPI.Instance.GetPlayerInfo(userCode).Result;
             if (result == null)
             {
                 chain.Add(TextChain.Create("[Arcaea]\n查询时发生了错误\n服务器连接错误\n如果你是第一次查询 请几分钟后再重试"));

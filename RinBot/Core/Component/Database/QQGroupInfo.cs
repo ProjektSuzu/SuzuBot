@@ -23,7 +23,7 @@ namespace RinBot.Core.Component.Database
             {
                 if (DisableModuleIdsJson == null)
                     return new();
-                return JsonConvert.DeserializeObject<List<string>>(DisableModuleIdsJson);
+                return JsonConvert.DeserializeObject<List<string>>(DisableModuleIdsJson) ?? new();
             }
             set
             {

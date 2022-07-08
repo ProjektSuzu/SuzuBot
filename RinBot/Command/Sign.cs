@@ -88,6 +88,7 @@ namespace RinBot.Command
                     var info = PermissionManager.Instance.GetQQUserInfo(uint.Parse(e.SenderId));
                     info.Exp += exp;
                     info.Memory += memory;
+                    PermissionManager.Instance.UpdateQQUserInfo(info);
                 }
                 else
                 {

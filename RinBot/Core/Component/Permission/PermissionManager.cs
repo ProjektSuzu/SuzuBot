@@ -104,6 +104,9 @@ namespace RinBot.Core.Component.Permission
             return info;
         }
 
+        public List<QQGroupInfo> GetQQGroupInfos()
+            => RinDatabase.Instance.dbConnection.Table<QQGroupInfo>().ToList();
+
         public bool UpdateQQUserInfo(QQUserInfo info)
             => RinDatabase.Instance.dbConnection.Update(info) > 0;
         public bool UpdateQQGroupInfo(QQGroupInfo info)

@@ -45,7 +45,7 @@ namespace RinBot.Command
                             stringBuilder.AppendLine($"缺少参数 <key>");
                             return stringBuilder.ToString();
                         }
-                        string key = args[1];
+                        string key = args[0];
                         args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.HasEnv(key))
                         {
@@ -70,7 +70,7 @@ namespace RinBot.Command
                             stringBuilder.AppendLine($"缺少参数 <key>");
                             return stringBuilder.ToString();
                         }
-                        string key = args[1];
+                        string key = args[0];
                         args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.SetEnv(key, args))
                         {
@@ -93,7 +93,7 @@ namespace RinBot.Command
                             stringBuilder.AppendLine($"缺少参数 <key>");
                             return stringBuilder.ToString();
                         }
-                        string key = args[1];
+                        string key = args[0];
                         args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.HasEnv(key))
                         {
@@ -125,7 +125,7 @@ namespace RinBot.Command
                             stringBuilder.AppendLine($"缺少参数 <key>");
                             return stringBuilder.ToString();
                         }
-                        string key = args[1];
+                        string key = args[0];
                         args = args.Skip(1).ToList();
                         if (!EnvManager.Instance.HasEnv(key))
                         {
@@ -143,24 +143,24 @@ namespace RinBot.Command
                     {
                         var envs = EnvManager.Instance.GetEnvs();
                         var totalCount = envs.Count();
-                        var page = 0;
+                        var page = 1;
                         if (args.Count > 0)
                         {
-                            if (!int.TryParse(args[0], out page) || page < 0)
+                            if (!int.TryParse(args[0], out page) || page < 1)
                             {
                                 stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <page>.");
                                 return stringBuilder.ToString();
                             }
-                            if (page + 1 > totalCount)
+                            if (page > totalCount)
                             {
                                 stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <page>.");
                                 return stringBuilder.ToString();
                             }
                         }
-                        envs = envs.Skip(page * 8).Take(8).ToList();
+                        envs = envs.Skip(page - 1 * 8).Take(8).ToList();
                         foreach (var env in envs)
                             stringBuilder.AppendLine($"{env.Key},");
-                        stringBuilder.AppendLine($"\n Page {page + 1} of {totalCount / 8 + 1}");
+                        stringBuilder.AppendLine($"\n Page {page} of {totalCount / 8 + 1}");
 
                         return stringBuilder.ToString();
                     }

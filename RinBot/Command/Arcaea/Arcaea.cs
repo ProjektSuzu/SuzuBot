@@ -71,9 +71,6 @@ namespace RinBot.Command.Arcaea
                 case "calculate":
                     return OnCalculate(e, args);
 
-                case "aua-test":
-                    return OnTestAquired(e);
-
                 default:
                     var chain = new RinMessageChain();
                     chain.Add(TextChain.Create($"[Arcaea]\n找不到功能: {funcName}"));
@@ -579,35 +576,5 @@ namespace RinBot.Command.Arcaea
             chain.Add(TextChain.Create(stringBuilder.ToString()));
             return chain;
         }
-
-        private RinMessageChain OnTestAquired(RinEvent e)
-        {
-            var chain = new RinMessageChain();
-            var httpClient = new HttpClient();
-            var url = @"https://server.awbugl.top/botarcapi/untested";
-
-            var json = httpClient.GetAsync(url).Result.Content.ReadAsStringAsync().Result;
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-            var list = new List<(string, SongDifficulty)>();
-            foreach (var item in dict)
-            {
-                var diff = item.Value.Split(',');
-                if (diff.Any(x => x.Trim() != ""))
-                {
-                    foreach (var d in diff)
-                    {
-                        if (d.Trim() != "")
-                            list.Add((item.Key, (SongDifficulty)Enum.Parse(typeof(SongDifficulty), d.Trim())));
-                    }
-                }
-            }
-            var random = list[new Random().Next(list.Count - 1)];
-            var song = ArcaeaSongDB.Instance.GetSongs(random.Item1).First(x => x.RatingClass == (int)random.Item2);
-            var songName = song.NameEN;
-            var setName = song.Set;
-            chain.Add(TextChain.Create($"[Arcaea]TestAquired\n{songName} ({random.Item2})\nAt {setName}\n\n{list.Count} Song(s) left."));
-            return chain;
-        }
-
     }
 }

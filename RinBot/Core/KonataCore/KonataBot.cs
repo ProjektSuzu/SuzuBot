@@ -3,9 +3,13 @@ using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
+using Konata.Core.Message;
+using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using NLog;
+using RinBot.Core.Component.ENV;
 using RinBot.Core.Component.Message;
+using RinBot.Core.Component.Permission;
 
 namespace RinBot.Core.KonataCore
 {
@@ -37,6 +41,11 @@ namespace RinBot.Core.KonataCore
         private readonly string konataConfigDirectory;
         private readonly string konataDevicePath;
         private readonly string konataKeyStorePath;
+
+        private const string AUTO_ACCEPT_FRIEND_REQ = "AUTO_ACCEPT_FRIEND_REQ_QQ";
+        private const string AUTO_ACCEPT_GROUP_REQ = "AUTO_ACCEPT_GROUP_REQ_QQ";
+
+        private const uint RINBOT_GROUP_OFFICIAL = 955578812u;
 
         private BotConfig GetBotConfig()
         {
@@ -138,6 +147,60 @@ namespace RinBot.Core.KonataCore
                 {
                     Logger.Warn($"Bot offline. {e.Type}");
                 };
+
+                Bot.OnFriendRequest += (s, e) =>
+                {
+                    Logger.Info($"Friend request: {e.ReqNick}({e.ReqUin}).");
+                    if (EnvManager.Instance.HasEnv(AUTO_ACCEPT_FRIEND_REQ) && EnvManager.Instance.GetEnv(AUTO_ACCEPT_FRIEND_REQ).First() == "1")
+                    {
+                        if (s.ApproveFriendRequest(e.ReqUin, e.Token).Result)
+                            Logger.Info($"Friend request accepted: {e.ReqNick}({e.ReqUin}).");
+                        else
+                            Logger.Error($"Friend request failed: {e.ReqNick}({e.ReqUin}).");
+                    }
+                };
+
+                Bot.OnGroupInvite += (s, e) =>
+                {
+                    Logger.Info($"Group invite request: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
+                    if (EnvManager.Instance.HasEnv(AUTO_ACCEPT_GROUP_REQ) && EnvManager.Instance.GetEnv(AUTO_ACCEPT_GROUP_REQ).First() == "1")
+                    {
+                        if (s.GetGroupMemberList(RINBOT_GROUP_OFFICIAL).Result.Any(x => x.Uin == e.InviterUin))
+                        {
+                            s.DeclineGroupInvitation(e.GroupUin, e.InviterUin, e.Token, "邀请者尚未加入 RinBot 认领群");
+                            Logger.Error($"Group invite request denied: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
+                            s.SendFriendMessage(e.InviterUin, $"拒绝群聊邀请\n邀请者尚未加入 RinBot 认领群 ({RINBOT_GROUP_OFFICIAL})");
+                            return;
+                        }
+                        if (s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token).Result)
+                        {
+                            PermissionManager.Instance.UpdateQQGroupInfo(new()
+                            {
+                                GroupId = e.GroupUin,
+                                InviterId = e.InviterUin,
+                                DisableModuleIds = new(),
+                                WhiteListed = false,
+                                BlackListed = false,
+
+                            });
+                            Logger.Info($"Group invite request accepted: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
+                        }
+                        else
+                        {
+                            Logger.Error($"Group invite request failed: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
+                        }
+                    }
+                };
+
+                Bot.OnGroupMemberDecrease += (s, e) =>
+                {
+                    if (e.GroupUin != RINBOT_GROUP_OFFICIAL) return;
+                    PermissionManager.Instance.GetQQGroupInfos()
+                    .Where(x => x.InviterId == e.MemberUin)
+                    .Select(x => x.GroupId)
+                    .ToList()
+                    .ForEach(x => s.GroupLeave(x));
+                };
             }
 
             #region Konata
@@ -146,6 +209,7 @@ namespace RinBot.Core.KonataCore
             Bot.OnGroupPoke += MessageProcessor.Instance.OnKonataGroupPoke;
             Bot.OnFriendPoke += MessageProcessor.Instance.OnKonataFriendPoke;
             #endregion
+
 
             Logger.Info("Bot initialization completed.");
             return;

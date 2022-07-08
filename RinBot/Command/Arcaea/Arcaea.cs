@@ -60,6 +60,7 @@ namespace RinBot.Command.Arcaea
                     return OnChartPreview(e, args);
 
                 case "song":
+                case "const":
                     return OnSongInfo(e, args);
 
                 case "linkplay":

@@ -40,7 +40,7 @@ namespace RinBot.Command
             {
                 case "get":
                     {
-                        if (args.Count < 2)
+                        if (args.Count < 1)
                         {
                             stringBuilder.AppendLine($"缺少参数 <key>");
                             return stringBuilder.ToString();
@@ -120,7 +120,7 @@ namespace RinBot.Command
 
                 case "del":
                     {
-                        if (args.Count < 2)
+                        if (args.Count < 1)
                         {
                             stringBuilder.AppendLine($"缺少参数 <key>");
                             return stringBuilder.ToString();

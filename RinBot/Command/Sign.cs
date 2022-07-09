@@ -1,6 +1,7 @@
 ﻿using Konata.Core;
 using Konata.Core.Interfaces.Api;
 using Newtonsoft.Json;
+using RinBot.Command.Tarot;
 using RinBot.Core;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
@@ -106,6 +107,14 @@ namespace RinBot.Command
             lotReply.AppendLine($"{comment}\n");
 
             chain.Add(TextChain.Create(lotReply.ToString()));
+
+            var tarot = TarotManager.Instance.GetTarotResults(1, random)[0];
+            var tarotMeaning = TarotManager.Instance.GetTarotMeaning(tarot.Title, tarot.IsReversed);
+            var tarotImage = TarotManager.Instance.GetTarotImage(tarot.Title);
+
+            chain.Add(TextChain.Create($"今天的塔罗牌是: {tarot.Title} {(tarot.IsReversed ? "逆位" : "正位")}"));
+            chain.Add(ImageChain.Create(tarotImage));
+            chain.Add(TextChain.Create(tarotMeaning + "\n"));
 
             chain.Add(TextChain.Create("\n结果仅供参考, 自己的命运要自己把握哦(ﾉﾟ▽ﾟ)ﾉ"));
             return chain;

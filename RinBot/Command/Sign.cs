@@ -167,11 +167,13 @@ namespace RinBot.Command
         };
             public static string[] Just = {
             "运气不错.",
-            "美好的一天从此开始."
+            "美好的一天从此开始.",
+            "不错的开端.",
         };
             public static string[] Great = {
             "今天或许有意外的惊喜呢~",
             "I`m so happy~",
+            "是吉不是寄哦~",
         };
             public static string[] Pure = {
             "这种运气..真的是存在的吗~~",

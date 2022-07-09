@@ -39,6 +39,9 @@ namespace RinBot.Command.Arcaea
 
             switch (funcName)
             {
+                case "alias":
+                    return OnAlias(e, args);
+
                 case "bind":
                     return OnBind(e, args);
 
@@ -219,7 +222,7 @@ namespace RinBot.Command.Arcaea
                         index++;
                     }
                 }
-                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index + 1} 个结果"));
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{String.Join('\n', songList.Take(5).Select(x => x.NameEN))}\n等 {index + 1} 个结果"));
                 return chain;
             }
 
@@ -366,7 +369,7 @@ namespace RinBot.Command.Arcaea
                         index++;
                     }
                 }
-                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index + 1} 个结果"));
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{String.Join('\n', songList.Take(5).Select(x => x.NameEN))}\n等 {index + 1} 个结果"));
                 return chain;
             }
 
@@ -422,7 +425,7 @@ namespace RinBot.Command.Arcaea
                         index++;
                     }
                 }
-                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{(index > 3 ? String.Join('\n', songList.Take(3).Select(x => x.NameEN)) : String.Join('\n', songList.Select(x => x.NameEN)))}\n等 {index + 1} 个结果"));
+                chain.Add(TextChain.Create($"[Arcaea]\n{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{String.Join('\n', songList.Take(5).Select(x => x.NameEN))}\n等 {index + 1} 个结果"));
                 return chain;
             }
 
@@ -450,6 +453,7 @@ namespace RinBot.Command.Arcaea
             stringBuilder.AppendLine($"难度: {String.Join('/', songList.Select(x => x.GetDifficultyFriendly()).ToList())}");
             stringBuilder.AppendLine($"定数: {String.Join('/', songList.Select(x => (float)x.Rating / 10).ToList())}");
             stringBuilder.AppendLine($"物量: {String.Join('/', songList.Select(x => x.Note).ToList())}");
+            stringBuilder.AppendLine($"\n提示: 可使用\n/arc alias {songId}\n来查询该曲的别名");
 
 
             chain.Add(TextChain.Create("[Arcaea]Song"));
@@ -513,7 +517,7 @@ namespace RinBot.Command.Arcaea
             return chain;
         }
 
-        private RinMessageChain OnCalculate(RinEvent e, List<string> args)
+        public RinMessageChain OnCalculate(RinEvent e, List<string> args)
         {
             float rating;
             uint score;
@@ -577,6 +581,65 @@ namespace RinBot.Command.Arcaea
 
             stringBuilder.AppendLine($"{rating:0.0000} <> {score:00000000}");
             stringBuilder.AppendLine($"=> {result:0.0000}");
+            chain.Add(TextChain.Create(stringBuilder.ToString()));
+            return chain;
+        }
+
+        public RinMessageChain OnAlias(RinEvent e, List<string> args)
+        {
+            string songName;
+
+            RinMessageChain chain = new RinMessageChain();
+            chain.Add(TextChain.Create("[Arcaea]Alias\n"));
+            StringBuilder stringBuilder = new();
+            if (args.Count > 0)
+            {
+                songName = String.Join(' ', args);
+            }
+            else
+            {
+                stringBuilder.AppendLine($"缺少参数: <songName>.");
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
+            }
+            
+            var songList = ArcaeaSongDB.Instance.TryGetSong(songName);
+            if (songList.Count <= 0)
+            {
+                stringBuilder.AppendLine($"未找到歌曲\n{songName}");
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
+            }
+            var sample = songList.First();
+            if (!songList.All(x => x.SongId == sample.SongId))
+            {
+                int index = 0;
+                while (index < songList.Count - 1)
+                {
+                    if (songList[index + 1].SongId == songList[index].SongId)
+                    {
+                        songList.RemoveAt(index);
+                    }
+                    else
+                    {
+                        index++;
+                    }
+                }
+                chain.Add(TextChain.Create($"{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{String.Join('\n', songList.Take(5).Select(x => x.NameEN))}\n等 {index + 1} 个结果"));
+                chain.Add(TextChain.Create(stringBuilder.ToString()));
+                return chain;
+            }   
+
+            stringBuilder.AppendLine($"{sample.NameEN}\n{sample.NameJP ?? ""}\n具有以下别名:");
+            songName = sample.SongId;
+
+            var aliasList = ArcaeaSongDB.Instance.GetAlias(songName);
+
+            foreach(var alias in aliasList)
+            {
+                stringBuilder.AppendLine(alias);
+            }
+
             chain.Add(TextChain.Create(stringBuilder.ToString()));
             return chain;
         }

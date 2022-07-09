@@ -22,7 +22,7 @@ namespace RinBot.Command.Arcaea
             arcAliasDBConnection = new(ALIAS_DB_PATH);
             arcAliasDBConnection.CreateTable<Alias>();
             var aliasList = arcAliasDBConnection.Table<Alias>().ToList();
-            aliasList = aliasList.Union(arcSongDBConnection.Table<Alias>()).ToList();
+            aliasList = aliasList.Union(arcSongDBConnection.Table<Alias>()).DistinctBy(x => new { x.SongId, x.AliasName }).ToList();
             arcAliasDBConnection.DeleteAll<Alias>();
             arcAliasDBConnection.InsertAll(aliasList);
         }
@@ -41,10 +41,10 @@ namespace RinBot.Command.Arcaea
                 return songs;
             }
 
-            string? sid = GetSongByAlias(name).FirstOrDefault()?.SongId ?? null;
-            if (sid != null)
+            songs = GetSongByAlias(name);
+            if (songs != null && songs.Count > 0)
             {
-                return GetSongs(sid);
+                return songs;
             }
 
             songs = arcSongDBConnection
@@ -105,7 +105,7 @@ namespace RinBot.Command.Arcaea
     [Table("alias")]
     internal class Alias
     {
-        [Column("songId")]
+        [Column("sid")]
         public string SongId { get; set; }
         [Column("alias")]
         public string AliasName { get; set; }

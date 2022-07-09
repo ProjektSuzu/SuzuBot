@@ -165,7 +165,7 @@ namespace RinBot.Core.KonataCore
                     Logger.Info($"Group invite request: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
                     if (EnvManager.Instance.HasEnv(AUTO_ACCEPT_GROUP_REQ) && EnvManager.Instance.GetEnv(AUTO_ACCEPT_GROUP_REQ).First() == "1")
                     {
-                        if (s.GetGroupMemberList(RINBOT_GROUP_OFFICIAL).Result.Any(x => x.Uin == e.InviterUin))
+                        if (!s.GetGroupMemberList(RINBOT_GROUP_OFFICIAL).Result.Any(x => x.Uin == e.InviterUin))
                         {
                             s.DeclineGroupInvitation(e.GroupUin, e.InviterUin, e.Token, "邀请者尚未加入 RinBot 认领群");
                             Logger.Error($"Group invite request denied: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");

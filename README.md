@@ -18,7 +18,7 @@ Simple bot for multi IM platform.
 | Telegram | Working | Working |
 
 # Document
-[Docs.RinBot](https://docs-rinbot.akulak.icu/) (Simplified Chinese Only)
+[RinBot.Docs](https://docs-rinbot.akulak.icu/) (Simplified Chinese Only)
 
 # Special Thanks
 RinBot could not have been created without these projects.

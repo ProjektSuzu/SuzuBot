@@ -386,7 +386,7 @@ namespace RinBot.Command.Arcaea
                 return chain;
             }
 
-            chain.Add(TextChain.Create("[Arcaea]Best"));
+            chain.Add(TextChain.Create("[Arcaea]ChartPreview"));
             chain.Add(ImageChain.Create(bytes));
             return chain;
         }
@@ -437,9 +437,9 @@ namespace RinBot.Command.Arcaea
             var pack = ArcaeaSongDB.Instance.GetPackName(songList.First().Set);
             var side = songList.First().Side switch
             {
-                0 => "光芒侧",
-                1 => "纷争侧",
-                2 => "Colorless",
+                0 => "光芒之侧",
+                1 => "纷争之侧",
+                2 => "消色之侧",
                 _ => "???",
             };
 
@@ -456,7 +456,7 @@ namespace RinBot.Command.Arcaea
             stringBuilder.AppendLine($"\n提示: 可使用\n/arc alias {songId}\n来查询该曲的别名");
 
 
-            chain.Add(TextChain.Create("[Arcaea]Song"));
+            chain.Add(TextChain.Create("[Arcaea]SongInfo"));
             chain.Add(ImageChain.Create(GraphGenerator.Instance.GetCoverImg(sample.SongId).Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray()));
             chain.Add(TextChain.Create(stringBuilder.ToString()));
 

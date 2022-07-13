@@ -206,4 +206,22 @@ namespace RinBot.Command.Arcaea
             }
         }
     }
+
+    public class SongInfoResult
+    {
+        [JsonProperty("status")]
+        public int Status { get; set; }
+        [JsonProperty("content")]
+        public SongInfoContent Content { get; set; }
+    }
+
+    public class SongInfoContent
+    {
+        [JsonProperty("song_id")]
+        public string SongId { get; set; }
+        [JsonProperty("difficulties")]
+        public List<Chart> Difficulties { get; set; }
+        [JsonProperty("alias")]
+        public List<string> Alias { get; set; }
+    }
 }

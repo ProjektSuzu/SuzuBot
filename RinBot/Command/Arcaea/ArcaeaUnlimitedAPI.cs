@@ -168,6 +168,37 @@ namespace RinBot.Command.Arcaea
             }
         }
 
+
+        public async Task<SongInfoResult?> GetSongInfo(string songId)
+        {
+            Logger.Info($"Querying SongInfo: {songId}");
+            try
+            {
+                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/song/info?songid={songId}&withsonginfo=false").Result;
+                if (!response.IsSuccessStatusCode)
+                {
+                    Logger.Error($"Http connection failed: {response.StatusCode}");
+                    return null;
+                }
+                Logger.Info($"Query SongInfo success: {songId}");
+                var result = JsonConvert.DeserializeObject<SongInfoResult>(response.Content.ReadAsStringAsync().Result);
+                if (result != null && result.Status == 0)
+                {
+                    result.Content.Difficulties.ForEach(x => x.SongId = result.Content.SongId);
+                }
+                return result;
+            }
+            catch (TaskCanceledException taskCanceled)
+            {
+                Logger.Error($"Timeout when Querying SongInfo: {songId}");
+                return null;
+            }
+            catch (Exception e)
+            {
+                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                return null;
+            }
+        }
         public async Task<byte[]?> GetChartPreview(string songId, SongDifficulty difficulty)
         {
             Logger.Info($"Downloading chart preview: {songId} {difficulty}");

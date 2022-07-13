@@ -1,4 +1,5 @@
-﻿using RinBot.Core;
+﻿using Newtonsoft.Json;
+using RinBot.Core;
 using SQLite;
 using System.Data;
 
@@ -79,10 +80,15 @@ namespace RinBot.Command.Arcaea
 
         public List<Chart> GetSongs(string songId)
         {
-            return arcSongDBConnection
+            var result = arcSongDBConnection
                 .Table<Chart>()
                 .Where(s => s.SongId.ToLower() == songId)
                 .ToList();
+            if (result.Count <= 0)
+            {
+                result = ArcaeaUnlimitedAPI.Instance.GetSongInfo(songId).Result?.Content?.Difficulties ?? new();
+            }
+            return result;
         }
         public List<string> GetAlias(string sid)
         {
@@ -112,37 +118,47 @@ namespace RinBot.Command.Arcaea
     }
 
     [Table("charts")]
-    internal class Chart
+    public class Chart
     {
         [PrimaryKey]
         [Column("song_id")]
+        [JsonProperty("song_id")]
         public string SongId { get; set; }
 
         [Column("name_en")]
+        [JsonProperty("name_en")]
         public string NameEN { get; set; }
 
         [Column("name_jp")]
+        [JsonProperty("name_jp")]
         public string NameJP { get; set; }
 
         [Column("bpm")]
+        [JsonProperty("bpm")]
         public string BPM { get; set; }
 
         [Column("set")]
+        [JsonProperty("set")]
         public string Set { get; set; }
 
         [Column("side")]
+        [JsonProperty("side")]
         public int Side { get; set; }
 
         [Column("rating_class")]
+        [JsonProperty("rating_class")]
         public int RatingClass { get; set; }
 
         [Column("difficulty")]
+        [JsonProperty("difficulty")]
         public int Difficulty { get; set; }
 
         [Column("rating")]
+        [JsonProperty("rating")]
         public int Rating { get; set; }
 
         [Column("note")]
+        [JsonProperty("note")]
         public int Note { get; set; }
 
         public int GetTheoreticalValue()

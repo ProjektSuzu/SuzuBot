@@ -1,4 +1,5 @@
-﻿using RinBot.Core;
+﻿using NLog;
+using RinBot.Core;
 using SkiaSharp;
 
 namespace RinBot.Command.Arcaea
@@ -6,6 +7,7 @@ namespace RinBot.Command.Arcaea
     internal class GraphGenerator
     {
         private static readonly string ARCAEA_RESOURCE_PATH = Path.Combine(Global.RESOURCE_PATH, "Arcaea");
+        private Logger Logger = LogManager.GetLogger("ARCIMG");
 
         //单例模式
         private static GraphGenerator instance;
@@ -57,6 +59,11 @@ namespace RinBot.Command.Arcaea
 
             #region 获取歌曲信息
             List<Chart> songs = ArcaeaSongDB.Instance.GetSongs(songResult.SongId);
+            //if (songs.Count <= 0)
+            //{
+            //    Logger.Warn("Local DB chart not found, try API.");
+            //    songs = ArcaeaUnlimitedAPI.Instance.GetSongInfo(songResult.SongId).Result.Content.Difficulties;
+            //}
             var song = songs[(int)songResult.Difficulty];
             #endregion
 
@@ -729,6 +736,11 @@ namespace RinBot.Command.Arcaea
                 songResult = ((BestPlayResult)playerResult).Content.Record;
             }
             var songs = ArcaeaSongDB.Instance.GetSongs(songResult.SongId);
+            //if (songs.Count <= 0)
+            //{
+            //    Logger.Warn("Local DB chart not found, try API.");
+            //    songs = ArcaeaUnlimitedAPI.Instance.GetSongInfo(songResult.SongId).Result.Content.Difficulties;
+            //}
             songInfo = songs[(int)songResult.Difficulty];
             #endregion
 

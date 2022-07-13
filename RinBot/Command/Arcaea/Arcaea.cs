@@ -519,9 +519,9 @@ namespace RinBot.Command.Arcaea
 
         public RinMessageChain OnCalculate(RinEvent e, List<string> args)
         {
-            float rating;
-            uint score;
-            float result;
+            float rating = 0f;
+            int score = 0;
+            float result = 0f;
 
             RinMessageChain chain = new RinMessageChain();
             chain.Add(TextChain.Create("[Arcaea]Calculate\n"));
@@ -546,7 +546,7 @@ namespace RinBot.Command.Arcaea
 
             if (args.Count > 0)
             {
-                if (!uint.TryParse(args[0], out score))
+                if (!int.TryParse(args[0], out score) || score < 0)
                 {
                     stringBuilder.AppendLine($"参数非法: \"{args[0]}\" => <score>.");
                     chain.Add(TextChain.Create(stringBuilder.ToString()));
@@ -562,10 +562,8 @@ namespace RinBot.Command.Arcaea
 
             if (score < 09_800_000)
             {
-                if (score > 09_500_000)
+                if (score >= 08_600_000)
                     result = rating + (float)(score - 09_500_000) / 300_000;
-                else
-                    result = 0f;
             }
             else if (score < 10_000_000)
             {

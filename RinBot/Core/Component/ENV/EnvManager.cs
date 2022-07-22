@@ -32,7 +32,7 @@ namespace RinBot.Core.Component.ENV
             return database.dbConnection
                 .Table<EnvironmentVariable>()
                 .FirstOrDefault(x => x.Key == key)
-                .Value ?? new();
+                ?.Value ?? new();
         }
 
         public List<EnvironmentVariable> GetEnvs()

@@ -3,6 +3,7 @@ using Konata.Core.Events.Model;
 using NLog;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Database;
+using RinBot.Core.Component.ENV;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
@@ -59,6 +60,8 @@ namespace RinBot.Core.Component.Command
         #endregion
 
         readonly Logger Logger = LogManager.GetLogger("CMD");
+
+        const string CUSTOM_CMD_PREFIX = "CUSTOM_CMD_PREFIX";
 
         private List<string> leadChars = new()
         {
@@ -136,6 +139,14 @@ namespace RinBot.Core.Component.Command
                 foreach (var leadChar in leadChars)
                     if (rinMessageEvent.RawContent.StartsWith(leadChar))
                         return true;
+                if (EnvManager.Instance.HasEnv(CUSTOM_CMD_PREFIX))
+                {
+                    foreach (var leadChar in EnvManager.Instance.GetEnv(CUSTOM_CMD_PREFIX))
+                    {
+                        if (rinMessageEvent.RawContent.StartsWith(leadChar))
+                            return true;
+                    }
+                }
 
                 if (rinMessageEvent.EventSubjectType == EventSubjectType.Group)
                 {
@@ -159,6 +170,15 @@ namespace RinBot.Core.Component.Command
                 foreach (var leadChar in leadChars)
                     if (rinMessageEvent.RawContent.StartsWith(leadChar))
                         return rinMessageEvent.RawContent.Substring(leadChar.Length).Trim();
+
+                if (EnvManager.Instance.HasEnv(CUSTOM_CMD_PREFIX))
+                {
+                    foreach (var leadChar in EnvManager.Instance.GetEnv(CUSTOM_CMD_PREFIX))
+                    {
+                        if (rinMessageEvent.RawContent.StartsWith(leadChar))
+                            return rinMessageEvent.RawContent.Substring(leadChar.Length).Trim();
+                    }
+                }
 
                 if (rinMessageEvent.EventSubjectType == EventSubjectType.Group)
                 {

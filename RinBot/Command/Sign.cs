@@ -15,24 +15,24 @@ namespace RinBot.Command
     [Module("签到", "org.akulak.sign")]
     internal class Sign
     {
-        private static readonly string CHECH_IN_LIST_PATH = Path.Combine(Global.RESOURCE_PATH, "checkInList.json");
-        private List<(string, EventSourceType)> checkInList;
+        private static readonly string SIGNED_LIST_PATH = Path.Combine(Global.RESOURCE_PATH, "signedList.json");
+        private List<(string, EventSourceType)> signedList;
         Timer clearTimer;
 
         public Sign()
         {
-            if (!File.Exists(CHECH_IN_LIST_PATH))
-                checkInList = new();
+            if (!File.Exists(SIGNED_LIST_PATH))
+                signedList = new();
             else
-                checkInList = JsonConvert.DeserializeObject<List<(string, EventSourceType)>>(File.ReadAllText(CHECH_IN_LIST_PATH)) ?? new();
-            File.WriteAllTextAsync(CHECH_IN_LIST_PATH, JsonConvert.SerializeObject(checkInList));
+                signedList = JsonConvert.DeserializeObject<List<(string, EventSourceType)>>(File.ReadAllText(SIGNED_LIST_PATH)) ?? new();
+            File.WriteAllTextAsync(SIGNED_LIST_PATH, JsonConvert.SerializeObject(signedList));
 
-            clearTimer = new Timer(new TimerCallback(ClearCheckInList));
+            clearTimer = new Timer(new TimerCallback(ClearSignedList));
             clearTimer.Change(DateTime.Now - new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day), new TimeSpan(24, 0, 0));
         }
 
-        private void ClearCheckInList(object obj)
-            => checkInList.Clear();
+        private void ClearSignedList(object obj)
+            => signedList.Clear();
 
         private string GetMemoryStr(long memory)
         {
@@ -75,13 +75,14 @@ namespace RinBot.Command
             var random = new Random((int)seed);
             StringBuilder signReply = new();
 
-            if (checkInList.Any(x => x.Item1 == e.SenderId && x.Item2 == e.EventSourceType))
+            if (signedList.Any(x => x.Item1 == e.SenderId && x.Item2 == e.EventSourceType))
             {
                 signReply.AppendLine("今天已经打过卡啦, 明天再来吧.\n");
             }
             else
             {
-                checkInList.Add(new(e.SenderId, e.EventSourceType));
+                signedList.Add(new(e.SenderId, e.EventSourceType));
+                File.WriteAllTextAsync(SIGNED_LIST_PATH, JsonConvert.SerializeObject(signedList));
                 int memory = new Random().Next(500, 1000);
                 int exp = new Random().Next(5, 10);
                 if (e.EventSourceType == EventSourceType.QQ)
@@ -95,7 +96,7 @@ namespace RinBot.Command
                 {
                     return null;
                 }
-                signReply.AppendLine($"打卡成功 你是今天第 {checkInList.Count} 个打卡的.");
+                signReply.AppendLine($"打卡成功 你是今天第 {signedList.Count} 个打卡的.");
                 signReply.AppendLine($"经验+ {exp} exp.");
                 signReply.AppendLine($"内存+ {GetMemoryStr(memory)}.\n");
             }

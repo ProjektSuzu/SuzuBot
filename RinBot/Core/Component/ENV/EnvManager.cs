@@ -1,6 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Newtonsoft.Json;
-using RinBot.Core.Component.Database;
+﻿using RinBot.Core.Component.Database;
 
 namespace RinBot.Core.Component.ENV
 {

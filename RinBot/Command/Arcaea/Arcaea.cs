@@ -1,11 +1,8 @@
-﻿using Newtonsoft.Json;
-using RinBot.Core.Component.Command.CustomAttribute;
+﻿using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
-using RinBot.Core.Component.Permission;
 using System.Text;
-using static RinBot.Command.Arcaea.SongResult;
 
 namespace RinBot.Command.Arcaea
 {
@@ -18,9 +15,9 @@ namespace RinBot.Command.Arcaea
             public string Host { get; set; }
             public DateTime AnnounceTime { get; set; }
         }
-        
+
         private List<LinkPlayRoom> linkPlayList = new();
-        
+
         public Arcaea()
         {
             var instance = ArcaeaSongDB.Instance;
@@ -119,7 +116,7 @@ namespace RinBot.Command.Arcaea
             RinMessageChain chain = new RinMessageChain();
             ArcaeaBindInfo info = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
             string userCode;
-            
+
             if (info != null) userCode = info.UserCode;
             else if (args.Count() > 0) userCode = args[0];
             else
@@ -600,7 +597,7 @@ namespace RinBot.Command.Arcaea
                 chain.Add(TextChain.Create(stringBuilder.ToString()));
                 return chain;
             }
-            
+
             var songList = ArcaeaSongDB.Instance.TryGetSong(songName);
             if (songList.Count <= 0)
             {
@@ -626,14 +623,14 @@ namespace RinBot.Command.Arcaea
                 chain.Add(TextChain.Create($"{songName} 是多项查询结果中的不确定关键字 请尝试补全关键字\n{String.Join('\n', songList.Take(5).Select(x => x.NameEN))}\n等 {index + 1} 个结果"));
                 chain.Add(TextChain.Create(stringBuilder.ToString()));
                 return chain;
-            }   
+            }
 
             stringBuilder.AppendLine($"{sample.NameEN}\n{sample.NameJP ?? ""}\n具有以下别名:");
             songName = sample.SongId;
 
             var aliasList = ArcaeaSongDB.Instance.GetAlias(songName);
 
-            foreach(var alias in aliasList)
+            foreach (var alias in aliasList)
             {
                 stringBuilder.AppendLine(alias);
             }

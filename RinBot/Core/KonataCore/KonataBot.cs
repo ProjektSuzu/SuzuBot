@@ -3,8 +3,6 @@ using Konata.Core.Common;
 using Konata.Core.Events.Model;
 using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
-using Konata.Core.Message;
-using Konata.Core.Message.Model;
 using Newtonsoft.Json;
 using NLog;
 using RinBot.Core.Component.ENV;

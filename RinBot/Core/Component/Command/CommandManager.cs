@@ -357,8 +357,8 @@ namespace RinBot.Core.Component.Command
                             }
 
 
-                            if (method.GetParameters().FirstOrDefault() != null 
-                                && method.GetParameters().FirstOrDefault().ParameterType == typeof(RinEvent) 
+                            if (method.GetParameters().FirstOrDefault() != null
+                                && method.GetParameters().FirstOrDefault().ParameterType == typeof(RinEvent)
                                 && returnValue != null)
                             {
                                 invokeRecord.IsInvoked = true;

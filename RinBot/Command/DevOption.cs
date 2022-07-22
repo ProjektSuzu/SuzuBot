@@ -1,11 +1,8 @@
 ﻿using NLog;
-using RinBot.BuildStamp;
 using RinBot.Core.Component.Command;
 using RinBot.Core.Component.Command.CustomAttribute;
-using RinBot.Core.Component.Database;
 using RinBot.Core.Component.ENV;
 using RinBot.Core.Component.Event;
-using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Permission;
 using System.Text;
 
@@ -24,7 +21,7 @@ namespace RinBot.Command
             if (args.Count == 0)
             {
                 stringBuilder.AppendLine($"Count: {EnvManager.Instance.GetEnvCount()}");
-                return stringBuilder.ToString();   
+                return stringBuilder.ToString();
             }
             else if (args.Count < 1)
             {

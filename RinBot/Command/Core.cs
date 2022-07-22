@@ -1,6 +1,4 @@
-﻿using Konata.Core;
-using Konata.Core.Events.Model;
-using Konata.Core.Interfaces.Api;
+﻿using Konata.Core.Interfaces.Api;
 using RinBot.BuildStamp;
 using RinBot.Core.Component.Command;
 using RinBot.Core.Component.Command.CustomAttribute;

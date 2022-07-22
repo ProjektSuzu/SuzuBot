@@ -1,16 +1,10 @@
-﻿using Konata.Core.Events.Model;
-using Konata.Core;
-using RinBot.Core.Component.Command.CustomAttribute;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Konata.Core;
+using Konata.Core.Events.Model;
 using Konata.Core.Interfaces.Api;
-using Newtonsoft.Json;
-using NLog;
-using RinBot.Core;
 using Konata.Core.Message;
+using Newtonsoft.Json;
+using RinBot.Core;
+using RinBot.Core.Component.Command.CustomAttribute;
 
 namespace RinBot.Command
 {
@@ -27,12 +21,12 @@ namespace RinBot.Command
             string? json = File.ReadAllText(POKE_REPLY_PATH);
             pokeReplys = JsonConvert.DeserializeObject<List<string>>(json ?? "") ?? new();
         }
-        
+
         [Command("戳一戳", "", MatchingType.Always, ReplyType.Reply)]
         public void OnPing(GroupPokeEvent e, Bot bot)
         {
             if (e.MemberUin != bot.Uin || e.OperatorUin == bot.Uin) return;
-            
+
             string reply = pokeReplys.ElementAt(new Random().Next(pokeReplys.Count()));
             reply = reply.Replace("{uin}", e.OperatorUin.ToString());
             reply = reply.Replace("{name}", bot.GetGroupMemberInfo(e.GroupUin, e.OperatorUin).Result.NickName);
@@ -61,7 +55,7 @@ namespace RinBot.Command
             }
             catch
             {
-                
+
             }
         }
     }

@@ -1,14 +1,8 @@
-﻿using RinBot.Command.Arcaea;
-using RinBot.Core.Component.Command.CustomAttribute;
+﻿using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command.Apex
 {

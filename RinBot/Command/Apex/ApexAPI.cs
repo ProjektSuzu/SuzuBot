@@ -1,16 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NLog;
-using RinBot.Command.Arcaea;
 using RinBot.Core;
-using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command.Apex
 {
@@ -24,8 +15,8 @@ namespace RinBot.Command.Apex
             {
                 if (instance == null) instance = new();
                 return instance;
-}
-}
+            }
+        }
         private ApexAPI()
         {
             if (!File.Exists(CONFIG_PATH))

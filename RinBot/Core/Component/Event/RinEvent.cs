@@ -8,8 +8,8 @@ namespace RinBot.Core.Component.Event
 {
     public enum EventSourceType
     {
-        QQ,
-        Telegram,
+        QQ = 1,
+        Telegram = 2,
     }
 
     public enum EventSubjectType
@@ -97,7 +97,34 @@ namespace RinBot.Core.Component.Event
             }
         }
 
-        private Task<bool> KonataMessageReply(RinMessageChain chains)
+        internal Task<bool> KonataMessageReply(Konata.Core.Message.MessageChain chains)
+        {
+            if (EventSubjectType == EventSubjectType.Bot)
+                throw new Exception("Unsupported subject type.");
+
+            var bot = (Bot)OriginalSender;
+
+            if (EventSubjectType == EventSubjectType.Group)
+            {
+                if (OriginalEvent is GroupMessageEvent)
+                {
+                    var groupMessageEvent = (GroupMessageEvent)OriginalEvent;
+                    return bot.SendGroupMessage(groupMessageEvent.GroupUin, chains);
+                }
+            }
+            else
+            {
+                if (OriginalEvent is FriendMessageEvent)
+                {
+                    var friendMessageEvent = (FriendMessageEvent)OriginalEvent;
+                    return bot.SendFriendMessage(friendMessageEvent.FriendUin, chains);
+                }
+            }
+            //should throw here
+            return Task.FromResult(true);
+        }
+
+        internal Task<bool> KonataMessageReply(RinMessageChain chains)
         {
             if (EventSubjectType == EventSubjectType.Bot)
                 throw new Exception("Unsupported subject type.");

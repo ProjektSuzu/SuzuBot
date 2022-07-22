@@ -25,11 +25,12 @@ namespace RinBot.Core.Component.Command.CustomAttribute
         public string Name { get; private set; }
         public string[] Command { get; private set; }
         public int MatchingMask { get; private set; }
+        public int EventSourceMask { get; private set; }
         public ReplyType ReplyType { get; private set; }
         public UserRole Role { get; private set; }
         public bool WhiteListOnly { get; private set; }
 
-        public CommandAttribute(string name, string command, MatchingType matchingType, ReplyType replyType, UserRole userRole = UserRole.User, bool whiteListOnly = false)
+        public CommandAttribute(string name, string command, MatchingType matchingType, ReplyType replyType, UserRole userRole = UserRole.User, bool whiteListOnly = false, int eventSourceMask = 0b11)
         {
             Name = name;
             Command = new[] { command };
@@ -37,9 +38,10 @@ namespace RinBot.Core.Component.Command.CustomAttribute
             ReplyType = replyType;
             Role = userRole;
             WhiteListOnly = whiteListOnly;
+            EventSourceMask = eventSourceMask;
         }
 
-        public CommandAttribute(string name, string[] command, int matchingMask, ReplyType replyType, UserRole userRole = UserRole.User, bool whiteListOnly = false)
+        public CommandAttribute(string name, string[] command, int matchingMask, ReplyType replyType, UserRole userRole = UserRole.User, bool whiteListOnly = false, int eventSourceMask = 0b11)
         {
             Name = name;
             Command = command;
@@ -47,9 +49,10 @@ namespace RinBot.Core.Component.Command.CustomAttribute
             ReplyType = replyType;
             Role = userRole;
             WhiteListOnly = whiteListOnly;
+            EventSourceMask = eventSourceMask;
         }
 
-        public CommandAttribute(string name, string command, int matchingMask, ReplyType replyType, UserRole userRole = UserRole.User, bool whiteListOnly = false)
+        public CommandAttribute(string name, string command, int matchingMask, ReplyType replyType, UserRole userRole = UserRole.User, bool whiteListOnly = false, int eventSourceMask = 0b11)
         {
             Name = name;
             Command = new[] { command };
@@ -57,6 +60,7 @@ namespace RinBot.Core.Component.Command.CustomAttribute
             ReplyType = replyType;
             Role = userRole;
             WhiteListOnly = whiteListOnly;
+            EventSourceMask = eventSourceMask;
         }
     }
 }

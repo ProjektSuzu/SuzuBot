@@ -245,6 +245,9 @@ namespace RinBot.Core.Component.Command
                     var attr = command.Attribute;
                     var method = command.Method;
 
+                    if ((attr.EventSourceMask & (int)rinEvent.EventSourceType) == 0)
+                        continue;
+
                     bool invoke = false;
                     var content = DropLeadChar(rinEvent);
                     string matchedPattern = "";
@@ -432,6 +435,14 @@ namespace RinBot.Core.Component.Command
                                             break;
                                     }
                                     rinEvent.Reply(messageChain);
+                                    return;
+                                }
+
+                                if (returnValue is Konata.Core.Message.MessageChain)
+                                {
+                                    if (rinEvent.EventSourceType != EventSourceType.QQ)
+                                        return;
+                                    rinEvent.KonataMessageReply((Konata.Core.Message.MessageChain)returnValue);
                                     return;
                                 }
                             }

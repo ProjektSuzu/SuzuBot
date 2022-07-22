@@ -297,7 +297,7 @@ namespace RinBot.Core.Component.Command
                     {
                         if (PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId)) < attr.Role)
                         {
-                            if (rinEvent.EventSubjectType != EventSubjectType.Group)
+                            if (rinEvent.EventSubjectType == EventSubjectType.Group)
                             {
                                 if (rinEvent.EventSourceType == EventSourceType.QQ
                                     && PermissionManager.Instance.GetQQUserRoleInGroup(uint.Parse(rinEvent.SenderId), uint.Parse(rinEvent.SubjectId)) >= attr.Role)
@@ -313,6 +313,15 @@ namespace RinBot.Core.Component.Command
                                     rinEvent.Reply(messageChain);
                                     return;
                                 }
+                            }
+                            else
+                            {
+                                Logger.Warn($"Permission denied: U{rinEvent.SenderId} Require {attr.Role}");
+                                    var messageChain = new RinMessageChain();
+                                    messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
+                                    messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
+                                    rinEvent.Reply(messageChain);
+                                    return;
                             }
                         }
 

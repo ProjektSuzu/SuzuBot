@@ -1,4 +1,5 @@
-﻿using Konata.Core.Interfaces.Api;
+﻿using Konata.Core;
+using Konata.Core.Interfaces.Api;
 using RinBot.BuildStamp;
 using RinBot.Core.Component.Command;
 using RinBot.Core.Component.Command.CustomAttribute;
@@ -19,6 +20,22 @@ namespace RinBot.Command
         {
             return $"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
         }
+
+        [Command("退群", "quit", MatchingType.StartsWith, ReplyType.Reply)]
+        public void OnQuit(RinEvent e)
+        {
+            if (e.EventSourceType == EventSourceType.QQ)
+            {
+                if (e.EventSubjectType == EventSubjectType.DirectMessage)
+                    return;
+                if (e.EventSubjectType == EventSubjectType.Group)
+                {
+                    var bot = e.OriginalSender as Bot;
+                    bot.GroupLeave(uint.Parse(e.SubjectId));
+                }
+            }
+        }
+
 
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]
         public string OnPing(RinEvent e)

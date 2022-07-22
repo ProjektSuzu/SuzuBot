@@ -120,13 +120,13 @@ namespace RinBot.Command.Apex
 
     public class PlayerStats
     {
-        public Global global;
+        public ApexGlobal global;
         public Realtime realtime;
         public Legend legends;
         public string? Error;
 
 
-        public class Global
+        public class ApexGlobal
         {
             public string name;
             public string uid;

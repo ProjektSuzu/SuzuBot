@@ -1,22 +1,11 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Newtonsoft.Json;
-using RinBot.BuildStamp;
+﻿using Newtonsoft.Json;
 using RinBot.Core;
 using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.ENV;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
-using SkiaSharp;
-using SkiaSharp.QrCode;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RinBot.Command
 {
@@ -27,7 +16,7 @@ namespace RinBot.Command
         private static readonly string IMG_HOST_CONFIG_PATH = Path.Combine(SETU_PATH, "img_config.json");
 
         private const string SETU_LIMIT = "SETU_LIMIT";
-        private const string COOLDOWN_SECOND_PER_IMG = "COOLDOWN_SECOND_PER_IMG";
+        private const string SETU_COOLDOWN_SECOND_PER_IMG = "SETU_COOLDOWN_SECOND_PER_IMG";
 
         private const string setuApi = @"https://api.lolicon.app/setu/v2";
         private const string acgApi = @"https://www.loliapi.com/acg/";
@@ -45,14 +34,14 @@ namespace RinBot.Command
         {
             get
             {
-                return int.Parse(EnvManager.Instance.GetEnv("SETU_LIMIT").FirstOrDefault() ?? "10");
+                return int.Parse(EnvManager.Instance.GetEnv(SETU_LIMIT).FirstOrDefault() ?? "10");
             }
         }
         private int coolDownSeconds
         {
             get
             {
-                return int.Parse(EnvManager.Instance.GetEnv("COOLDOWN_SECOND_PER_IMG").FirstOrDefault() ?? "15");
+                return int.Parse(EnvManager.Instance.GetEnv(SETU_COOLDOWN_SECOND_PER_IMG).FirstOrDefault() ?? "15");
             }
         }
 

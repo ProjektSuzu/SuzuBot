@@ -143,7 +143,14 @@ namespace RinBot.Core.KonataCore
 
                 Bot.OnBotOffline += (s, e) =>
                 {
-                    Logger.Warn($"Bot offline. {e.Type}");
+                    Logger.Error($"Bot offline. {e.Type}");
+                    Logger.Error($"Try reconnect after 60s.");
+                    Thread.Sleep(60000);
+                    if (!(s as Bot).Login().Result)
+                    {
+                        Logger.Error($"Reconnect Failed.");
+                        s.Dispose();
+                    }
                 };
 
                 Bot.OnFriendRequest += (s, e) =>

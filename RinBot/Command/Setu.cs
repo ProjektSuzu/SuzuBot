@@ -213,12 +213,14 @@ namespace RinBot.Command
                     ));
             }
 
-            List<Action> actions = new List<Action>();
+            List<Task> actions = new List<Task>();
             foreach (var data in result.data)
             {
-                actions.Add(() => GenerateMessage(data));
+                var task = new Task(() => GenerateMessage(data));
+                task.Start();
+                actions.Add(task);
             }
-            Parallel.Invoke(actions.ToArray());
+            Task.WaitAll(actions.ToArray());
 
             chains.Add(multiReply);
             return chains.Build();

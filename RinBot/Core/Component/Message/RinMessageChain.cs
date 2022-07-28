@@ -12,6 +12,12 @@ namespace RinBot.Core.Component.Message
             Chains = new();
         }
 
+        internal List<BaseChain> Add(string text)
+        {
+            Chains.Add(new TextChain(text));
+            return Chains;
+        }
+
         internal List<BaseChain> Add(BaseChain chain)
         {
             Chains.Add(chain);

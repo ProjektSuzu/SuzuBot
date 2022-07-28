@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace RinBot.Command
 {
-    [Module("一眼丁真", "org.akulak.loongPic", ModuleEnableConfig.NormallyDisable)]
+    [Module("一眼丁真", "org.akulak.dingzhen", ModuleEnableConfig.NormallyDisable)]
     internal class Dingzhen
     {
         private static readonly string LOONG_PIC_PATH = Path.Combine(Global.RESOURCE_PATH, "Dingzhen");

@@ -21,8 +21,13 @@ namespace RinBot.Core.Component.Command
         [PrimaryKey]
         [Column("module_id")]
         public string ModuleId { get; set; }
+        [Column("module_name")]
+
+        public string ModuleName { get; set; }
         [Column("is_enable")]
         public bool IsEnable { get; set; }
+        [Column("default_enable_type")]
+        public ModuleEnableConfig DefaultEnableType { get; set; }
     }
 
     class Module
@@ -73,6 +78,10 @@ namespace RinBot.Core.Component.Command
         public int ModuleCount => modules.Count;
         public int CommandCount => modules.Sum(x => x.Commands.Count);
 
+        public List<ModuleInfo> GetModuleInfos()
+            => RinDatabase.Instance.dbConnection
+            .Table<ModuleInfo>().ToList();
+
         internal void RegisterCommands()
         {
             Type[] types = Assembly.GetExecutingAssembly().GetTypes();
@@ -115,7 +124,12 @@ namespace RinBot.Core.Component.Command
             modules.ForEach(x =>
             {
                 RinDatabase.Instance.dbConnection
-                .InsertOrReplace(new ModuleInfo() { ModuleId = x.ModuleAttribute.ModuleID, IsEnable = x.IsEnable });
+                .InsertOrReplace(new ModuleInfo() { 
+                    ModuleId = x.ModuleAttribute.ModuleID, 
+                    ModuleName = x.ModuleAttribute.ModuleName, 
+                    IsEnable = x.IsEnable,
+                    DefaultEnableType = x.ModuleAttribute.ModuleEnableConfig,
+                });
             });
 
             Logger.Info($"Total {modules.Count} Module(s), {commandCount} Command(s).");
@@ -238,16 +252,20 @@ namespace RinBot.Core.Component.Command
             foreach (var module in modules)
             {
                 if (!module.IsEnable) continue;
-                if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.NormallyEnable)
+                if (rinEvent.EventSubjectType == EventSubjectType.Group)
                 {
-                    if (disabled.Any(x => x == module.ModuleAttribute.ModuleID))
-                        continue;
+                    if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.NormallyEnable)
+                    {
+                        if (disabled.Any(x => x == module.ModuleAttribute.ModuleID))
+                            continue;
+                    }
+                    if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.NormallyDisable)
+                    {
+                        if (disabled.All(x => x != module.ModuleAttribute.ModuleID))
+                            continue;
+                    }
                 }
-                if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.NormallyDisable)
-                {
-                    if (disabled.All(x => x != module.ModuleAttribute.ModuleID))
-                        continue;
-                }
+                
 
                 foreach (var command in module.Commands)
                 {

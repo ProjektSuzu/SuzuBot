@@ -21,7 +21,7 @@ namespace RinBot.Command
             return $"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu/modules/ 来获取帮助信息";
         }
 
-        [Command("退群", "quit", MatchingType.StartsWith, ReplyType.Reply)]
+        [Command("退群", "quit", MatchingType.StartsWith, ReplyType.Reply, UserRole.Operator)]
         public void OnQuit(RinEvent e)
         {
             if (e.EventSourceType == EventSourceType.QQ)

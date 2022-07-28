@@ -238,7 +238,16 @@ namespace RinBot.Core.Component.Command
             foreach (var module in modules)
             {
                 if (!module.IsEnable) continue;
-                if (disabled.Any(x => x == module.ModuleAttribute.ModuleID)) continue;
+                if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.NormallyEnable)
+                {
+                    if (disabled.Any(x => x == module.ModuleAttribute.ModuleID))
+                        continue;
+                }
+                if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.NormallyDisable)
+                {
+                    if (disabled.All(x => x != module.ModuleAttribute.ModuleID))
+                        continue;
+                }
 
                 foreach (var command in module.Commands)
                 {

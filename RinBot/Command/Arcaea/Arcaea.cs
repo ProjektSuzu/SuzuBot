@@ -85,8 +85,8 @@ namespace RinBot.Command.Arcaea
             ArcaeaBindInfo info = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType); ;
             string userCode;
 
-            if (info != null) userCode = info.UserCode;
-            else if (args.Count() > 0) userCode = args[0];
+            if (args.Count > 0) userCode = args[0];
+            else if (info != null) userCode = info.UserCode;
             else
             {
                 chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));
@@ -117,8 +117,8 @@ namespace RinBot.Command.Arcaea
             ArcaeaBindInfo info = ArcaeaUserDB.Instance.GetBindInfo(e.SenderId, e.EventSourceType);
             string userCode;
 
-            if (info != null) userCode = info.UserCode;
-            else if (args.Count() > 0) userCode = args[0];
+            if (args.Count > 0) userCode = args[0];
+            else if (info != null) userCode = info.UserCode;
             else
             {
                 chain.Add(TextChain.Create("[Arcaea]\n未查询到用户的绑定信息\n请先使用\n/arc bind <userCode/userName>\n进行绑定\n格式范例:\n/arc bind 114514810\n/arc bind YajuuSenpai"));

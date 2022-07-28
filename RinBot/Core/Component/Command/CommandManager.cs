@@ -124,9 +124,10 @@ namespace RinBot.Core.Component.Command
             modules.ForEach(x =>
             {
                 RinDatabase.Instance.dbConnection
-                .InsertOrReplace(new ModuleInfo() { 
-                    ModuleID = x.ModuleAttribute.ModuleID, 
-                    ModuleName = x.ModuleAttribute.ModuleName, 
+                .InsertOrReplace(new ModuleInfo()
+                {
+                    ModuleID = x.ModuleAttribute.ModuleID,
+                    ModuleName = x.ModuleAttribute.ModuleName,
                     IsEnable = x.IsEnable,
                     DefaultEnableType = x.ModuleAttribute.ModuleEnableConfig,
                 });
@@ -265,7 +266,7 @@ namespace RinBot.Core.Component.Command
                             continue;
                     }
                 }
-                
+
 
                 foreach (var command in module.Commands)
                 {
@@ -367,11 +368,11 @@ namespace RinBot.Core.Component.Command
                             else
                             {
                                 Logger.Warn($"Permission denied: U{rinEvent.SenderId} Require {attr.Role}");
-                                    var messageChain = new RinMessageChain();
-                                    messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
-                                    messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
-                                    rinEvent.Reply(messageChain);
-                                    return;
+                                var messageChain = new RinMessageChain();
+                                messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
+                                messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
+                                rinEvent.Reply(messageChain);
+                                return;
                             }
                         }
 

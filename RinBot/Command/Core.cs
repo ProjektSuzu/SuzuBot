@@ -7,6 +7,7 @@ using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Permission;
 using RinBot.Core.KonataCore;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -39,9 +40,7 @@ namespace RinBot.Command
         [Command("模块管理", "cmdctl", MatchingType.StartsWith, ReplyType.Reply, UserRole.Operator)]
         public string OnModuleManage(RinEvent e, List<string> args)
         {
-            StringBuilder builder = new();
-            builder.AppendLine("[CMDCTL]");
-            List<string> modules = new();
+            var cmdlist = CommandManager.Instance.GetModuleInfos();
             List<string> disabled = new();
             if (e.EventSourceType == EventSourceType.QQ)
             {
@@ -56,7 +55,8 @@ namespace RinBot.Command
 
             if (args.Count == 0)
             {
-                var cmdlist = CommandManager.Instance.GetModuleInfos();
+                StringBuilder builder = new();
+                builder.AppendLine("[CMDCTL]");
                 if (e.EventSubjectType == EventSubjectType.Group)
                 {
                     foreach (var cmd in cmdlist)
@@ -79,15 +79,111 @@ namespace RinBot.Command
                 }
                 else
                 {
+                    foreach (var cmd in cmdlist)
+                    {
+                        if (!cmd.IsEnable)
+                            builder.Append("⬛");
+                        else
+                            builder.Append("⚪");
+                        builder.Append($" {cmd.ModuleName}\n");
+                    }
 
+                    builder.AppendLine();
+                    builder.AppendLine("⬛ 全局关闭");
+                    builder.AppendLine("⚪ 开启");
                 }
+                return builder.ToString();
             }
             else
             {
                 if (e.EventSubjectType != EventSubjectType.Group) return "[CMDCTL]\n仅允许在群聊环境内执行此操作";
 
+                List<string> moduleNames = new();
+                var targetGroupID = e.SubjectId;
+                bool? action = null;
+                bool global = false;
+
+                Queue<string> queue = new Queue<string>(args);
+
+                while (queue.Count > 0)
+                {
+                    var arg = queue.Dequeue();
+                    switch (arg)
+                    {
+                        case "enable":
+                        case "开启":
+                            action = true;
+                            break;
+
+                        case "disable":
+                        case "关闭":
+                            action = false;
+                            break;
+
+                        //case "-t":
+                        //case "--target":
+                        //    {
+                        //        if (queue.Count <= 0)
+                        //            return "[CMDCTL]\n缺少参数 <groupID>";
+                        //        else
+                        //        {
+                        //            targetGroupID = queue.Dequeue();
+                        //            break;
+                        //        }
+                        //    }
+
+                        default:
+                            moduleNames.Add(arg);
+                            break;
+                    }
+                }
+
+                if (action == null) return "[CMDCTL]\n未指定操作";
+                List<ModuleInfo> modules = new();
+                foreach (var name in moduleNames)
+                {
+                    var module = cmdlist.FirstOrDefault(x => x.ModuleName == name || x.ModuleID == name);
+                    if (module == null)
+                        return $"[CMDCTL]\n未找到模块 {name}";
+                    else
+                        modules.Add(module);
+                }
+
+                var groupId = uint.Parse(e.SubjectId);
+                var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
+                foreach (var module in modules)
+                {
+                    if ((bool)action)
+                    {
+                        if (module.DefaultEnableType == ModuleEnableConfig.NormallyEnable || module.DefaultEnableType == ModuleEnableConfig.WhiteListOnly)
+                        {
+                            if (disabled.Any(x => x == module.ModuleID))
+                                disabled.Remove(module.ModuleID);
+                        }
+                        else
+                        {
+                            if (disabled.All(x => x != module.ModuleID))
+                                disabled.Add(module.ModuleID);
+                        }
+                    }
+                    else
+                    {
+                        if (module.DefaultEnableType == ModuleEnableConfig.NormallyEnable || module.DefaultEnableType == ModuleEnableConfig.WhiteListOnly)
+                        {
+                            if (disabled.All(x => x != module.ModuleID))
+                                disabled.Add(module.ModuleID);
+                        }
+                        else
+                        {
+                            if (disabled.Any(x => x == module.ModuleID))
+                                disabled.Remove(module.ModuleID);
+                        }
+                    }
+                }
+                info.DisableModuleIds = disabled;
+                PermissionManager.Instance.UpdateQQGroupInfo(info);
+                return $"[CMDCTL]\n已{((bool)action ? "开启" : "关闭")} {modules.Count} 个模块.";
             }
-            return builder.ToString();
         }
 
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]

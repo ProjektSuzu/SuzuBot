@@ -1,19 +1,13 @@
-﻿using RestSharp;
-using RinBot.Core.Component.Command.CustomAttribute;
+﻿using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command.Bilibili
 {
     [Module("BiliBili", "org.akulak.bilibili")]
     internal class Bilibili
     {
-        [Command("查成分", new[] { "ccf", "chachengfeng" , "查成分" }, (int)MatchingType.StartsWith, ReplyType.Reply)]
+        [Command("查成分", new[] { "ccf", "chachengfeng", "查成分" }, (int)MatchingType.StartsWith, ReplyType.Reply)]
         public RinMessageChain OnIngredientCheck(RinEvent e, List<string> args)
         {
             var chains = new RinMessageChain();

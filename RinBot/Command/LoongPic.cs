@@ -3,11 +3,6 @@ using RinBot.Core.Component.Command.CustomAttribute;
 using RinBot.Core.Component.Event;
 using RinBot.Core.Component.Message;
 using RinBot.Core.Component.Message.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Command
 {
@@ -15,7 +10,7 @@ namespace RinBot.Command
     internal class LoongPic
     {
         private static readonly string LOONG_PIC_PATH = Path.Combine(Global.RESOURCE_PATH, "LoongPic");
-        [Command("发龙图", new[] { "龙图", "loong", "dragon"}, (int)MatchingType.StartsWith, ReplyType.Send)]
+        [Command("发龙图", new[] { "龙图", "loong", "dragon" }, (int)MatchingType.StartsWith, ReplyType.Send)]
         public RinMessageChain OnLoongPic(RinEvent e)
         {
             var chains = new RinMessageChain();

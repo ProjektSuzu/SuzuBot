@@ -226,7 +226,7 @@ namespace RinBot.Command
             return chains.Build();
         }
     }
-    
+
     class Cooldown
     {
         public string Id;

@@ -18,7 +18,7 @@ namespace RinBot.Command
         [Command("帮助", "help", MatchingType.StartsWith, ReplyType.Reply)]
         public string OnHelp(RinEvent e)
         {
-            return $"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu 来获取帮助信息";
+            return $"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu/modules/ 来获取帮助信息";
         }
 
         [Command("退群", "quit", MatchingType.StartsWith, ReplyType.Reply)]

@@ -159,7 +159,11 @@ namespace RinBot.Core.KonataCore
                     if (EnvManager.Instance.HasEnv(AUTO_ACCEPT_FRIEND_REQ) && EnvManager.Instance.GetEnv(AUTO_ACCEPT_FRIEND_REQ).First() == "1")
                     {
                         if (s.ApproveFriendRequest(e.ReqUin, e.Token).Result)
+                        {
                             Logger.Info($"Friend request accepted: {e.ReqNick}({e.ReqUin}).");
+                            s.SendFriendPoke(e.ReqUin);
+                            s.SendFriendMessage(e.ReqUin, "在使用之前请先阅读使用文档\nhttps://docs-rinbot.akulak.icu");
+                        }
                         else
                             Logger.Error($"Friend request failed: {e.ReqNick}({e.ReqUin}).");
                     }

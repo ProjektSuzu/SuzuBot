@@ -20,7 +20,7 @@ namespace RinBot.Core.Component.Command
     {
         [PrimaryKey]
         [Column("module_id")]
-        public string ModuleId { get; set; }
+        public string ModuleID { get; set; }
         [Column("module_name")]
 
         public string ModuleName { get; set; }
@@ -120,12 +120,12 @@ namespace RinBot.Core.Component.Command
             RinDatabase.Instance.dbConnection
                 .Table<ModuleInfo>()
                 .ToList()
-                .ForEach(x => modules.First(y => y.ModuleAttribute.ModuleID == x.ModuleId).IsEnable = x.IsEnable);
+                .ForEach(x => modules.First(y => y.ModuleAttribute.ModuleID == x.ModuleID).IsEnable = x.IsEnable);
             modules.ForEach(x =>
             {
                 RinDatabase.Instance.dbConnection
                 .InsertOrReplace(new ModuleInfo() { 
-                    ModuleId = x.ModuleAttribute.ModuleID, 
+                    ModuleID = x.ModuleAttribute.ModuleID, 
                     ModuleName = x.ModuleAttribute.ModuleName, 
                     IsEnable = x.IsEnable,
                     DefaultEnableType = x.ModuleAttribute.ModuleEnableConfig,

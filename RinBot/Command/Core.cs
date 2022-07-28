@@ -36,6 +36,59 @@ namespace RinBot.Command
             }
         }
 
+        [Command("模块管理", "cmdctl", MatchingType.StartsWith, ReplyType.Reply, UserRole.Operator)]
+        public string OnModuleManage(RinEvent e, List<string> args)
+        {
+            StringBuilder builder = new();
+            builder.AppendLine("[CMDCTL]");
+            List<string> modules = new();
+            List<string> disabled = new();
+            if (e.EventSourceType == EventSourceType.QQ)
+            {
+                if (e.EventSubjectType == EventSubjectType.Group)
+                {
+                    var groupId = uint.Parse(e.SubjectId);
+                    var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
+
+                    disabled = info.DisableModuleIds;
+                }
+            }
+
+            if (args.Count == 0)
+            {
+                var cmdlist = CommandManager.Instance.GetModuleInfos();
+                if (e.EventSubjectType == EventSubjectType.Group)
+                {
+                    foreach (var cmd in cmdlist)
+                    {
+                        if (!cmd.IsEnable)
+                            builder.Append("⬛");
+                        else if (cmd.DefaultEnableType == ModuleEnableConfig.NormallyEnable && disabled.Any(x => x == cmd.ModuleID))
+                            builder.Append("🔷");
+                        else if (cmd.DefaultEnableType == ModuleEnableConfig.NormallyDisable && disabled.All(x => x != cmd.ModuleID))
+                            builder.Append("🔷");
+                        else
+                            builder.Append("⚪");
+                        builder.Append($" {cmd.ModuleName}\n");
+                    }
+
+                    builder.AppendLine();
+                    builder.AppendLine("⬛ 全局关闭");
+                    builder.AppendLine("🔷 当前群聊关闭");
+                    builder.AppendLine("⚪ 开启");
+                }
+                else
+                {
+
+                }
+            }
+            else
+            {
+                if (e.EventSubjectType != EventSubjectType.Group) return "[CMDCTL]\n仅允许在群聊环境内执行此操作";
+
+            }
+            return builder.ToString();
+        }
 
         [Command("Ping", "ping", MatchingType.StartsWith, ReplyType.Reply)]
         public string OnPing(RinEvent e)

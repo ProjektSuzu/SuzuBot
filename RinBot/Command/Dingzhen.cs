@@ -15,7 +15,7 @@ namespace RinBot.Command
     internal class Dingzhen
     {
         private static readonly string LOONG_PIC_PATH = Path.Combine(Global.RESOURCE_PATH, "Dingzhen");
-        [Command("发一眼丁真", new[] { "丁真", "dingzhen" }, (int)MatchingType.Contains | (int)MatchingType.NoLeadChar, ReplyType.Send)]
+        [Command("发一眼丁真", new[] { "丁真", "dingzhen" }, (int)MatchingType.StartsWith, ReplyType.Send)]
         public RinMessageChain OnDingzhen(RinEvent e)
         {
             var chains = new RinMessageChain();

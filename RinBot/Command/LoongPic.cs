@@ -15,7 +15,7 @@ namespace RinBot.Command
     internal class LoongPic
     {
         private static readonly string LOONG_PIC_PATH = Path.Combine(Global.RESOURCE_PATH, "LoongPic");
-        [Command("发龙图", new[] { "龙图", "loong", "dragon"}, (int)MatchingType.Contains | (int)MatchingType.NoLeadChar, ReplyType.Send)]
+        [Command("发龙图", new[] { "龙图", "loong", "dragon"}, (int)MatchingType.StartsWith, ReplyType.Send)]
         public RinMessageChain OnLoongPic(RinEvent e)
         {
             var chains = new RinMessageChain();

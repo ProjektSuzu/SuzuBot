@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <StartupObject>RinBot.Program</StartupObject>
     <NeutralLanguage>zh-Hans</NeutralLanguage>
-    <Company>AkulaKirov</Company>
+    <Company>ProjektRin</Company>
     <Authors>AkulaKirov</Authors>
     <RepositoryUrl>https://github.com/AkulaKirov/RinBot</RepositoryUrl>
     <PackageProjectUrl>https://github.com/AkulaKirov/RinBot</PackageProjectUrl>

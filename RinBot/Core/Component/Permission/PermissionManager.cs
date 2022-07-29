@@ -55,7 +55,7 @@ namespace RinBot.Core.Component.Permission
 
         public UserRole GetQQUserRoleInGroup(uint userId, uint groupId)
         {
-            var info = KonataCore.KonataBot.Instance.Bot.GetGroupMemberInfo(userId, groupId).Result;
+            var info = KonataCore.KonataBot.Instance.Bot.GetGroupMemberInfo(groupId, userId).Result;
             if (info.Role >= Konata.Core.Common.RoleType.Admin)
                 return UserRole.Operator;
             return UserRole.User;

@@ -70,7 +70,7 @@ namespace RinBot.Command
             chain.Add(TextChain.Create($"[Sign]\n{name}\n"));
 
             var seed = int.Parse(DateTime.Now.ToString("yyyyMMdd")) + uint.Parse(e.SenderId);
-            while (seed > int.MaxValue)
+            while (seed > Int32.MaxValue)
                 seed /= 2;
             var random = new Random((int)seed);
             StringBuilder signReply = new();

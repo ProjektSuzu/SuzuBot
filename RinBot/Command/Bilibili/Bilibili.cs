@@ -19,7 +19,7 @@ namespace RinBot.Command.Bilibili
             }
             var target = args.First();
             var result = int.TryParse(target, out _) ? IngredientCheck.Instance.Check(int.Parse(target)) : IngredientCheck.Instance.Check(target);
-            if (result.Ingredients == null)
+            if (result == null || result.Ingredients == null)
             {
                 chains.Add("目标用户不存在或者关注不可见");
                 return chains;

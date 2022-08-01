@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 
 namespace RinBot.Command
 {
-    //[Module("色图", "org.akulak.setu")]
+    [Module("色图", "org.akulak.setu")]
     internal class Setu
     {
         private static readonly string SETU_PATH = Path.Combine(Global.RESOURCE_PATH, "Setu");

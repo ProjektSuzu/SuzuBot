@@ -167,7 +167,6 @@ namespace RinBot.Command
                     return stringBuilder.ToString();
             }
         }
-
         [Command("模块重载", "reload", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
         public string OnReload(RinEvent e)
         {

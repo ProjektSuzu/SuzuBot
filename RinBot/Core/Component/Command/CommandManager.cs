@@ -267,6 +267,39 @@ namespace RinBot.Core.Component.Command
                     }
                 }
 
+                if (module.ModuleAttribute.ModuleEnableConfig == ModuleEnableConfig.WhiteListOnly)
+                {
+                    if (rinEvent.EventSubjectType == EventSubjectType.Group)
+                    {
+                        if (rinEvent.EventSourceType == EventSourceType.QQ)
+                        {
+                            if (PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId)) < UserRole.Admin
+                            && !PermissionManager.Instance.GetQQGroupInfo(uint.Parse(rinEvent.SubjectId)).WhiteListed)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                    else if (rinEvent.EventSubjectType == EventSubjectType.DirectMessage)
+                    {
+                        if (rinEvent.EventSourceType == EventSourceType.QQ)
+                        {
+                            if (PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId)) < UserRole.Admin)
+                            {
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+
 
                 foreach (var command in module.Commands)
                 {
@@ -346,6 +379,7 @@ namespace RinBot.Core.Component.Command
 
                     if (invoke)
                     {
+                        // 权限检测
                         if (PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId)) < attr.Role)
                         {
                             if (rinEvent.EventSubjectType == EventSubjectType.Group)

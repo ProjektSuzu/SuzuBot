@@ -50,6 +50,18 @@ namespace RinBot.Command
                     var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
 
                     disabled = info.DisableModuleIds;
+                    if (!info.WhiteListed)
+                    {
+                        cmdlist.RemoveAll(x => x.DefaultEnableType == ModuleEnableConfig.WhiteListOnly);
+                    }
+                }
+                else if (e.EventSubjectType == EventSubjectType.DirectMessage)
+                {
+
+                }
+                else
+                {
+                    return "";
                 }
             }
 

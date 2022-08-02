@@ -165,6 +165,10 @@ namespace RinBot.Command
                 var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
                 foreach (var module in modules)
                 {
+                    if (module.IsCritical)
+                    {
+                        return $"[CMDCTL]\n不允许操作核心模块 {module.ModuleName}.";
+                    }
                     if ((bool)action)
                     {
                         if (module.DefaultEnableType == ModuleEnableConfig.NormallyEnable || module.DefaultEnableType == ModuleEnableConfig.WhiteListOnly)

@@ -22,10 +22,11 @@ namespace RinBot.Core.Component.Command
         [Column("module_id")]
         public string ModuleID { get; set; }
         [Column("module_name")]
-
         public string ModuleName { get; set; }
         [Column("is_enable")]
         public bool IsEnable { get; set; }
+        [Column("is_critical")]
+        public bool IsCritical { get; set; }
         [Column("default_enable_type")]
         public ModuleEnableConfig DefaultEnableType { get; set; }
     }
@@ -34,7 +35,23 @@ namespace RinBot.Core.Component.Command
     {
         public object ModuleClass { get; set; }
         public ModuleAttribute ModuleAttribute { get; set; }
-        public bool IsEnable { get; set; }
+        private bool isEnable = true;
+        public bool IsEnable
+        {
+            get
+            {
+                return isEnable;
+            }
+            set
+            {
+                isEnable = value;
+                var info = CommandManager.Instance.GetModuleInfos()
+                    .FirstOrDefault(x => x.ModuleID == ModuleAttribute.ModuleID);
+                info.IsEnable = value;
+                RinDatabase.Instance.dbConnection
+                .Update(info);
+            }
+        }
         public List<Command> Commands { get; set; }
     }
 
@@ -129,6 +146,7 @@ namespace RinBot.Core.Component.Command
                     ModuleID = x.ModuleAttribute.ModuleID,
                     ModuleName = x.ModuleAttribute.ModuleName,
                     IsEnable = x.IsEnable,
+                    IsCritical = x.ModuleAttribute.CriticalModule,
                     DefaultEnableType = x.ModuleAttribute.ModuleEnableConfig,
                 });
             });

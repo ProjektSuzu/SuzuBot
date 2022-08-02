@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/AkulaKirov/RinBot</RepositoryUrl>
     <PackageProjectUrl>https://github.com/AkulaKirov/RinBot</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>3.2.2</Version>
+    <Version>3.2.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -50,6 +50,18 @@ namespace RinBot.Command
                     var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
 
                     disabled = info.DisableModuleIds;
+                    if (!info.WhiteListed)
+                    {
+                        cmdlist.RemoveAll(x => x.DefaultEnableType == ModuleEnableConfig.WhiteListOnly);
+                    }
+                }
+                else if (e.EventSubjectType == EventSubjectType.DirectMessage)
+                {
+
+                }
+                else
+                {
+                    return "";
                 }
             }
 
@@ -153,6 +165,10 @@ namespace RinBot.Command
                 var info = PermissionManager.Instance.GetQQGroupInfo(groupId);
                 foreach (var module in modules)
                 {
+                    if (module.IsCritical)
+                    {
+                        return $"[CMDCTL]\n不允许操作核心模块 {module.ModuleName}.";
+                    }
                     if ((bool)action)
                     {
                         if (module.DefaultEnableType == ModuleEnableConfig.NormallyEnable || module.DefaultEnableType == ModuleEnableConfig.WhiteListOnly)

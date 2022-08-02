@@ -8,7 +8,7 @@ using System.Text;
 
 namespace RinBot.Command
 {
-    [Module("开发者选项", "org.akulak.devOption")]
+    [Module("开发者选项", "org.akulak.devOption", critical: true)]
     internal class DevOption
     {
         private Logger Logger = LogManager.GetLogger("DEV");
@@ -167,7 +167,6 @@ namespace RinBot.Command
                     return stringBuilder.ToString();
             }
         }
-
         [Command("模块重载", "reload", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
         public string OnReload(RinEvent e)
         {
@@ -216,6 +215,36 @@ namespace RinBot.Command
             {
                 return null;
             }
+        }
+        [Command("启用模块", "enable", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
+        public string OnEnableModule(RinEvent e, List<string> args)
+        {
+            if (args.Count <= 0)
+                return "[DevOptions]\n缺少参数 <module>";
+            var name = args[0];
+            var moduleInfo = CommandManager.Instance.GetModuleInfos().FirstOrDefault(x => x.ModuleID == name || x.ModuleName == name);
+            if (moduleInfo == null)
+                return $"[DevOptions]\n未找到模块 {name}";
+            var module = CommandManager.Instance.GetModule(moduleInfo.ModuleID);
+            if (module.ModuleAttribute.CriticalModule)
+                return $"[CMDCTL]\n不允许操作核心模块 {moduleInfo.ModuleName}.";
+            module.IsEnable = true;
+            return $"[DevOptions]\n{moduleInfo.ModuleName} 已启用";
+        }
+        [Command("禁用模块", "disable", MatchingType.StartsWith, ReplyType.Reply, UserRole.Admin)]
+        public string OnDisableModule(RinEvent e, List<string> args)
+        {
+            if (args.Count <= 0)
+                return "[DevOptions]\n缺少参数 <module>";
+            var name = args[0];
+            var moduleInfo = CommandManager.Instance.GetModuleInfos().FirstOrDefault(x => x.ModuleID == name || x.ModuleName == name);
+            if (moduleInfo == null)
+                return $"[DevOptions]\n未找到模块 {name}";
+            var module = CommandManager.Instance.GetModule(moduleInfo.ModuleID);
+            if (module.ModuleAttribute.CriticalModule)
+                return $"[CMDCTL]\n不允许操作核心模块 {moduleInfo.ModuleName}.";
+            module.IsEnable = false;
+            return $"[DevOptions]\n{moduleInfo.ModuleName} 已禁用";
         }
     }
 }

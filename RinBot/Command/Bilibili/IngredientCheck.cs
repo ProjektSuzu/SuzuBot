@@ -25,11 +25,11 @@ namespace RinBot.Command.Bilibili
 
         private static RestClient bilibiliAPI = new RestClient("https://api.bilibili.com/");
         private static RestClient vtbAPI = new RestClient("https://api.tokyo.vtbs.moe/");
-        private static List<int> vtbs = new();
+        private static List<uint> vtbs = new();
         private static Logger Logger = LogManager.GetLogger("查成分");
         public static void InitVtbLists()
         {
-            vtbs = new List<int>();
+            vtbs = new List<uint>();
             var request = new RestRequest("/v1/vtbs");
             var responseJson = vtbAPI.Get(request);
             var response = JsonConvert.DeserializeObject<List<VtbInfo>>(responseJson.Content);
@@ -60,7 +60,7 @@ namespace RinBot.Command.Bilibili
                 var response = JsonConvert.DeserializeObject<JObject>(responseJson.Content);
                 if (response == null || (int)response["code"] != 0)
                     return null;
-                var followings = response["data"]?["list"]?.ToList().Select(x => new VtbInfo() { MemberId = (int)x["mid"], UserName = x["uname"].ToString() }).ToList();
+                var followings = response["data"]?["list"]?.ToList().Select(x => new VtbInfo() { MemberId = (uint)x["mid"], UserName = x["uname"].ToString() }).ToList();
                 userFollowings.AddRange(followings);
             }
             return userFollowings;
@@ -96,7 +96,7 @@ namespace RinBot.Command.Bilibili
     public class VtbInfo
     {
         [JsonProperty("mid")]
-        public int MemberId { get; set; }
+        public uint MemberId { get; set; }
         public string UserName { get; set; }
     }
 

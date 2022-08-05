@@ -23,7 +23,7 @@ namespace RinBot.Command
         }
 
         [Command("戳一戳", "", MatchingType.Always, ReplyType.Reply)]
-        public void OnPing(GroupPokeEvent e, Bot bot)
+        public void OnPoke(GroupPokeEvent e, Bot bot)
         {
             if (e.MemberUin != bot.Uin || e.OperatorUin == bot.Uin) return;
 
@@ -41,7 +41,7 @@ namespace RinBot.Command
             }
         }
         [Command("戳一戳", "", MatchingType.Always, ReplyType.Reply)]
-        public void OnPing(FriendPokeEvent e, Bot bot)
+        public void OnPoke(FriendPokeEvent e, Bot bot)
         {
             if (e.FriendUin == bot.Uin || e.SelfUin != 0) return;
 

@@ -28,7 +28,7 @@ namespace RinBot.Command
             File.WriteAllTextAsync(SIGNED_LIST_PATH, JsonConvert.SerializeObject(signedList));
 
             clearTimer = new Timer(new TimerCallback(ClearSignedList));
-            clearTimer.Change(DateTime.Now - new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day), new TimeSpan(24, 0, 0));
+            clearTimer.Change(new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day).AddDays(1) - DateTime.Now, new TimeSpan(24, 0, 0));
         }
 
         private void ClearSignedList(object obj)

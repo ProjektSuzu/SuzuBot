@@ -193,6 +193,7 @@ namespace RinBot.Core.KonataCore
 
                             });
                             Logger.Info($"Group invite request accepted: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
+                            s.GetGroupMemberList(e.GroupUin, true);
                         }
                         else
                         {

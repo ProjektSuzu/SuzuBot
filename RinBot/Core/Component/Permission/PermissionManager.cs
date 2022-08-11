@@ -112,6 +112,9 @@ namespace RinBot.Core.Component.Permission
         public bool UpdateQQGroupInfo(QQGroupInfo info)
            => RinDatabase.Instance.dbConnection.Update(info) > 0;
 
+        public bool InsertQQGroupInfo(QQGroupInfo info)
+            => RinDatabase.Instance.dbConnection.InsertOrReplace(info) > 0;
+
         public bool IsQQGroupWhiteListed(uint groupId)
             => GetQQGroupInfo(groupId).WhiteListed;
 

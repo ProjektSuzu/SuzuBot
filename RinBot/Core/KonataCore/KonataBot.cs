@@ -183,7 +183,7 @@ namespace RinBot.Core.KonataCore
                         }
                         if (s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token).Result)
                         {
-                            PermissionManager.Instance.UpdateQQGroupInfo(new()
+                            PermissionManager.Instance.InsertQQGroupInfo(new()
                             {
                                 GroupId = e.GroupUin,
                                 InviterId = e.InviterUin,

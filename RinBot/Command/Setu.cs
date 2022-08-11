@@ -9,7 +9,7 @@ using System.Net.Http.Headers;
 
 namespace RinBot.Command
 {
-    [Module("色图", "org.akulak.setu", ModuleEnableConfig.WhiteListOnly)]
+    [Module("色图", "org.akulak.setu", ModuleEnableConfig.NormallyDisable)]
     internal class Setu
     {
         private static readonly string SETU_PATH = Path.Combine(Global.RESOURCE_PATH, "Setu");
@@ -183,7 +183,7 @@ namespace RinBot.Command
                 $"标题: {data.title}\n" +
                 $"作者: {data.author}\n" +
                 $"PID: {data.pid}\n" +
-                $"标签: {string.Join(' ', data.tags)}\n\n" +
+                //$"标签: {string.Join(' ', data.tags)}\n\n" +
                 $"{result.Image?.Url ?? data.urls.original}\n";
 
                 Konata.Core.Message.MessageBuilder message = new Konata.Core.Message.MessageBuilder().Text(text);

@@ -409,20 +409,24 @@ namespace RinBot.Core.Component.Command
                                 }
                                 else
                                 {
-                                    Logger.Warn($"Permission denied: U{rinEvent.SenderId} Require {attr.Role}");
-                                    var messageChain = new RinMessageChain();
-                                    messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
-                                    messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
+                                    Logger.Warn($"Permission denied: U{rinEvent.SenderId} is {PermissionManager.Instance.GetQQUserRoleInGroup(uint.Parse(rinEvent.SenderId), uint.Parse(rinEvent.SubjectId))}, require {attr.Role}");
+                                    var messageChain = new RinMessageChain
+                                    {
+                                        ReplyChain.Create(rinEvent.OriginalEvent),
+                                        TextChain.Create($"权限不足: 需要 {attr.Role}")
+                                    };
                                     rinEvent.Reply(messageChain);
                                     return;
                                 }
                             }
                             else
                             {
-                                Logger.Warn($"Permission denied: U{rinEvent.SenderId} Require {attr.Role}");
-                                var messageChain = new RinMessageChain();
-                                messageChain.Add(ReplyChain.Create(rinEvent.OriginalEvent));
-                                messageChain.Add(TextChain.Create($"权限不足: 需要 {attr.Role}"));
+                                Logger.Warn($"Permission denied: U{rinEvent.SenderId} is {PermissionManager.Instance.GetQQUserRole(uint.Parse(rinEvent.SenderId))}, require {attr.Role}");
+                                var messageChain = new RinMessageChain
+                                {
+                                    ReplyChain.Create(rinEvent.OriginalEvent),
+                                    TextChain.Create($"权限不足: 需要 {attr.Role}")
+                                };
                                 rinEvent.Reply(messageChain);
                                 return;
                             }

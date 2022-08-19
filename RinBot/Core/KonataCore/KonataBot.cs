@@ -5,27 +5,16 @@ using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
 using Newtonsoft.Json;
 using NLog;
-using RinBot.Core.Component.ENV;
-using RinBot.Core.Component.Message;
-using RinBot.Core.Component.Permission;
 
 namespace RinBot.Core.KonataCore
 {
     internal class KonataBot
     {
         #region Singleton
-        private static KonataBot instance;
-        public static KonataBot Instance
-        {
-            get
-            {
-                if (instance == null) instance = new();
-                return instance;
-            }
-        }
+        public static KonataBot Instance = new Lazy<KonataBot>(() => new KonataBot()).Value;
         private KonataBot()
         {
-            konataConfigDirectory = Path.Combine(Global.CONFIG_PATH, "Konata");
+            konataConfigDirectory = Path.Combine(GlobalScope.CONFIG_DIR_PATH, "Konata");
             if (!Directory.Exists(konataConfigDirectory)) Directory.CreateDirectory(konataConfigDirectory);
 
             konataDevicePath = Path.Combine(konataConfigDirectory, "device.json");
@@ -99,7 +88,7 @@ namespace RinBot.Core.KonataCore
             return keyStore;
         }
 
-        public void InitializeBot()
+        public void InitBot()
         {
             if (Bot != null)
             {
@@ -152,74 +141,7 @@ namespace RinBot.Core.KonataCore
                         s.Dispose();
                     }
                 };
-
-                Bot.OnFriendRequest += (s, e) =>
-                {
-                    Logger.Info($"Friend request: {e.ReqNick}({e.ReqUin}).");
-                    if (EnvManager.Instance.HasEnv(AUTO_ACCEPT_FRIEND_REQ) && EnvManager.Instance.GetEnv(AUTO_ACCEPT_FRIEND_REQ).First() == "1")
-                    {
-                        if (s.ApproveFriendRequest(e.ReqUin, e.Token).Result)
-                        {
-                            Logger.Info($"Friend request accepted: {e.ReqNick}({e.ReqUin}).");
-                            s.SendFriendPoke(e.ReqUin);
-                            s.SendFriendMessage(e.ReqUin, "在使用之前请先阅读使用文档\nhttps://docs-rinbot.akulak.icu");
-                        }
-                        else
-                            Logger.Error($"Friend request failed: {e.ReqNick}({e.ReqUin}).");
-                    }
-                };
-
-                Bot.OnGroupInvite += (s, e) =>
-                {
-                    Logger.Info($"Group invite request: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
-                    if (EnvManager.Instance.HasEnv(AUTO_ACCEPT_GROUP_REQ) && EnvManager.Instance.GetEnv(AUTO_ACCEPT_GROUP_REQ).First() == "1")
-                    {
-                        if (!s.GetGroupMemberList(RINBOT_GROUP_OFFICIAL).Result.Any(x => x.Uin == e.InviterUin))
-                        {
-                            s.DeclineGroupInvitation(e.GroupUin, e.InviterUin, e.Token, "邀请者尚未加入 RinBot 认领群");
-                            Logger.Error($"Group invite request denied: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
-                            s.SendFriendMessage(e.InviterUin, $"拒绝群聊邀请\n邀请者尚未加入 RinBot 认领群 ({RINBOT_GROUP_OFFICIAL})");
-                            return;
-                        }
-                        if (s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token).Result)
-                        {
-                            PermissionManager.Instance.UpdateQQGroupInfo(new()
-                            {
-                                GroupId = e.GroupUin,
-                                InviterId = e.InviterUin,
-                                DisableModuleIds = new(),
-                                WhiteListed = false,
-                                BlackListed = false,
-
-                            });
-                            Logger.Info($"Group invite request accepted: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
-                            s.GetGroupMemberList(e.GroupUin, true);
-                        }
-                        else
-                        {
-                            Logger.Error($"Group invite request failed: {e.InviterNick}({e.InviterUin}) => {e.GroupName}({e.GroupUin}).");
-                        }
-                    }
-                };
-
-                Bot.OnGroupMemberDecrease += (s, e) =>
-                {
-                    if (e.GroupUin != RINBOT_GROUP_OFFICIAL) return;
-                    PermissionManager.Instance.GetQQGroupInfos()
-                    .Where(x => x.InviterId == e.MemberUin)
-                    .Select(x => x.GroupId)
-                    .ToList()
-                    .ForEach(x => s.GroupLeave(x));
-                };
             }
-
-            #region Konata
-            Bot.OnGroupMessage += MessageProcessor.Instance.OnKonataGroupMessage;
-            Bot.OnFriendMessage += MessageProcessor.Instance.OnKonataFriendMessage;
-            Bot.OnGroupPoke += MessageProcessor.Instance.OnKonataGroupPoke;
-            Bot.OnFriendPoke += MessageProcessor.Instance.OnKonataFriendPoke;
-            #endregion
-
 
             Logger.Info("Bot initialization completed.");
             return;

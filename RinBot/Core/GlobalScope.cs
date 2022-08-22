@@ -12,6 +12,11 @@ namespace RinBot.Core
         public static readonly string RESOURCE_DIR_PATH = Path.Combine(ROOT_DIR_PATH, "resource");
         public static readonly string DB_DIR_PATH = Path.Combine(ROOT_DIR_PATH, "database");
 
+        // Bot
+        public static KonataBot KonataBot
+            => KonataBot.Instance;
+
+        // Managers
         public static DatabaseManager DatabaseManager
             => DatabaseManager.Instance;
         public static CommandManager CommandManager
@@ -19,6 +24,7 @@ namespace RinBot.Core
         public static PermissionManager PermissionManager
             => PermissionManager.Instance;
 
+        // DatabaseConnections
         public static SQLiteAsyncConnection RinDBAsyncConnection
             => DatabaseManager.DBConnection;
 
@@ -39,7 +45,7 @@ namespace RinBot.Core
             PermissionManager.OnInit();
 
             // Initialize Bots
-            KonataBot.Instance.InitBot();
+            KonataBot.InitBot();
         }
     }
 }

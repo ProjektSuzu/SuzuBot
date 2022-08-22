@@ -1,5 +1,4 @@
 ﻿using RinBot.Core.Components.Attributes;
-using RinBot.Core.Components.Commands;
 using RinBot.Core.Components.Databases.Tables;
 using System.Reflection;
 using Module = RinBot.Core.Components.Commands.Module;

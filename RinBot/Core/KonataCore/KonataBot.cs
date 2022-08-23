@@ -230,6 +230,7 @@ namespace RinBot.Core.KonataCore
             bool result = Bot.Login().Result;
             if (result)
             {
+                UpdateBotKeyStore(Bot.KeyStore);
                 Logger.Info("Bot login success.");
                 Logger.Info($"{Bot.GetGroupList(true).Result.Count} Group(s), {Bot.GetFriendList(true).Result.Count} Friend(s).");
             }

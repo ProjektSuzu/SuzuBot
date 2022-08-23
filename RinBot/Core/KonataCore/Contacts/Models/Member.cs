@@ -1,4 +1,5 @@
 ﻿using Konata.Core.Common;
+using Konata.Core.Message;
 
 namespace RinBot.Core.KonataCore.Contacts.Models
 {
@@ -13,6 +14,11 @@ namespace RinBot.Core.KonataCore.Contacts.Models
         internal Member(string name, uint uin) : base(name, uin)
         {
 
+        }
+
+        public override async Task<bool> SendMessage(MessageChain chains)
+        {
+            throw new NotImplementedException();
         }
     }
 }

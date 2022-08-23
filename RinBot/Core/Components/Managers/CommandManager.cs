@@ -1,7 +1,10 @@
-﻿using RinBot.Core.Components.Attributes;
+﻿using NLog;
+using RinBot.Core.Components.Attributes;
+using RinBot.Core.Components.Commands;
 using RinBot.Core.Components.Databases.Tables;
+using RinBot.Core.KonataCore.Contacts.Models;
+using RinBot.Core.KonataCore.Events;
 using System.Reflection;
-using Module = RinBot.Core.Components.Commands.Module;
 
 namespace RinBot.Core.Components.Managers
 {
@@ -15,10 +18,20 @@ namespace RinBot.Core.Components.Managers
         }
         #endregion
 
-        private Dictionary<string, Module> moduleTable = new();
-        private Dictionary<string, Command> commandTable = new();
+        public List<string> CommandPrefixs = new()
+        {
+            "/",
+            "铃酱",
+        };
 
-        public async void OnInit()
+        public Dictionary<string, BotModule> ModuleTable = new();
+        public int ModuleCount => ModuleTable.Count;
+
+        private Dictionary<string, BotCommand> commandTable = new();
+        public int CommandCount => commandTable.Count;
+        private static Logger Logger = LogManager.GetLogger("CMD");
+
+        public void OnInit()
         {
             var assembly = Assembly.GetExecutingAssembly();
             foreach (var type in assembly.GetTypes())
@@ -29,10 +42,10 @@ namespace RinBot.Core.Components.Managers
                     if (attribute != null)
                     {
                         var module = LoadModule(type, attribute);
-                        var info = await GlobalScope.DatabaseManager.DBConnection
+                        var info = GlobalScope.DatabaseManager.DBConnection
                             .Table<ModuleInfo>()
                             .Where(x => x.ModuleId == module.ModuleId)
-                            .FirstAsync();
+                            .FirstOrDefaultAsync().Result;
                         if (info == null)
                         {
                             info = new ModuleInfo()
@@ -48,17 +61,125 @@ namespace RinBot.Core.Components.Managers
                     }
                 }
             }
+            Logger.Info($"{ModuleTable.Count} Module(s), {commandTable.Count} Command(s) Loaded.");
+        }
+
+        public void OnBotCommand(MessageEventArgs messageEvent)
+        {
+            var rawContent = messageEvent.Message.Chain.ToString();
+            var commandStruct = Interprete(rawContent);
+            if (commandStruct == null) return;
+
+            if (commandTable.TryGetValue(commandStruct.FuncToken, out var command))
+            {
+                var module = ModuleTable[command.ParentId];
+                if (!module.IsEnabled) return;
+
+                if (messageEvent.Subject is Group group)
+                {
+                    var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(group.Uin);
+                    switch (module.EnableType)
+                    {
+                        case ModuleEnableType.NormallyEnabled:
+                            {
+                                if (groupInfo.ModuleIds.Contains(module.ModuleId))
+                                    return;
+                                break;
+                            }
+                        case ModuleEnableType.NormallyDisabled:
+                            {
+                                if (!groupInfo.ModuleIds.Contains(module.ModuleId))
+                                    return;
+                                break;
+                            }
+                        case ModuleEnableType.WhiteListOnly:
+                            {
+                                if (!GlobalScope.PermissionManager.IsGroupInWhiteList(group.Uin).Result)
+                                    return;
+                                break;
+                            }
+                    }
+                }
+
+                var senderPermission = GlobalScope.PermissionManager.GetUserLevel(messageEvent.Sender);
+                if (senderPermission < command.Permission)
+                {
+                    Logger.Warn($"{module.Name}|{command.Name} Permission Denied " +
+                    $"{messageEvent.Subject.Name}({messageEvent.Subject.Uin})|{messageEvent.Sender.Name}({messageEvent.Sender.Uin}).");
+                    messageEvent.Reply("你没有执行该命令的权限\n" +
+                        $"{module.Name}|{command.Name} 要求 {command.Permission}\n" +
+                        $"你的权限级别为 {senderPermission}");
+                    return;
+                }
+
+                switch (command.Method.GetParameters().Length)
+                {
+                    case 2:
+                        command.Method.Invoke(module.Instance, new object[] { messageEvent, commandStruct });
+                        break;
+                    case 1:
+                        command.Method.Invoke(module.Instance, new object[] { messageEvent });
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+                Logger.Info($"{module.Name}|{command.Name} Invoked " +
+                    $"{messageEvent.Subject.Name}({messageEvent.Subject.Uin})|{messageEvent.Sender.Name}({messageEvent.Sender.Uin}).");
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        public bool HasPrefix(string command)
+        {
+            foreach (string prefix in CommandPrefixs)
+            {
+                if (command.TrimStart().StartsWith(prefix)) return true;
+            }
+            return false;
+        }
+
+        public string DropPrefix(string command)
+        {
+            command = command.Trim();
+            foreach (var prefix in CommandPrefixs)
+            {
+                if (command.StartsWith(prefix))
+                {
+                    return command[prefix.Length..];
+                }
+            }
+            return command;
+        }
+
+        public CommandStruct? Interprete(string command)
+        {
+            if (!HasPrefix(command)) return null;
+
+            var array = DropPrefix(command).Split(' ').ToArray();
+            if (array.Length <= 0) return null;
+
+            var token = array[0];
+            var args = array[1..];
+            return new CommandStruct()
+            {
+                FuncToken = token,
+                FuncArgs = args,
+            };
         }
 
         public ModuleInfo? GetModuleInfo(string moduleId)
         {
-            if (!moduleTable.TryGetValue(moduleId, out var module))
+            if (ModuleTable.TryGetValue(moduleId, out var module))
             {
                 return new ModuleInfo()
                 {
                     Name = module.Name,
                     ModuleId = module.ModuleId,
                     IsEnabled = module.IsEnabled,
+                    IsCritical = module.IsCritical,
                 };
             }
             else
@@ -66,7 +187,17 @@ namespace RinBot.Core.Components.Managers
 
         }
 
-        public Command? GetCommand(string command)
+        public ModuleInfo? GetModuleInfoByName(string moduleName)
+        {
+            foreach (var module in ModuleTable)
+            {
+                if (module.Value.Name == moduleName)
+                    return GetModuleInfo(module.Value.ModuleId);
+            }
+            return null;
+        }
+
+        public BotCommand? GetCommand(string command)
         {
             if (commandTable.TryGetValue(command, out var module)) return module;
             else return null;
@@ -75,53 +206,57 @@ namespace RinBot.Core.Components.Managers
         public void ReloadModules()
         {
             commandTable.Clear();
+            OnInit();
         }
 
-        public void RegisterCommand(Command command)
+        public void RegisterCommand(BotCommand command)
         {
-            foreach (var func in command.FuncNames)
+            foreach (var func in command.Tokens)
             {
                 commandTable.TryAdd(func, command);
             }
         }
 
-        public void RegsiterModule(Module module)
+        public void RegsiterModule(BotModule module)
         {
             foreach (var cmd in module.Commands)
             {
                 RegisterCommand(cmd);
             }
-            moduleTable.TryAdd(module.ModuleId, module);
+            ModuleTable.TryAdd(module.ModuleId, module);
         }
 
-        public Module LoadModule(Type type, ModuleAttribute attribute)
+        public BotModule LoadModule(Type type, ModuleAttribute attribute)
         {
             var methods = type.GetMethods();
-            var commands = new List<Command>();
+            var commands = new List<BotCommand>();
+            Logger.Info($"Loading Module: {attribute.Name}({attribute.ModuleId})");
             foreach (var method in methods)
             {
                 CommandAttribute? cmdAttribute = method.GetCustomAttribute<CommandAttribute>();
-                if (cmdAttribute != null) continue;
+                if (cmdAttribute == null) continue;
                 commands.Add(LoadCommand(method, cmdAttribute, attribute.ModuleId));
             }
             var instance = Activator.CreateInstance(type);
-            return new Module
+            return new BotModule
                 (
                     attribute.Name,
                     attribute.ModuleId,
                     attribute.IsCritical,
+                    attribute.EnableType,
                     true,
                     instance,
                     commands
                 );
         }
 
-        public Command LoadCommand(MethodInfo method, CommandAttribute attribute, string parentId)
+        public BotCommand LoadCommand(MethodInfo method, CommandAttribute attribute, string parentId)
         {
-            return new Command
+            Logger.Info($"\tLoading Command: {parentId}|{attribute.Name}");
+            return new BotCommand
                 (
                     attribute.Name,
-                    attribute.FuncNames,
+                    attribute.FuncTokens,
                     attribute.Permission,
                     method,
                     parentId

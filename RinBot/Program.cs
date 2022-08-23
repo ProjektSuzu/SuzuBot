@@ -23,8 +23,6 @@ namespace RinBot
             Logger.Info($"Running on: {RuntimeInformation.RuntimeIdentifier} with {RuntimeInformation.FrameworkDescription}");
 
             GlobalScope.BootStrap();
-
-            Logger.Info("Program startup complete.");
             return 0;
         }
     }

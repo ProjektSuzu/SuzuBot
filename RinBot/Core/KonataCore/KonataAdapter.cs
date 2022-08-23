@@ -1,10 +1,7 @@
-﻿using Konata.Core.Interfaces.Api;
+﻿using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
 using RinBot.Core.KonataCore.Contacts.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using RinBot.Core.KonataCore.Events;
 
 namespace RinBot.Core.KonataCore
 {
@@ -17,6 +14,31 @@ namespace RinBot.Core.KonataCore
 
         }
         #endregion
+
+        public MessageEventArgs WarpMessageEvent(GroupMessageEvent groupMessageEvent)
+        {
+            var group = GetGroup(groupMessageEvent.GroupUin).Result;
+            var member = GetMember(groupMessageEvent.MemberUin, group).Result;
+
+            return new MessageEventArgs()
+            {
+                Subject = group,
+                Sender = member,
+                Message = groupMessageEvent.Message,
+            };
+        }
+
+        public MessageEventArgs WarpMessageEvent(FriendMessageEvent friendMessageEvent)
+        {
+            var friend = GetFriend(friendMessageEvent.FriendUin).Result;
+
+            return new MessageEventArgs()
+            {
+                Subject = friend,
+                Sender = friend,
+                Message = friendMessageEvent.Message,
+            };
+        }
 
         public async Task<Friend?> GetFriend(uint uin)
         {
@@ -33,7 +55,6 @@ namespace RinBot.Core.KonataCore
                 };
             }
         }
-
         public async Task<Group?> GetGroup(uint uin)
         {
             var group = GlobalScope.KonataBot.Bot.GetGroupList().Result.FirstOrDefault(x => x.Uin == uin);
@@ -74,8 +95,29 @@ namespace RinBot.Core.KonataCore
                     MaxMemberCount = group.MaxMemberCount,
                     TotalMuted = group.Muted,
                     SelfMuted = group.MutedMe,
-                    Members = memberDict;
+                    Members = memberDict,
                 };
+            }
+        }
+        public async Task<Member?> GetMember(uint memberUin, uint groupUin)
+        {
+            var group = await GetGroup(groupUin);
+            return group == null ? null : await GetMember(memberUin, group);
+        }
+        public async Task<Member?> GetMember(uint memberUin, Group group)
+        {
+            if (group.Members.TryGetValue(memberUin, out var member))
+            {
+                return new(member.Name == "" ? member.NickName : member.Name, member.Uin)
+                {
+                    NickName = member.NickName,
+                    SpecialTitle = member.SpecialTitle,
+                    Role = member.Role,
+                };
+            }
+            else
+            {
+                return null;
             }
         }
     }

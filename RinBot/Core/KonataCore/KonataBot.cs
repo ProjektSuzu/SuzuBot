@@ -39,8 +39,8 @@ namespace RinBot.Core.KonataCore
             return new()
             {
                 TryReconnect = true,
-                HighwayChunkSize = 1048576,
-                //CustomHost = "msfwifi.3g.qq.com:8080",
+                //HighwayChunkSize = 1048576,
+                CustomHost = "msfwifi.3g.qq.com:8080",
                 Protocol = OicqProtocol.Android,
             };
         }
@@ -108,7 +108,7 @@ namespace RinBot.Core.KonataCore
                 keyStore
                 );
             {
-                Bot.OnLog += (s, e) => { Logger.Debug(e.EventMessage); };
+                Bot.OnLog += (s, e) => { Logger.Trace(e.EventMessage); };
                 Bot.OnCaptcha += (s, e) =>
                 {
                     switch (e.Type)
@@ -130,6 +130,7 @@ namespace RinBot.Core.KonataCore
                     }
                 };
 
+                // 断线重连
                 Bot.OnBotOffline += (s, e) =>
                 {
                     Logger.Error($"Bot offline. {e.Type}");
@@ -143,6 +144,20 @@ namespace RinBot.Core.KonataCore
                 };
             }
 
+            // Log
+            Bot.OnFriendMessage += (s, e) =>
+            {
+                var friend = GlobalScope.KonataAdapter.GetFriend(e.FriendUin).Result;
+                Logger.Debug($"{friend.Name}({friend.Uin}):\n{e.Message.Chain}");
+            };
+
+            Bot.OnGroupMessage += (s, e) =>
+            {
+                var group = GlobalScope.KonataAdapter.GetGroup(e.GroupUin).Result;
+                var member = GlobalScope.KonataAdapter.GetMember(e.MemberUin, group).Result;
+                Logger.Debug($"{group.Name}({group.Uin})|{member.NickName}({member.Uin}):\n{e.Message.Chain}");
+            };
+
             Logger.Info("Bot initialization completed.");
             return;
         }
@@ -152,6 +167,7 @@ namespace RinBot.Core.KonataCore
             bool result = Bot.Login().Result;
             if (result)
             {
+                UpdateBotKeyStore(Bot.KeyStore);
                 Logger.Info("Bot login success.");
                 Logger.Info($"{Bot.GetGroupList(true).Result.Count} Group(s), {Bot.GetFriendList(true).Result.Count} Friend(s).");
             }

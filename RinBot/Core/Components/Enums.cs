@@ -1,10 +1,23 @@
 ﻿namespace RinBot.Core.Components
 {
-    internal enum Permission : short
+    public enum UserPermission : short
     {
+        Banned,
         User,
         GroupAdmin,
         Admin,
-        Root
+        Root,
+    }
+    internal enum SubjectType : short
+    {
+        Friend,
+        Group,
+        Temp
+    }
+    internal enum ModuleEnableType : short
+    {
+        NormallyEnabled,
+        NormallyDisabled,
+        WhiteListOnly,
     }
 }

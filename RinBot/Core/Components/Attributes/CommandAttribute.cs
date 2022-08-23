@@ -4,20 +4,20 @@
     internal class CommandAttribute : Attribute
     {
         public string Name { get; protected set; }
-        public string[] FuncNames { get; protected set; }
-        public Permission Permission { get; protected set; }
+        public string[] FuncTokens { get; protected set; }
+        public UserPermission Permission { get; protected set; }
 
-        public CommandAttribute(string name, string funcName, Permission permission = Permission.User)
+        public CommandAttribute(string name, string funcName, UserPermission permission = UserPermission.User)
         {
             Name = name;
-            FuncNames = new[] { funcName };
+            FuncTokens = new[] { funcName };
             Permission = permission;
         }
 
-        public CommandAttribute(string name, string[] funcNames, Permission permission = Permission.User)
+        public CommandAttribute(string name, string[] funcNames, UserPermission permission = UserPermission.User)
         {
             Name = name;
-            FuncNames = funcNames;
+            FuncTokens = funcNames;
             Permission = permission;
         }
     }

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RinBot.Core.KonataCore.Events
+namespace RinBot.Core.Components.Recorders
 {
-    internal class MessageEvent
+    internal class MessageRecorder
     {
     }
 }

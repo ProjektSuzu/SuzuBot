@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Konata.Core.Interfaces.Api;
+using Konata.Core.Message;
 
 namespace RinBot.Core.KonataCore.Contacts.Models
 {
@@ -19,6 +16,11 @@ namespace RinBot.Core.KonataCore.Contacts.Models
         internal Group(string name, uint uin) : base(name, uin)
         {
 
+        }
+
+        public override async Task<bool> SendMessage(MessageChain chains)
+        {
+            return await GlobalScope.KonataBot.Bot.SendGroupMessage(Uin, chains);
         }
     }
 }

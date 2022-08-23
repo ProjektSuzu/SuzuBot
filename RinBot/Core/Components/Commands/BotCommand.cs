@@ -2,19 +2,18 @@
 
 namespace RinBot.Core.Components.Commands
 {
-    internal class Command
+    internal class BotCommand
     {
         public string Name { get; protected set; }
-        public string[] FuncNames { get; protected set; }
-        public Permission Permission { get; protected set; }
-
+        public string[] Tokens { get; protected set; }
+        public UserPermission Permission { get; protected set; }
         public MethodInfo Method { get; protected set; }
         public string ParentId { get; protected set; }
 
-        public Command(string name, string[] funcNames, Permission permission, MethodInfo method, string parentId)
+        public BotCommand(string name, string[] funcNames, UserPermission permission, MethodInfo method, string parentId)
         {
             Name = name;
-            FuncNames = funcNames;
+            Tokens = funcNames;
             Permission = permission;
             Method = method;
             ParentId = parentId;

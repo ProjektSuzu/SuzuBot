@@ -19,8 +19,11 @@ namespace RinBot.Core.Components.Managers
         public void OnInit()
         {
             dbConnection = new(rinDBPath);
-            dbConnection.CreateTableAsync<ModuleInfo>();
-            dbConnection.CreateTableAsync<QQUserInfo>();
+            dbConnection.CreateTableAsync<ModuleInfo>().Wait();
+            dbConnection.CreateTableAsync<QQUserInfo>().Wait();
+            dbConnection.CreateTableAsync<QQGroupInfo>().Wait();
+            dbConnection.CreateTableAsync<QQGroupWhiteList>().Wait();
+            dbConnection.CreateTableAsync<QQGroupBlackList>().Wait();
         }
 
         public SQLiteAsyncConnection GetConnection(string fileName)

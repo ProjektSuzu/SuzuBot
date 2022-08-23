@@ -27,7 +27,6 @@
     <PackageReference Include="SkiaSharp" Version="2.88.1-preview.79" />
     <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.1-preview.79" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1-preview.79" />
-    <PackageReference Include="SkiaSharp.QrCode" Version="0.6.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
   </ItemGroup>
 
@@ -46,10 +45,6 @@
 
   <ItemGroup>
     <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Command\" />
   </ItemGroup>
 
 	  <!-- Get Build Stamp -->

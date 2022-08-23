@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Konata.Core.Message;
 
 namespace RinBot.Core.KonataCore.Contacts
 {
@@ -10,6 +6,8 @@ namespace RinBot.Core.KonataCore.Contacts
     {
         public string Name { get; internal set; }
         public uint Uin { get; internal set; }
+
+        public abstract Task<bool> SendMessage(MessageChain chains);
 
         protected BotContact(string name, uint uin)
         {

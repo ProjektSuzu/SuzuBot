@@ -16,6 +16,10 @@ namespace RinBot.Core
         public static KonataBot KonataBot
             => KonataBot.Instance;
 
+        // Adapter
+        public static KonataAdapter KonataAdapter
+            => KonataAdapter.Instance;
+
         // Managers
         public static DatabaseManager DatabaseManager
             => DatabaseManager.Instance;
@@ -23,6 +27,8 @@ namespace RinBot.Core
             => CommandManager.Instance;
         public static PermissionManager PermissionManager
             => PermissionManager.Instance;
+        public static EventManager EventManager
+            => EventManager.Instance;
 
         // DatabaseConnections
         public static SQLiteAsyncConnection RinDBAsyncConnection
@@ -38,14 +44,28 @@ namespace RinBot.Core
             Directory.CreateDirectory(RESOURCE_DIR_PATH);
             Directory.CreateDirectory(DB_DIR_PATH);
 
-            // Initialize Managers
-            Logger.Info("Initialize Managers.");
-            DatabaseManager.OnInit();
-            CommandManager.OnInit();
-            PermissionManager.OnInit();
-
             // Initialize Bots
+            Logger.Info("Step 1/3: Initialize Bot(s).");
             KonataBot.InitBot();
+
+            // Initialize Managers
+            Logger.Info("Step 2/3: Initialize Manager(s).");
+            DatabaseManager.OnInit();
+            PermissionManager.OnInit();
+            EventManager.OnInit();
+            CommandManager.OnInit();
+
+            // Login Bots
+            Logger.Info("Step 3/3: Login Bot(s).");
+            if (KonataBot.LoginBot())
+            {
+                Logger.Info("Bot Login Success.");
+            }
+            else
+            {
+                Logger.Fatal("Bot Login Failed.");
+            }
+            Logger.Info("Program startup complete.");
         }
     }
 }

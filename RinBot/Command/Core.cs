@@ -125,6 +125,7 @@ namespace RinBot.Command
                     builder.AppendLine("该对话场景不支持此操作");
                     messageEventArgs.Reply(builder.ToString());
                 }
+                var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(messageEventArgs.Subject.Uin);
                 bool action = false;
                 List<string> operateModuleIds = new();
                 if (command.FuncArgs[0] == "enable")
@@ -160,9 +161,18 @@ namespace RinBot.Command
                     }
                     else
                     {
-                        builder.AppendLine($"模块 {module.Name} 已在该群禁用");
+                        if (groupInfo.ModuleIds.Contains(moduleId))
+                        {
+                            groupInfo.ModuleIds.Remove(moduleId);
+                        }
+                        else
+                        {
+                            groupInfo.ModuleIds.Add(moduleId);
+                        }
+                        builder.AppendLine($"模块 {module.Name} 操作成功");
                     }
                 }
+                GlobalScope.PermissionManager.UpdateGroupInfo(groupInfo);
                 messageEventArgs.Reply(builder.ToString());
             }
         }

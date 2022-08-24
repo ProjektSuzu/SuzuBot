@@ -54,7 +54,7 @@ namespace RinBot.Core.Components.Managers
                 throw new NotSupportedException();
             }
         }
-        public QQUserInfo GetQQUserInfo(uint uin)
+        public QQUserInfo GetUserInfo(uint uin)
         {
             var info = GlobalScope.DatabaseManager.DBConnection
                 .Table<QQUserInfo>()
@@ -77,6 +77,9 @@ namespace RinBot.Core.Components.Managers
             else
                 return info;
         }
+        public bool UpdateUserInfo(QQUserInfo info)
+            => GlobalScope.DatabaseManager.DBConnection
+            .UpdateAsync(info).Result > 0;
         public QQGroupInfo GetGroupInfo(uint uin)
         {
             var info = GlobalScope.DatabaseManager.DBConnection
@@ -99,6 +102,9 @@ namespace RinBot.Core.Components.Managers
             else
                 return info;
         }
+        public bool UpdateGroupInfo(QQGroupInfo info)
+            => GlobalScope.DatabaseManager.DBConnection
+            .UpdateAsync(info).Result > 0;
         public async Task<bool> IsGroupInBlackList(uint groupUin)
         {
             return await GlobalScope.DatabaseManager.DBConnection

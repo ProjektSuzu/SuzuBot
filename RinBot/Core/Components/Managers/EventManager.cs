@@ -30,7 +30,7 @@ namespace RinBot.Core.Components.Managers
         {
             if (groupMessageEvent.MemberUin == sender.Uin) return;
             if (GlobalScope.PermissionManager.IsGroupInBlackList(groupMessageEvent.GroupUin).Result) return;
-            if (GlobalScope.PermissionManager.GetQQUserInfo(groupMessageEvent.MemberUin).Level == UserPermission.Banned) return;
+            if (GlobalScope.PermissionManager.GetUserInfo(groupMessageEvent.MemberUin).Level == UserPermission.Banned) return;
 
             var msgEvent = GlobalScope.KonataAdapter.WarpMessageEvent(groupMessageEvent);
             OnMessageEvent.Invoke(sender, msgEvent);
@@ -39,7 +39,7 @@ namespace RinBot.Core.Components.Managers
         public void OnKonataFriendMessageEvent(Konata.Core.Bot sender, Konata.Core.Events.Model.FriendMessageEvent friendMessageEvent)
         {
             if (friendMessageEvent.FriendUin == sender.Uin) return;
-            if (GlobalScope.PermissionManager.GetQQUserInfo(friendMessageEvent.FriendUin).Level == UserPermission.Banned) return;
+            if (GlobalScope.PermissionManager.GetUserInfo(friendMessageEvent.FriendUin).Level == UserPermission.Banned) return;
 
             var msgEvent = GlobalScope.KonataAdapter.WarpMessageEvent(friendMessageEvent);
             OnMessageEvent.Invoke(sender, msgEvent);

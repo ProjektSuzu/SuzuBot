@@ -25,10 +25,5 @@ namespace RinBot.Core.Components.Managers
             dbConnection.CreateTableAsync<QQGroupWhiteList>().Wait();
             dbConnection.CreateTableAsync<QQGroupBlackList>().Wait();
         }
-
-        public SQLiteAsyncConnection GetConnection(string fileName)
-        {
-            return new SQLiteAsyncConnection(Path.Combine(GlobalScope.DB_DIR_PATH, fileName));
-        }
     }
 }

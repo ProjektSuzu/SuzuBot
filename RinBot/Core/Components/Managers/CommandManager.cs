@@ -158,11 +158,11 @@ namespace RinBot.Core.Components.Managers
         {
             if (!HasPrefix(command)) return null;
 
-            var array = DropPrefix(command).Split(' ').ToArray();
+            var array = DropPrefix(command).Split(' ', StringSplitOptions.RemoveEmptyEntries & StringSplitOptions.TrimEntries).ToArray();
             if (array.Length <= 0) return null;
 
             var token = array[0];
-            var args = array[1..];
+            var args = array.Length > 1 ? array[1..] : Array.Empty<string>();
             return new CommandStruct()
             {
                 FuncToken = token,

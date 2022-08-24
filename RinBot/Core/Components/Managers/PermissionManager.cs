@@ -23,7 +23,8 @@ namespace RinBot.Core.Components.Managers
 
             var userInfo = GlobalScope.DatabaseManager.DBConnection
                 .Table<QQUserInfo>()
-                .FirstOrDefaultAsync(x => x.Uin == user.Uin).Result;
+                .Where(x => x.Uin == user.Uin)
+                .FirstOrDefaultAsync().Result;
 
             if (user is Member member)
             {
@@ -57,7 +58,8 @@ namespace RinBot.Core.Components.Managers
         {
             var info = GlobalScope.DatabaseManager.DBConnection
                 .Table<QQUserInfo>()
-                .FirstOrDefaultAsync(x => x.Uin == uin).Result;
+                .Where(x => x.Uin == uin)
+                .FirstOrDefaultAsync().Result;
             if (info == null)
             {
                 info = new()
@@ -79,7 +81,8 @@ namespace RinBot.Core.Components.Managers
         {
             var info = GlobalScope.DatabaseManager.DBConnection
                 .Table<QQGroupInfo>()
-                .FirstOrDefaultAsync(x => x.Uin == uin).Result;
+                .Where(x => x.Uin == uin)
+                .FirstOrDefaultAsync().Result;
             if (info == null)
             {
                 var group = GlobalScope.KonataAdapter.GetGroup(uin).Result;
@@ -100,13 +103,15 @@ namespace RinBot.Core.Components.Managers
         {
             return await GlobalScope.DatabaseManager.DBConnection
                 .Table<QQGroupBlackList>()
-                .FirstOrDefaultAsync(x => x.Uin == groupUin) != null;
+                .Where(x => x.Uin == groupUin)
+                .FirstOrDefaultAsync() != null;
         }
         public async Task<bool> IsGroupInWhiteList(uint groupUin)
         {
             return await GlobalScope.DatabaseManager.DBConnection
                 .Table<QQGroupWhiteList>()
-                .FirstOrDefaultAsync(x => x.Uin == groupUin) != null;
+                .Where(x => x.Uin == groupUin)
+                .FirstOrDefaultAsync() != null;
         }
         public void OnInit()
         {

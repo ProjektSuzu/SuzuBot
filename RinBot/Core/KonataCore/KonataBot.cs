@@ -39,8 +39,8 @@ namespace RinBot.Core.KonataCore
             return new()
             {
                 TryReconnect = true,
-                //HighwayChunkSize = 1048576,
-                CustomHost = "msfwifi.3g.qq.com:8080",
+                HighwayChunkSize = 1048576,
+                //CustomHost = "msfwifi.3g.qq.com:8080",
                 Protocol = OicqProtocol.Android,
             };
         }

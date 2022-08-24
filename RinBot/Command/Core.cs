@@ -7,7 +7,6 @@ using RinBot.Core.Components;
 using RinBot.Core.Components.Attributes;
 using RinBot.Core.Components.Commands;
 using RinBot.Core.Components.Managers;
-using RinBot.Core.KonataCore;
 using RinBot.Core.KonataCore.Contacts.Models;
 using RinBot.Core.KonataCore.Events;
 using System.Diagnostics;
@@ -173,6 +172,15 @@ namespace RinBot.Command
         {
             GlobalScope.CommandManager.ReloadModules();
             messageEvent.Reply($"载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.");
+        }
+
+        [Command("测试", "test")]
+        public void OnTest(MessageEventArgs messageEvent)
+        {
+            var builder = new MessageBuilder();
+            var datetime = Utils.GetUnixDateTimeMilliseconds(1590927077539);
+            builder.Text(datetime.ToString());
+            messageEvent.Reply(builder);
         }
 
     }

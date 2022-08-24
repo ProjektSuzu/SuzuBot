@@ -1,5 +1,4 @@
-﻿using RinBot.Core.Components.Managers;
-using SQLite;
+﻿using SQLite;
 
 namespace RinBot.Core.Components.Databases.Tables
 {

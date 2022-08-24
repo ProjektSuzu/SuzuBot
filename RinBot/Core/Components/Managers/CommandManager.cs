@@ -112,19 +112,29 @@ namespace RinBot.Core.Components.Managers
                     return;
                 }
 
-                switch (command.Method.GetParameters().Length)
+                try
                 {
-                    case 2:
-                        command.Method.Invoke(module.Instance, new object[] { messageEvent, commandStruct });
-                        break;
-                    case 1:
-                        command.Method.Invoke(module.Instance, new object[] { messageEvent });
-                        break;
-                    default:
-                        throw new InvalidOperationException();
+                    switch (command.Method.GetParameters().Length)
+                    {
+                        case 2:
+                            command.Method.Invoke(module.Instance, new object[] { messageEvent, commandStruct });
+                            break;
+                        case 1:
+                            command.Method.Invoke(module.Instance, new object[] { messageEvent });
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                    Logger.Info($"{module.Name}|{command.Name} Invoked " +
+                        $"{messageEvent.Subject.Name}({messageEvent.Subject.Uin})|{messageEvent.Sender.Name}({messageEvent.Sender.Uin}).");
                 }
-                Logger.Info($"{module.Name}|{command.Name} Invoked " +
-                    $"{messageEvent.Subject.Name}({messageEvent.Subject.Uin})|{messageEvent.Sender.Name}({messageEvent.Sender.Uin}).");
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error Occured When Execute {module.Name}|{command.Name} "
+                                 + $"By {messageEvent.Subject.Name}({messageEvent.Subject.Uin})|{messageEvent.Sender.Name}({messageEvent.Sender.Uin})\n"
+                                 + $"{ex.InnerException?.ToString()} {ex.InnerException?.Message}\n{ex.InnerException?.StackTrace}\n"
+                                 + $"{ex} {ex.Message}\n{ex.StackTrace}");
+                }
             }
             else
             {

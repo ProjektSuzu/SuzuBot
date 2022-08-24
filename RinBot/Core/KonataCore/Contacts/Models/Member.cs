@@ -1,4 +1,5 @@
 ﻿using Konata.Core.Common;
+using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 
 namespace RinBot.Core.KonataCore.Contacts.Models
@@ -8,6 +9,7 @@ namespace RinBot.Core.KonataCore.Contacts.Models
         public string NickName { get; internal set; }
         public string SpecialTitle { get; internal set; }
         public RoleType Role { get; internal set; }
+        public uint GroupUin { get; internal set; }
 
         public bool IsAdmin { get => Role >= RoleType.Admin; }
 
@@ -19,6 +21,10 @@ namespace RinBot.Core.KonataCore.Contacts.Models
         public override async Task<bool> SendMessage(MessageChain chains)
         {
             throw new NotImplementedException();
+        }
+        public override async Task<bool> SendPoke()
+        {
+            return await GlobalScope.KonataBot.Bot.SendGroupPoke(GroupUin, Uin);
         }
     }
 }

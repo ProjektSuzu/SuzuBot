@@ -8,6 +8,7 @@ namespace RinBot.Core.KonataCore.Contacts
         public uint Uin { get; internal set; }
 
         public abstract Task<bool> SendMessage(MessageChain chains);
+        public abstract Task<bool> SendPoke();
 
         protected BotContact(string name, uint uin)
         {

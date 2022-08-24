@@ -33,7 +33,7 @@ namespace RinBot.Command.Sign
         private Timer clearTimer;
         private void SaveList() => File.WriteAllTextAsync(SIGN_LIST_PATH, JsonConvert.SerializeObject(signList));
 
-        [Command("签到", new[] { "sign", "签到" , "打卡" })]
+        [TextCommand("签到", new[] { "sign", "签到" , "打卡" })]
         public void OnSign(MessageEventArgs messageEvent)
         {
             var builder = new MessageBuilder("[Sign]\n");

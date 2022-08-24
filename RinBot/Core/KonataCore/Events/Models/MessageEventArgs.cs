@@ -5,7 +5,7 @@ using RinBot.Core.KonataCore.Contacts;
 
 namespace RinBot.Core.KonataCore.Events
 {
-    internal class MessageEventArgs
+    internal class MessageEventArgs : RinEventArgs
     {
         public BotContact Subject { get; internal set; }
         public BotContact Sender { get; internal set; }

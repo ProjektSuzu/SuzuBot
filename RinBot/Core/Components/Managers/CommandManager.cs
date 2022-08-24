@@ -1,4 +1,5 @@
-﻿using NLog;
+﻿using Konata.Core.Message.Model;
+using NLog;
 using RinBot.Core.Components.Attributes;
 using RinBot.Core.Components.Commands;
 using RinBot.Core.Components.Databases.Tables;
@@ -22,13 +23,14 @@ namespace RinBot.Core.Components.Managers
         {
             "/",
             "铃酱",
+            AtChain.Create(GlobalScope.KonataBot.Bot.Uin).ToString(),
         };
 
         public Dictionary<string, BotModule> ModuleTable = new();
         public int ModuleCount => ModuleTable.Count;
 
-        private Dictionary<string, BotCommand> commandTable = new();
-        public int CommandCount => commandTable.Count;
+        private Dictionary<string, BotCommand> CommandTable = new();
+        public int CommandCount => CommandTable.Count;
         private static Logger Logger = LogManager.GetLogger("CMD");
 
         public void OnInit()
@@ -61,16 +63,32 @@ namespace RinBot.Core.Components.Managers
                     }
                 }
             }
-            Logger.Info($"{ModuleTable.Count} Module(s), {commandTable.Count} Command(s) Loaded.");
+            Logger.Info($"{ModuleTable.Count} Module(s), {CommandTable.Count} Command(s) Loaded.");
         }
 
-        public void OnBotCommand(MessageEventArgs messageEvent)
+        public void OnBotCommand(RinEventArgs rinEvent)
+        {
+            if (rinEvent is MessageEventArgs messageEvent)
+            {
+                HandleCommand(messageEvent);
+            }
+            else if (rinEvent is PokeEventArgs pokeEvent)
+            {
+                HandleCommand(pokeEvent);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public void HandleCommand(MessageEventArgs messageEvent)
         {
             var rawContent = messageEvent.Message.Chain.ToString();
             var commandStruct = Interprete(rawContent);
             if (commandStruct == null) return;
 
-            if (commandTable.TryGetValue(commandStruct.FuncToken, out var command))
+            if (CommandTable.TryGetValue(commandStruct.FuncToken, out var command))
             {
                 var module = ModuleTable[command.ParentId];
                 if (!module.IsEnabled) return;
@@ -136,9 +154,25 @@ namespace RinBot.Core.Components.Managers
                                  + $"{ex} {ex.Message}\n{ex.StackTrace}");
                 }
             }
-            else
+        }
+        public void HandleCommand(PokeEventArgs pokeEvent)
+        {
+            foreach (var command in CommandTable)
             {
-                return;
+                if (command.Key.StartsWith("#poke_") && command.Key.EndsWith("#"))
+                {
+                    var module = ModuleTable[command.Value.ParentId];
+                    if ((command.Value.Attribute as PokeCommandAttribute).ReceiveTarget == PokeReceiveTarget.Bot)
+                    {
+                        if (pokeEvent.Receiver != null && pokeEvent.Receiver.Uin != GlobalScope.KonataBot.Bot.Uin)
+                        {
+                            continue;
+                        }
+                    }
+                    command.Value.Method.Invoke(module.Instance, new[] { pokeEvent });
+                    Logger.Info($"{module.Name}|{command.Value.Name} Invoked " +
+                        $"{pokeEvent.Subject.Name}({pokeEvent.Subject.Uin})|{pokeEvent.Sender.Name}({pokeEvent.Sender.Uin}).");
+                }
             }
         }
 
@@ -168,7 +202,7 @@ namespace RinBot.Core.Components.Managers
         {
             if (!HasPrefix(command)) return null;
 
-            var array = DropPrefix(command).Split(' ', StringSplitOptions.RemoveEmptyEntries & StringSplitOptions.TrimEntries).ToArray();
+            var array = DropPrefix(command).Split(' ', StringSplitOptions.RemoveEmptyEntries).ToArray();
             if (array.Length <= 0) return null;
 
             var token = array[0];
@@ -209,13 +243,13 @@ namespace RinBot.Core.Components.Managers
 
         public BotCommand? GetCommand(string command)
         {
-            if (commandTable.TryGetValue(command, out var module)) return module;
+            if (CommandTable.TryGetValue(command, out var module)) return module;
             else return null;
         }
 
         public void ReloadModules()
         {
-            commandTable.Clear();
+            CommandTable.Clear();
             OnInit();
         }
 
@@ -223,7 +257,7 @@ namespace RinBot.Core.Components.Managers
         {
             foreach (var func in command.Tokens)
             {
-                commandTable.TryAdd(func, command);
+                CommandTable.TryAdd(func, command);
             }
         }
 
@@ -243,7 +277,7 @@ namespace RinBot.Core.Components.Managers
             Logger.Info($"Loading Module: {attribute.Name}({attribute.ModuleId})");
             foreach (var method in methods)
             {
-                CommandAttribute? cmdAttribute = method.GetCustomAttribute<CommandAttribute>();
+                CommandHandlerAttribute? cmdAttribute = method.GetCustomAttribute<CommandHandlerAttribute>();
                 if (cmdAttribute == null) continue;
                 commands.Add(LoadCommand(method, cmdAttribute, attribute.ModuleId));
             }
@@ -260,17 +294,37 @@ namespace RinBot.Core.Components.Managers
                 );
         }
 
-        public BotCommand LoadCommand(MethodInfo method, CommandAttribute attribute, string parentId)
+        public BotCommand LoadCommand(MethodInfo method, CommandHandlerAttribute attribute, string parentId)
         {
             Logger.Info($"\tLoading Command: {parentId}|{attribute.Name}");
-            return new BotCommand
-                (
-                    attribute.Name,
-                    attribute.FuncTokens,
-                    attribute.Permission,
-                    method,
-                    parentId
-                );
+            if (attribute is TextCommandAttribute textCommand)
+            {
+                return new BotCommand
+                    (
+                        textCommand.Name,
+                        textCommand.FuncTokens,
+                        textCommand.Permission,
+                        method,
+                        attribute,
+                        parentId
+                    );
+            }
+            else if (attribute is PokeCommandAttribute pokeCommand)
+            {
+                return new BotCommand
+                    (
+                        pokeCommand.Name,
+                        new[] { $"#poke_{pokeCommand.Name}#" },
+                        UserPermission.User,
+                        method,
+                        attribute,
+                        parentId
+                    );
+            }
+            else
+            {
+                throw new InvalidCastException();
+            }
         }
     }
 }

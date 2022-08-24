@@ -153,9 +153,22 @@ namespace RinBot.Core.KonataCore
 
             Bot.OnGroupMessage += (s, e) =>
             {
+                Logger.Debug($"{e.GroupName}({e.GroupUin})|{e.MemberCard}({e.MemberUin}):\n{e.Message.Chain}");
+            };
+
+            Bot.OnFriendPoke += (s, e) =>
+            {
+                var friend = GlobalScope.KonataAdapter.GetFriend(e.FriendUin).Result;
+                Logger.Debug($"{friend.Name}({friend.Uin}) {e.ActionPrefix} 你 {e.ActionSuffix}");
+            };
+
+            Bot.OnGroupPoke += (s, e) =>
+            {
                 var group = GlobalScope.KonataAdapter.GetGroup(e.GroupUin).Result;
-                var member = GlobalScope.KonataAdapter.GetMember(e.MemberUin, group).Result;
-                Logger.Debug($"{group.Name}({group.Uin})|{member.NickName}({member.Uin}):\n{e.Message.Chain}");
+                var sender = GlobalScope.KonataAdapter.GetMember(e.OperatorUin, group).Result;
+                var receiver = GlobalScope.KonataAdapter.GetMember(e.MemberUin, group).Result;
+                Logger.Debug($"{group.Name}({group.Uin}) | {sender.Name}({sender.Uin}) " +
+                    $"{e.ActionPrefix} {receiver.Name}({receiver.Uin}) {e.ActionSuffix}");
             };
 
             Logger.Info("Bot initialization completed.");

@@ -27,7 +27,6 @@ namespace RinBot.Core.KonataCore
                 Message = groupMessageEvent.Message,
             };
         }
-
         public MessageEventArgs WarpMessageEvent(FriendMessageEvent friendMessageEvent)
         {
             var friend = GetFriend(friendMessageEvent.FriendUin).Result;
@@ -37,6 +36,29 @@ namespace RinBot.Core.KonataCore
                 Subject = friend,
                 Sender = friend,
                 Message = friendMessageEvent.Message,
+            };
+        }
+        public PokeEventArgs WarpPokeEvent(GroupPokeEvent groupPokeEvent)
+        {
+            var subject = GetGroup(groupPokeEvent.GroupUin).Result;
+            var sender = GetMember(groupPokeEvent.OperatorUin, subject).Result;
+            var receiver = GetMember(groupPokeEvent.MemberUin, subject).Result;
+            return new()
+            {
+                Subject = subject,
+                Sender = sender,
+                Receiver = receiver,
+            };
+        }
+        public PokeEventArgs WarpPokeEvent(FriendPokeEvent friendPokeEvent)
+        {
+            var subject = GetFriend(friendPokeEvent.FriendUin).Result;
+            var sender = GetFriend(friendPokeEvent.FriendUin).Result;
+            return new()
+            {
+                Subject = subject,
+                Sender = sender,
+                Receiver = null,
             };
         }
 
@@ -113,6 +135,7 @@ namespace RinBot.Core.KonataCore
                     NickName = member.NickName,
                     SpecialTitle = member.SpecialTitle,
                     Role = member.Role,
+                    GroupUin = group.Uin,
                 };
             }
             else

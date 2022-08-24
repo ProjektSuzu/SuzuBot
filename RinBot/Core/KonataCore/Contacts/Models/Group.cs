@@ -22,5 +22,10 @@ namespace RinBot.Core.KonataCore.Contacts.Models
         {
             return await GlobalScope.KonataBot.Bot.SendGroupMessage(Uin, chains);
         }
+
+        public override async Task<bool> SendPoke()
+        {
+            throw new InvalidOperationException();
+        }
     }
 }

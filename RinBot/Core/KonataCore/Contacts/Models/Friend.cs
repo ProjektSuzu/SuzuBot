@@ -15,5 +15,9 @@ namespace RinBot.Core.KonataCore.Contacts.Models
         {
             return await GlobalScope.KonataBot.Bot.SendFriendMessage(Uin, chains);
         }
+        public override async Task<bool> SendPoke()
+        {
+            return await GlobalScope.KonataBot.Bot.SendFriendPoke(Uin);
+        }
     }
 }

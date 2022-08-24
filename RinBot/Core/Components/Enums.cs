@@ -12,7 +12,13 @@
     {
         Friend,
         Group,
-        Temp
+        Temp,
+    }
+
+    public enum PokeReceiveTarget : short
+    {
+        Any,
+        Bot,
     }
     internal enum ModuleEnableType : short
     {

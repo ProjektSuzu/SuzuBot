@@ -83,7 +83,7 @@ namespace RinBot.Command.Arcaea
             Directory.CreateDirectory(COVER_DIR_PATH);
         }
 
-        [Command("Arcaea", new[] { "arcaea", "arc", "a" })]
+        [TextCommand("Arcaea", new[] { "arcaea", "arc", "a" })]
         public void OnArcaea(MessageEventArgs messageEvent, CommandStruct command)
         {
             if (command.FuncArgs.Length <= 0)

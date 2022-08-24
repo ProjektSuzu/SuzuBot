@@ -36,20 +36,33 @@ namespace RinBot.Command
 
         private readonly string[] pingReplys;
 
-        [Command("帮助", "help")]
+        [TextCommand("帮助", "help")]
         public void OnHelp(MessageEventArgs messageEvent)
         {
             messageEvent.Reply($"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu/modules/ 来获取帮助信息");
         }
 
-        [Command("Ping", "ping")]
+        [TextCommand("Ping", "ping")]
         public void OnPing(MessageEventArgs messageEvent)
         {
             var chains = MessageBuilder.Eval(pingReplys[new Random().Next(pingReplys.Length)]);
             messageEvent.Reply(chains);
         }
 
-        [Command("状态汇报", "status")]
+        [TextCommand("退群", "quit")]
+        public void OnQuit(MessageEventArgs messageEvent)
+        {
+            if (messageEvent.Subject is Group)
+            {
+                GlobalScope.KonataBot.Bot.GroupLeave(messageEvent.Subject.Uin);
+            }
+            else
+            {
+                messageEvent.Reply("该对话场景不支持此操作");
+            }
+        }
+
+        [TextCommand("状态汇报", "status")]
         public void OnStatus(MessageEventArgs messageEvent)
         {
             int processorCount = Environment.ProcessorCount;
@@ -78,8 +91,8 @@ namespace RinBot.Command
             messageEvent.Reply(stringBuilder.ToString());
         }
 
-        [Command("模块管理", "cmdctl", UserPermission.GroupAdmin)]
-        public void OnCommandControl(MessageEventArgs messageEventArgs, CommandStruct command)
+        [TextCommand("模块管理", "cmdctl", UserPermission.GroupAdmin)]
+        public void OnCommandControl(MessageEventArgs messageEvent, CommandStruct command)
         {
             var moduleList = GlobalScope.CommandManager.ModuleTable
                 .Select(x => x.Value);
@@ -88,7 +101,7 @@ namespace RinBot.Command
             if (command.FuncArgs.Length <= 0)
             {
                 string[] groupModuleIds;
-                if (messageEventArgs.Subject is Group group)
+                if (messageEvent.Subject is Group group)
                 {
                     var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(group.Uin);
                     groupModuleIds = groupInfo.ModuleIds.ToArray();
@@ -116,16 +129,16 @@ namespace RinBot.Command
                 builder.AppendLine("🔷 当前群聊关闭");
                 builder.AppendLine("⚪ 开启");
 
-                messageEventArgs.Reply(builder.ToString());
+                messageEvent.Reply(builder.ToString());
             }
             else
             {
-                if (messageEventArgs.Subject is not Group)
+                if (messageEvent.Subject is not Group)
                 {
                     builder.AppendLine("该对话场景不支持此操作");
-                    messageEventArgs.Reply(builder.ToString());
+                    messageEvent.Reply(builder.ToString());
                 }
-                var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(messageEventArgs.Subject.Uin);
+                var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(messageEvent.Subject.Uin);
                 bool action = false;
                 List<string> operateModuleIds = new();
                 if (command.FuncArgs[0] == "enable")
@@ -139,7 +152,7 @@ namespace RinBot.Command
                 else
                 {
                     builder.AppendLine($"参数错误: {command.FuncArgs[0]} => <enable/disable>");
-                    messageEventArgs.Reply(builder.ToString());
+                    messageEvent.Reply(builder.ToString());
                 }
 
                 if (command.FuncArgs.Length >= 2)
@@ -173,18 +186,18 @@ namespace RinBot.Command
                     }
                 }
                 GlobalScope.PermissionManager.UpdateGroupInfo(groupInfo);
-                messageEventArgs.Reply(builder.ToString());
+                messageEvent.Reply(builder.ToString());
             }
         }
 
-        [Command("模块重载", "reload", UserPermission.Root)]
+        [TextCommand("模块重载", "reload", UserPermission.Root)]
         public void OnReload(MessageEventArgs messageEvent)
         {
             GlobalScope.CommandManager.ReloadModules();
             messageEvent.Reply($"载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.");
         }
 
-        [Command("测试", "test")]
+        [TextCommand("测试", "test")]
         public void OnTest(MessageEventArgs messageEvent)
         {
             var builder = new MessageBuilder();

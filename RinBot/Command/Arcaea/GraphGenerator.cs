@@ -1419,7 +1419,7 @@ namespace RinBot.Command.Arcaea
         {
             if (!File.Exists(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png")))
             {
-                File.WriteAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png"), ArcaeaModule.ArcaeaUnlimitedAPI.GetCharaIllust(chara, isUncapped).Result);
+                File.WriteAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png"), ArcaeaModule.ArcaeaUnlimitedAPI.GetCharaIcon(chara, isUncapped).Result);
             }
 
             return SKBitmap.Decode(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png"));

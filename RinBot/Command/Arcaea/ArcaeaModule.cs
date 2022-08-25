@@ -318,8 +318,10 @@ namespace RinBot.Command.Arcaea
                             stringBuilder.AppendLine(name);
                         }
                         stringBuilder.AppendLine($"等 {count} 个结果\n请尝试补全关键字");
+                        messageBuilder.Text(stringBuilder.ToString());
                         break;
                     }
+                messageEvent.Reply(messageBuilder);
             }
         }
         public void OnBind(MessageEventArgs messageEvent, CommandStruct command)
@@ -465,6 +467,7 @@ namespace RinBot.Command.Arcaea
                             stringBuilder.AppendLine(name);
                         }
                         stringBuilder.AppendLine($"等 {count} 个结果\n请尝试补全关键字");
+                        messageBuilder.Text(stringBuilder.ToString());
                         break;
                     }
             }

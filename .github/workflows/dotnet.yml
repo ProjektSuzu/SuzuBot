@@ -30,7 +30,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
-      run:  dotnet publish -c Release --no-self-contained -f net7.0 -o publish
+      run:  dotnet publish -c Release --no-self-contained -f net70 -o publish
       
 #    - name: Stop current program
 #      uses: garygrossgarten/github-action-ssh@v0.6.3

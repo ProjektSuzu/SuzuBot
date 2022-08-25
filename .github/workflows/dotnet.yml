@@ -14,10 +14,21 @@ jobs:
       with:
         token: ${{ secrets.token }}
         submodules: 'true'
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+#    - name: Setup .NET
+#      uses: actions/setup-dotnet@v2
+#      with:
+#        dotnet-version: 7.0.x
+    - name: Setup latest .NET SDKs
+    # You may pin to the exact commit or the version.
+    # uses: Elskom/setup-latest-dotnet@908aae4113c27b157acc40625a3495c80b29f407
+      uses: Elskom/setup-latest-dotnet@v1.1.2
       with:
-        dotnet-version: 7.0.x
+        # Major version of the .NET SDK to install.
+        VERSION_MAJOR: # optional, default is 7
+        # Minor version of the .NET SDK to install.
+        VERSION_MINOR: # optional, default is 0
+        # Band version of the .NET SDK to install.
+        VERSION_BAND: # optional, default is 1xx
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -57,5 +68,3 @@ jobs:
         port: ${{ secrets.port }}
         username: ${{ secrets.username }}
         password: ${{ secrets.password }}
-    
-  

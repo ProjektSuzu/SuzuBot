@@ -61,7 +61,7 @@ jobs:
         host: ${{ secrets.host }}
         port: ${{ secrets.port }}
         username: ${{ secrets.username }}
-        password: ${{ secrets.password }}name: .NET
+        password: ${{ secrets.password }}
 
 on:
   push:

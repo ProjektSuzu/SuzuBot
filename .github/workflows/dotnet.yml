@@ -45,7 +45,7 @@ jobs:
       uses: garygrossgarten/github-action-scp@v0.7.3
       with:
         local: publish
-        remote: /home/akulak/RinBot
+        remote: /home/RinBot
         host: ${{ secrets.host }}
         port: ${{ secrets.port }}
         username: ${{ secrets.username }}
@@ -55,7 +55,7 @@ jobs:
       uses: garygrossgarten/github-action-ssh@v0.6.3
       with:
         command: |
-          sudo chmod 755 /home/akulak/RinBot/RinBot &&
+          sudo chmod 755 /home/RinBot/RinBot &&
           sudo systemctl restart rinbot.service
         host: ${{ secrets.host }}
         port: ${{ secrets.port }}

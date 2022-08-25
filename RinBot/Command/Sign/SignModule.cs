@@ -1,8 +1,10 @@
 ﻿using Konata.Core.Message;
 using Newtonsoft.Json;
+using RinBot.Command.TarotCard;
 using RinBot.Core;
 using RinBot.Core.Components.Attributes;
 using RinBot.Core.KonataCore.Events;
+using System.ComponentModel;
 
 namespace RinBot.Command.Sign
 {
@@ -33,6 +35,8 @@ namespace RinBot.Command.Sign
         private Timer clearTimer;
         private void SaveList() => File.WriteAllTextAsync(SIGN_LIST_PATH, JsonConvert.SerializeObject(signList));
 
+
+
         [TextCommand("签到", new[] { "sign", "签到", "打卡" })]
         public void OnSign(MessageEventArgs messageEvent)
         {
@@ -45,7 +49,13 @@ namespace RinBot.Command.Sign
             {
                 sign = signList.Sign(messageEvent.Sender.Uin);
                 SaveList();
-                var random = new Random();
+
+                // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
+                var bytes = System.Text.Encoding.ASCII.GetBytes(DateTime.Today.ToString("yyyyMMdd") + messageEvent.Sender.Uin.ToString());
+                int seed = BitConverter.ToInt32(bytes);
+                var random = new Random(seed);
+
+                // 基础部分
                 var coin = random.Next(100);
                 var exp = random.Next(50);
                 var favor = random.Next(10);
@@ -60,7 +70,21 @@ namespace RinBot.Command.Sign
                     $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}" +
                     $"RC +{coin}\n" +
                     $"经验 +{exp}\n" +
-                    $"好感度 +{favor}");
+                    $"好感度 +{favor}\n\n");
+
+                // 抽签部分
+                var stick = FortuneStick.GetStick(random);
+                builder.Text($"今日的运势是: {stick.GetFortuneName()}\n" +
+                    $"{stick.GetComment()}\n\n");
+
+                // 塔罗牌部分
+                var tarot = TarotCards.GetTarotCards(1, random).First();
+                builder.Text($"今日的塔罗牌是: {tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
+                builder.Image(File.ReadAllBytes(tarot.ImagePath));
+                builder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}\n\n");
+
+                // 免责声明
+                builder.Text($"结果仅供参考, 自己的命运要自己把握哦(・ω≦)☆");
             }
             messageEvent.Reply(builder);
         }
@@ -104,5 +128,89 @@ namespace RinBot.Command.Sign
         public uint Uin { get; set; } = 0u;
         public uint ContinuousSign { get; set; } = 1u;
         public DateTime LastSign { get; set; } = DateTime.Today;
+    }
+
+    internal class FortuneStick
+    {
+        public enum FortuneStickType
+        {
+            RIP,                    // 大凶
+            Suck,                   // 凶
+            Nice,                   // 小吉
+            Wunderbar,              // 吉
+            OMGYouAreTheChoosenOne  // 大吉
+        }
+
+        public FortuneStickType FortuneType { get; private set; }
+        private FortuneStick(FortuneStickType type)
+        {
+            FortuneType = type;
+        }
+
+        public static FortuneStick GetStick(Random? random = null)
+        {
+            random ??= new();
+            return new FortuneStick((FortuneStickType)random.Next(5));
+        }
+
+        public string GetComment()
+        {
+            var random = new Random();
+            return FortuneType switch
+            {
+                FortuneStickType.RIP
+                => LotComment.Miss[random.Next(LotComment.Miss.Length)],
+                FortuneStickType.Suck
+                => LotComment.Bad[random.Next(LotComment.Bad.Length)],
+                FortuneStickType.Nice
+                => LotComment.Just[random.Next(LotComment.Just.Length)],
+                FortuneStickType.Wunderbar
+                => LotComment.Great[random.Next(LotComment.Great.Length)],
+                FortuneStickType.OMGYouAreTheChoosenOne
+                => LotComment.Pure[random.Next(LotComment.Pure.Length)],
+            };
+        }
+        public string GetFortuneName()
+        {
+            return FortuneType switch
+            {
+                FortuneStickType.RIP => "大凶",
+                FortuneStickType.Suck => "凶",
+                FortuneStickType.Nice => "小吉",
+                FortuneStickType.Wunderbar => "吉",
+                FortuneStickType.OMGYouAreTheChoosenOne => "大吉",
+            };
+        }
+
+        private static class LotComment
+        {
+            //别问我为什么要这么命名 就是玩
+            public static string[] Miss = {
+            "铃会为你祈祷的...",
+            "现在偷偷改签还来得及吗...",
+            "也许还能再抢救一下...",
+            };
+            public static string[] Bad = {
+            "今天还是小心一点的好..",
+            "一定要好好的..",
+            "这种事情也是没法控制的嘛.."
+            };
+            public static string[] Just = {
+            "运气不错.",
+            "美好的一天从此开始.",
+            "不错的开端.",
+            };
+            public static string[] Great = {
+            "今天或许有意外的惊喜呢~",
+            "I`m so happy~",
+            "是吉不是寄哦~",
+            };
+            public static string[] Pure = {
+            "你就是天选之人~~",
+            "这种运气..真的是存在的吗~~",
+            "其实是铃偷偷帮你改的~不要告诉别人哦~~",
+            "三☆倍☆Ice☆Cream~~"
+            };
+        }
     }
 }

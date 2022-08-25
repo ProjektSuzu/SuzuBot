@@ -15,9 +15,9 @@ jobs:
         token: ${{ secrets.token }}
         submodules: 'true'
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -26,7 +26,7 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Publish
-      run:  dotnet publish -c Release --no-self-contained -f net60 -o publish
+      run:  dotnet publish -c Release --no-self-contained -f net7.0 -o publish
       
 #    - name: Stop current program
 #      uses: garygrossgarten/github-action-ssh@v0.6.3

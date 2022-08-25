@@ -1,330 +1,213 @@
 ﻿using Newtonsoft.Json;
 using NLog;
-using RinBot.Core;
-using System.Net.Http.Headers;
-using static RinBot.Command.Arcaea.SongResult;
+using RestSharp;
+using RinBot.Command.Arcaea.Database;
+using static RinBot.Command.Arcaea.AUAResult;
 
 namespace RinBot.Command.Arcaea
 {
     internal class ArcaeaUnlimitedAPI
     {
-        #region Singleton
-        private static ArcaeaUnlimitedAPI instance;
-        public static ArcaeaUnlimitedAPI Instance
+        public ArcaeaUnlimitedAPI()
         {
-            get
+            if (File.Exists(AUTH_PATH))
             {
-                if (instance == null) instance = new();
-                return instance;
+                auth = JsonConvert.DeserializeObject<Auth>(File.ReadAllText(AUTH_PATH)) ?? new();
+                RestClient = new(auth.Url);
+                RestClient.Options.MaxTimeout = 60 * 1000;
             }
-        }
-        private ArcaeaUnlimitedAPI()
-        {
-            if (!File.Exists(CONFIG_PATH))
+            else
             {
-                Logger.Fatal("配置文件不存在");
-                throw new FileNotFoundException(CONFIG_PATH);
-            }
-            config = JsonConvert.DeserializeObject<AUAConfig>(File.ReadAllText(CONFIG_PATH));
-            if (config == null)
-            {
-                Logger.Fatal("配置文件损坏");
-                throw new FileLoadException(CONFIG_PATH);
+                File.WriteAllText(AUTH_PATH, JsonConvert.SerializeObject(new Auth()));
+                throw new ArgumentNullException();
             }
 
-            if (!File.Exists(STATUS_PATH))
+            statusTable = new();
+            if (File.Exists(STATUS_PATH))
             {
-                Logger.Fatal("配置文件不存在");
-                throw new FileNotFoundException(STATUS_PATH);
+                var list = JsonConvert.DeserializeObject<List<AUAStatus>>(File.ReadAllText(STATUS_PATH)) ?? new();
+                foreach (var status in list)
+                {
+                    statusTable.Add(status.Status, status);
+                }
             }
-            statusList = JsonConvert.DeserializeObject<List<AUAStatus>>(File.ReadAllText(STATUS_PATH));
-            if (config == null)
-            {
-                Logger.Fatal("配置文件损坏");
-                throw new FileLoadException(STATUS_PATH);
-            }
-            Logger.Info("配置文件读取成功");
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("User-Agent", config.Token));
         }
-        #endregion
+        public static string AUTH_PATH => Path.Combine(ArcaeaModule.RESOURCE_DIR_PATH, "auth.json");
+        public static string STATUS_PATH => Path.Combine(ArcaeaModule.RESOURCE_DIR_PATH, "aua_status.json");
+
+        private readonly Auth auth;
+        private Dictionary<int, AUAStatus> statusTable;
+        private static RestClient RestClient;
         private Logger Logger = LogManager.GetLogger("AUA");
-        private static readonly string ARCAEA_RESOURCE_PATH = Path.Combine(Global.RESOURCE_PATH, "Arcaea");
-        private static readonly string CONFIG_PATH = Path.Combine(ARCAEA_RESOURCE_PATH, "aua_token.json");
-        private static readonly string STATUS_PATH = Path.Combine(ARCAEA_RESOURCE_PATH, "aua_status.json");
 
-        private List<AUAStatus> statusList;
-        private ArcaeaUserDB ArcaeaUserDB = ArcaeaUserDB.Instance;
-        private AUAConfig config;
-        private HttpClient httpClient = new()
-        {
-            Timeout = new TimeSpan(0, 1, 0)
-        };
+
         public async Task<B30Result?> GetBest30Result(string userCode)
         {
-            Logger.Info($"Querying Best30Result: {userCode}");
-            try
+            var request = new RestRequest($"/user/best30?usercode={userCode}&overflow=3&withsonginfo=false");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Querying Best30 Result: {userCode}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/best30?usercode={userCode}&overflow=3&withsonginfo=false").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                Logger.Info($"Query Best30Result success: {userCode}");
-                var result = JsonConvert.DeserializeObject<B30Result>(response.Content.ReadAsStringAsync().Result);
-                return result;
+                Logger.Info($"Querying Best30 Result Successful: {userCode}");
+                return JsonConvert.DeserializeObject<B30Result>(response.Content!);
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when Querying BeBest30ResultstInfo: {userCode}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                Logger.Error($"Querying Best30 Result Failed: {userCode}");
                 return null;
             }
         }
-        public async Task<BestPlayResult?> GetBestResult(string userCode, string songId, SongDifficulty difficulty = SongDifficulty.Future)
+        public async Task<BestPlayResult?> GetBestResult(string userCode, string songId, RatingClass ratingClass = RatingClass.Future)
         {
-            Logger.Info($"Querying BestResult: {userCode} {songId} {difficulty}");
-            try
+            var request = new RestRequest($"/user/best?usercode={userCode}&songid={songId}&difficulty={(int)ratingClass}&withsonginfo=false");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Querying Best Result: {userCode} {songId} {ratingClass}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/best?usercode={userCode}&songid={songId}&difficulty={(int)difficulty}&withsonginfo=false").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                Logger.Info($"Query BestResult success: {userCode} {songId} {difficulty}");
-                var result = JsonConvert.DeserializeObject<BestPlayResult>(response.Content.ReadAsStringAsync().Result);
-                return result;
+                Logger.Info($"Querying Best Result Successful: {userCode} {songId} {ratingClass}");
+                return JsonConvert.DeserializeObject<BestPlayResult>(response.Content!);
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when Querying BestResult: {userCode} {songId} {difficulty}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                Logger.Error($"Querying Best Result Failed: {userCode} {songId} {ratingClass}");
                 return null;
             }
         }
-        public async Task<PlayerInfoResult?> GetPlayerInfo(string userCode)
+        public async Task<PlayerInfoResult?> GetPlayerInfoByCode(string userCode)
         {
-            Logger.Info($"Querying PlayerInfo via UserCode: {userCode}");
-            try
+            var request = new RestRequest($"/user/info?usercode={userCode}&withsonginfo=false");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Querying PlayerInfo: {userCode}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/info?usercode={userCode}&withsonginfo=false").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                Logger.Info($"Query PlayerInfo Success via UserCode: {userCode}");
-                var result = JsonConvert.DeserializeObject<PlayerInfoResult>(response.Content.ReadAsStringAsync().Result);
-                if (result != null && result.Status == 0)
-                    ArcaeaUserDB.UpdatePlayerInfo(result.Content.AccountInfo.UserCode, result.Content.AccountInfo.UserName);
-                return result;
+                Logger.Info($"Querying PlayerInfo Successful: {userCode}");
+                return JsonConvert.DeserializeObject<PlayerInfoResult>(response.Content!);
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when Querying PlayerInfo via UserCode: {userCode}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                Logger.Error($"Querying PlayerInfo Failed: {userCode}");
                 return null;
             }
         }
         public async Task<PlayerInfoResult?> GetPlayerInfoByName(string userName)
         {
-            Logger.Info($"Querying PlayerInfo via UserId: {userName}");
-            try
+            var request = new RestRequest($"/user/info?user={userName}&withsonginfo=false");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Querying PlayerInfo: {userName}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/user/info?user={userName}&withsonginfo=false").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                Logger.Info($"Query PlayerInfo Success via UserId: {userName}");
-                var result = JsonConvert.DeserializeObject<PlayerInfoResult>(response.Content.ReadAsStringAsync().Result);
-                if (result != null && result.Status == 0)
-                    ArcaeaUserDB.UpdatePlayerInfo(result.Content.AccountInfo.UserCode, result.Content.AccountInfo.UserName);
-                return result;
+                Logger.Info($"Querying PlayerInfo Successful: {userName}");
+                return JsonConvert.DeserializeObject<PlayerInfoResult>(response.Content!);
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when Querying PlayerInfo via UserId: {userName}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                Logger.Error($"Querying PlayerInfo Failed: {userName}");
                 return null;
             }
         }
-
-
         public async Task<SongInfoResult?> GetSongInfo(string songId)
         {
-            Logger.Info($"Querying SongInfo: {songId}");
-            try
+            var request = new RestRequest($"/song/info?songid={songId}");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Get SongInfo: {songId}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/song/info?songid={songId}&withsonginfo=false").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                Logger.Info($"Query SongInfo success: {songId}");
-                var result = JsonConvert.DeserializeObject<SongInfoResult>(response.Content.ReadAsStringAsync().Result);
-                if (result != null && result.Status == 0)
-                {
-                    result.Content.Difficulties.ForEach(x => x.SongId = result.Content.SongId);
-                }
-                return result;
+                Logger.Info($"Get SongInfo Successful: {songId}");
+                return JsonConvert.DeserializeObject<SongInfoResult>(response.Content!);
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when Querying SongInfo: {songId}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
+                Logger.Error($"Get SongInfo Failed: {songId}");
                 return null;
             }
         }
-        public async Task<byte[]?> GetChartPreview(string songId, SongDifficulty difficulty)
+        public async Task<byte[]> GetSongCover(string songId, RatingClass ratingClass = RatingClass.Future)
         {
-            Logger.Info($"Downloading chart preview: {songId} {difficulty}");
-            try
+            var request = new RestRequest($"/assets/song?songid={songId}&difficulty={((int)ratingClass)}");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Download Song Cover: {songId} {ratingClass}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/preview?songid={songId}&difficulty={difficulty}").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                else
-                {
-                    Logger.Info($"Download chart preview success: {songId} {difficulty}");
-                    return response.Content.ReadAsByteArrayAsync().Result;
-                }
+                Logger.Info($"Download Song Cover Successful: {songId} {ratingClass}");
+                return response.RawBytes!;
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when downloading chart preview: {songId} {difficulty}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
-                return null;
+                Logger.Error($"Download Song Cover Failed: {songId} {ratingClass}");
+                return Array.Empty<byte>();
             }
         }
-        public async Task<byte[]?> GetSongCover(string sid, bool beyond = false)
+        public async Task<byte[]> GetChartPreview(string songId, RatingClass ratingClass = RatingClass.Future)
         {
-            Logger.Info($"Downloading song cover: {sid} {(beyond ? "BYD" : "")}");
-            try
+            var request = new RestRequest($"/assets/preview?songid={songId}&difficulty={((int)ratingClass)}");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Download Chart Preview: {songId} {ratingClass}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/song?songid={sid}{(beyond ? "&difficulty=byn" : "")}").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                else
-                {
-                    Logger.Info($"Download song cover success: {sid} {(beyond ? "BYD" : "")}");
-                    return response.Content.ReadAsByteArrayAsync().Result;
-                }
+                Logger.Info($"Download Chart Preview Successful: {songId} {ratingClass}");
+                return response.RawBytes!;
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when downloading song cover: {sid} {(beyond ? "BYD" : "")}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
-                return null;
+                Logger.Error($"Download Chart Preview Failed: {songId} {ratingClass}");
+                return Array.Empty<byte>();
             }
         }
-        public async Task<byte[]?> GetCharacterImage(uint chara, bool isUncapped = false)
+        public async Task<byte[]> GetCharaIllust(uint chara, bool isUncapped = false)
         {
-            Logger.Info($"Downloading character cover: {chara} {(isUncapped ? "uncapped" : "")}");
-            try
+            var request = new RestRequest($"/assets/char?partner={chara}&awakened={isUncapped}");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Download Character Illust: {chara} {(isUncapped ? "uncapped" : "")}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/char?partner={chara}&awakened={isUncapped}").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                else
-                {
-                    Logger.Info($"Download character cover success: {chara} {(isUncapped ? "uncapped" : "")}");
-                    return response.Content.ReadAsByteArrayAsync().Result;
-                }
+                Logger.Info($"Download Character Illust Successful: {chara} {(isUncapped ? "uncapped" : "")}");
+                return response.RawBytes!;
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when downloading character cover: {chara} {(isUncapped ? "uncapped" : "")}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
-                return null;
+                Logger.Warn($"Download Character Illust Failed: {chara} {(isUncapped ? "uncapped" : "")}");
+                return Array.Empty<byte>();
             }
         }
-        public async Task<byte[]?> GetCharacterIcon(uint chara, bool isUncapped = false)
+        public async Task<byte[]> GetCharaIcon(uint chara, bool isUncapped = false)
         {
-            Logger.Info($"Downloading character icon: {chara} {(isUncapped ? "uncapped" : "")}");
-            try
+            var request = new RestRequest($"/assets/icon?partner={chara}&awakened={isUncapped}");
+            request.AddHeader("Authorization", $"Bearer {auth.BearerToken}");
+            Logger.Info($"Download Character Icon: {chara} {(isUncapped ? "uncapped" : "")}");
+            var response = await RestClient.ExecuteAsync(request);
+            if (response.IsSuccessful)
             {
-                HttpResponseMessage? response = httpClient.GetAsync($"{config.API}/assets/icon?partner={chara}&awakened={isUncapped}").Result;
-                if (!response.IsSuccessStatusCode)
-                {
-                    Logger.Error($"Http connection failed: {response.StatusCode}");
-                    return null;
-                }
-                else
-                {
-                    Logger.Info($"Download character icon success: {chara} {(isUncapped ? "uncapped" : "")}");
-                    return response.Content.ReadAsByteArrayAsync().Result;
-                }
+                Logger.Info($"Download Character Icon Successful: {chara} {(isUncapped ? "uncapped" : "")}");
+                return response.RawBytes!;
             }
-            catch (TaskCanceledException taskCanceled)
+            else
             {
-                Logger.Error($"Timeout when downloading character icon: {chara} {(isUncapped ? "uncapped" : "")}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Logger.Error($"Unexcept Error Occured: {e.Message}");
-                return null;
+                Logger.Warn($"Download Character Icon Failed: {chara} {(isUncapped ? "uncapped" : "")}");
+                return Array.Empty<byte>();
             }
         }
-        public string GetStatusTranslation(int statusCode)
-        {
-            return statusList.FirstOrDefault(x => x.Status == statusCode)?.Translation ?? "unknow";
-        }
+
+        public AUAStatus? GetStatus(int statusCode)
+            => statusTable.TryGetValue(statusCode, out var status) ? status : null;
     }
 
-    internal class AUAConfig
+
+
+    internal class Auth
     {
-        [JsonProperty("api")]
-        public string API { get; set; }
-        [JsonProperty("token")]
-        public string Token { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; } = "url";
+        [JsonProperty("bearer_token")]
+        public string BearerToken { get; set; } = "token";
     }
-
     internal class AUAStatus
     {
         [JsonProperty("status")]
@@ -334,4 +217,5 @@ namespace RinBot.Command.Arcaea
         [JsonProperty("translation")]
         public string Translation { get; set; }
     }
+
 }

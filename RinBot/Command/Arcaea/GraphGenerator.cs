@@ -1,28 +1,16 @@
 ﻿using NLog;
-using RinBot.Core;
+using RinBot.Command.Arcaea.Database;
 using SkiaSharp;
+using static RinBot.Command.Arcaea.AUAResult;
 
 namespace RinBot.Command.Arcaea
 {
     internal class GraphGenerator
     {
-        private static readonly string ARCAEA_RESOURCE_PATH = Path.Combine(Global.RESOURCE_PATH, "Arcaea");
+        private static readonly string ARCAEA_RESOURCE_PATH = ArcaeaModule.RESOURCE_DIR_PATH;
         private Logger Logger = LogManager.GetLogger("ARCIMG");
 
-        //单例模式
-        private static GraphGenerator instance;
-        public static GraphGenerator Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new GraphGenerator();
-                }
-                return instance;
-            }
-        }
-        private GraphGenerator()
+        public GraphGenerator()
         {
 
         }
@@ -58,13 +46,13 @@ namespace RinBot.Command.Arcaea
             //Console.WriteLine($"ID: {id}  {songResult.song_id}");
 
             #region 获取歌曲信息
-            List<Chart> songs = ArcaeaSongDB.Instance.GetSongs(songResult.SongId);
+            List<Chart> songs = ArcaeaModule.ArcaeaSongDatabase.GetChartsPrecise(songResult.SongId).Result;
             //if (songs.Count <= 0)
             //{
             //    Logger.Warn("Local DB chart not found, try API.");
             //    songs = ArcaeaUnlimitedAPI.Instance.GetSongInfo(songResult.SongId).Result.Content.Difficulties;
             //}
-            var song = songs[(int)songResult.Difficulty];
+            var song = songs[(int)songResult.RatingClass];
             #endregion
 
             #region 绘制背景
@@ -83,7 +71,7 @@ namespace RinBot.Command.Arcaea
             #endregion
 
             #region 获取封面图片
-            SKBitmap bitmap = GetCoverImg(songResult.SongId, songResult.Difficulty == SongResult.SongDifficulty.Beyond);
+            SKBitmap bitmap = SKBitmap.Decode(GetSongCover(ArcaeaModule.ArcaeaSongDatabase.GetChart(songResult.SongId, songResult.RatingClass).Result));
             SKBitmap scaledBitmap = new SKBitmap(580, 580);
             bitmap.ScalePixels(scaledBitmap, SKFilterQuality.None);
             #endregion
@@ -131,13 +119,13 @@ namespace RinBot.Command.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/NotoSans-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/NotoSans-Regular.ttf"));
                 SKRect rect = new SKRect();
                 float maxWidth = 700;
                 fontPaint.MeasureText(songName, ref rect);
                 while (rect.Size.Width > maxWidth)
                 {
-                    songName = songName.Substring(0, songName.Length - 3) + "..";
+                    songName = songName[..^3] + "..";
                     fontPaint.MeasureText(songName, ref rect);
                 }
 
@@ -148,12 +136,12 @@ namespace RinBot.Command.Arcaea
             #region 绘制难度信息条
             using (SKPaint bgPaint = new SKPaint())
             {
-                bgPaint.Color = difficultyColorsDarker[(int)songResult.Difficulty];
+                bgPaint.Color = difficultyColorsDarker[(int)songResult.RatingClass];
                 SKRect backDifficultyBorad = new SKRect(10, 10, 1350, 110);
                 SKRoundRect backDifficultyBoradRound = new SKRoundRect(backDifficultyBorad, 50);
                 mainCanvas.DrawRoundRect(backDifficultyBoradRound, bgPaint);
 
-                bgPaint.Color = difficultyColors[(int)songResult.Difficulty];
+                bgPaint.Color = difficultyColors[(int)songResult.RatingClass];
                 SKRect frontDifficultyBorad = new SKRect(10, 10, 860, 110);
                 SKRoundRect frontDifficultyBoradRound = new SKRoundRect(frontDifficultyBorad, 50);
                 mainCanvas.DrawRoundRect(frontDifficultyBoradRound, bgPaint);
@@ -168,7 +156,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
                 SKRect rect = new SKRect();
                 fontPaint.MeasureText(songPTT, ref rect);
                 float w = rect.Size.Width;
@@ -180,21 +168,21 @@ namespace RinBot.Command.Arcaea
 
             #region 绘制歌曲定数
             string songRating = "WTF?!";
-            switch (songResult.Difficulty)
+            switch (songResult.RatingClass)
             {
-                case SongResult.SongDifficulty.Beyond:
+                case RatingClass.Beyond:
                     songRating = $"BEYOND {(float)song.Rating / 10:0.00}";
                     break;
 
-                case SongResult.SongDifficulty.Future:
+                case RatingClass.Future:
                     songRating = $"FUTURE {(float)song.Rating / 10:0.00}";
                     break;
 
-                case SongResult.SongDifficulty.Present:
+                case RatingClass.Present:
                     songRating = $"PRESENT {(float)song.Rating / 10:0.00}";
                     break;
 
-                case SongResult.SongDifficulty.Past:
+                case RatingClass.Past:
                     songRating = $"PAST {(float)song.Rating / 10:0.00}";
                     break;
 
@@ -207,7 +195,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
                 SKRect rect = new SKRect();
                 fontPaint.MeasureText(songRating, ref rect);
                 float w = rect.Size.Width;
@@ -225,7 +213,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 128;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 mainCanvas.DrawText(songScore, 970, 300, fontPaint);
             }
@@ -268,7 +256,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 //Pure
                 string pureText = $"P:{songResult.PureCount}";
@@ -337,12 +325,12 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 60;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/ark-pixel-12px-latin.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/ark-pixel-12px-latin.otf"));
 
                 mainCanvas.DrawText(playTime.ToString("yyyy-MM-dd HH:mm:ss"), 600, 585, fontPaint);
 
                 fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 string idStr = $"#{id.ToString().PadLeft(2, '0')}";
                 mainCanvas.DrawText(idStr, 1320, 585, fontPaint);
@@ -410,7 +398,7 @@ namespace RinBot.Command.Arcaea
             #region 绘制PTT边框
             using (SKPaint bgPaint = new SKPaint())
             {
-                SKBitmap bmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"ratings/rating_{playerInfo.GetPlayerPTTType()}.png")));
+                SKBitmap bmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"rating/rating_{playerInfo.GetPlayerPTTType()}.png")));
                 SKBitmap scaledBitmap = new SKBitmap(260, 260);
                 bmp.ScalePixels(scaledBitmap, SKFilterQuality.Medium);
 
@@ -428,7 +416,7 @@ namespace RinBot.Command.Arcaea
                 if (playerInfo.Rating < 0)
                 {
                     string pttStr = "您";
-                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/NotoSansCJKsc-Regular.otf"));
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/NotoSansCJKsc-Regular.otf"));
                     fontPaint.TextAlign = SKTextAlign.Center;
                     fontPaint.Color = new SKColor(80, 73, 89);
                     fontPaint.Style = SKPaintStyle.Stroke;
@@ -444,7 +432,7 @@ namespace RinBot.Command.Arcaea
                     string pttDec = (playerInfo.Rating % 100).ToString().PadLeft(2, '0');
 
                     fontPaint.TextAlign = SKTextAlign.Right;
-                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-SemiBold.ttf"));
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-SemiBold.ttf"));
                     fontPaint.Color = new SKColor(80, 73, 89);
                     fontPaint.Style = SKPaintStyle.Stroke;
                     fontPaint.StrokeWidth = 16;
@@ -473,7 +461,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 144;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/GeosansLight.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/GeosansLight.ttf"));
 
                 mainCanvas.DrawText(playerInfo.UserName, 460, 300, fontPaint);
             }
@@ -486,7 +474,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/GeosansLight.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/GeosansLight.ttf"));
 
                 mainCanvas.DrawText(playerInfo.UserCode.ToString().Insert(6, " ").Insert(3, " "), 550, 400, fontPaint);
             }
@@ -509,7 +497,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/ark-pixel-12px-latin.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/ark-pixel-12px-latin.otf"));
 
                 mainCanvas.DrawText("Generated By RinBot", 50, 550, fontPaint);
             }
@@ -522,7 +510,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/ark-pixel-12px-latin.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/ark-pixel-12px-latin.otf"));
 
                 mainCanvas.DrawText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), 2350, 550, fontPaint);
             }
@@ -542,7 +530,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 96;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 fontPaint.Color = new SKColor(80, 73, 89);
                 fontPaint.Style = SKPaintStyle.Stroke;
@@ -607,7 +595,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 96;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 fontPaint.Color = new SKColor(80, 73, 89);
                 fontPaint.Style = SKPaintStyle.Stroke;
@@ -643,7 +631,7 @@ namespace RinBot.Command.Arcaea
                     fontPaint.TextSize = 128;
                     fontPaint.IsAntialias = true;
                     fontPaint.TextAlign = SKTextAlign.Center;
-                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                     fontPaint.Color = new SKColor(80, 73, 89);
                     fontPaint.Style = SKPaintStyle.Stroke;
@@ -675,7 +663,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 84;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 fontPaint.Color = new SKColor(80, 73, 89);
                 fontPaint.Style = SKPaintStyle.Stroke;
@@ -735,13 +723,13 @@ namespace RinBot.Command.Arcaea
                 accountInfo = ((BestPlayResult)playerResult).Content.AccountInfo;
                 songResult = ((BestPlayResult)playerResult).Content.Record;
             }
-            var songs = ArcaeaSongDB.Instance.GetSongs(songResult.SongId);
+            var songs = ArcaeaModule.ArcaeaSongDatabase.GetChartsPrecise(songResult.SongId).Result;
             //if (songs.Count <= 0)
             //{
             //    Logger.Warn("Local DB chart not found, try API.");
             //    songs = ArcaeaUnlimitedAPI.Instance.GetSongInfo(songResult.SongId).Result.Content.Difficulties;
             //}
-            songInfo = songs[(int)songResult.Difficulty];
+            songInfo = songs[(int)songResult.RatingClass];
             #endregion
 
             #region 绘制背景
@@ -762,7 +750,7 @@ namespace RinBot.Command.Arcaea
             #endregion
 
             #region 获取封面图片
-            SKBitmap bitmap = GetCoverImg(songResult.SongId, songResult.Difficulty == SongResult.SongDifficulty.Beyond);
+            SKBitmap bitmap = SKBitmap.Decode(GetSongCover(ArcaeaModule.ArcaeaSongDatabase.GetChart(songResult.SongId, songResult.RatingClass).Result));
             SKBitmap scaledBitmap = new SKBitmap(550, 550);
             bitmap.ScalePixels(scaledBitmap, SKFilterQuality.None);
             #endregion
@@ -796,7 +784,7 @@ namespace RinBot.Command.Arcaea
             using (SKPaint fontPaint = new SKPaint())
             using (SKPaint bgPaint = new SKPaint())
             {
-                bgPaint.Color = difficultyColors[(int)songResult.Difficulty];
+                bgPaint.Color = difficultyColors[(int)songResult.RatingClass];
                 SKRect backBoardDown = new SKRect(70, 220, 1730, 340);
                 SKRoundRect backBoardDownRound = new SKRoundRect(backBoardDown, 50);
                 mainCanvas.DrawRoundRect(backBoardDownRound, bgPaint);
@@ -806,13 +794,13 @@ namespace RinBot.Command.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/NotoSans-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/NotoSans-Regular.ttf"));
                 SKRect rect = new SKRect();
                 float maxWidth = 1600;
                 fontPaint.MeasureText(songName, ref rect);
                 while (rect.Size.Width > maxWidth)
                 {
-                    songName = songName.Substring(0, songName.Length - 3) + "..";
+                    songName = songName[..^3] + "..";
                     fontPaint.MeasureText(songName, ref rect);
                 }
                 mainCanvas.DrawText(songName, 900, 310, fontPaint);
@@ -869,21 +857,21 @@ namespace RinBot.Command.Arcaea
 
             #region 绘制歌曲定数和PTT
             string songRating = "WTF?!";
-            switch (songResult.Difficulty)
+            switch (songResult.RatingClass)
             {
-                case SongResult.SongDifficulty.Beyond:
+                case RatingClass.Beyond:
                     songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
-                case SongResult.SongDifficulty.Future:
+                case RatingClass.Future:
                     songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
-                case SongResult.SongDifficulty.Present:
+                case RatingClass.Present:
                     songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
-                case SongResult.SongDifficulty.Past:
+                case RatingClass.Past:
                     songRating = $"{(float)songInfo.Rating / 10:0.00}";
                     break;
 
@@ -897,18 +885,18 @@ namespace RinBot.Command.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 mainCanvas.DrawText($"PTT {songRating} => {songResult.Rating.ToString("0.0000")}", 965, 640, fontPaint);
             }
-            #endregion
 
+            #endregion
             #region 绘制歌曲得分进度
-            int progress = 0;
-            int theoretical = songInfo.GetTheoreticalValue();
+            int theoretical = songInfo.MaxScore;
             float percentage;
             int diff;
             string progressStr;
+            int progress;
             switch (songResult.GetClearType())
             {
                 case SongResult.ClearType.PM:
@@ -993,7 +981,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 mainCanvas.DrawText(progressStr, 970, 545, fontPaint);
             }
@@ -1007,7 +995,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Center;
                 fontPaint.TextEncoding = SKTextEncoding.Utf8;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 mainCanvas.DrawText(FormatScore(songResult.Score), 965, 480, fontPaint);
             }
@@ -1050,7 +1038,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 64;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Right;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-Regular.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-Regular.ttf"));
 
                 //Pure
                 string pureText = $"P:{songResult.PureCount}";
@@ -1108,7 +1096,7 @@ namespace RinBot.Command.Arcaea
             #region 绘制PTT边框
             using (SKPaint bgPaint = new SKPaint())
             {
-                SKBitmap pttBmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"ratings/rating_{accountInfo.GetPlayerPTTType()}.png")));
+                SKBitmap pttBmp = SKBitmap.Decode(File.ReadAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"rating/rating_{accountInfo.GetPlayerPTTType()}.png")));
                 SKBitmap scaledPTTBmp = new SKBitmap(160, 160);
                 pttBmp.ScalePixels(scaledPTTBmp, SKFilterQuality.Low);
 
@@ -1127,7 +1115,7 @@ namespace RinBot.Command.Arcaea
                 if (accountInfo.Rating < 0)
                 {
                     string pttStr = "您";
-                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/NotoSansCJKsc-Regular.otf"));
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/NotoSansCJKsc-Regular.otf"));
                     fontPaint.TextAlign = SKTextAlign.Center;
                     fontPaint.Color = new SKColor(80, 73, 89);
                     fontPaint.Style = SKPaintStyle.Stroke;
@@ -1143,7 +1131,7 @@ namespace RinBot.Command.Arcaea
                     string pttDec = (accountInfo.Rating % 100).ToString().PadLeft(2, '0');
 
                     fontPaint.TextAlign = SKTextAlign.Right;
-                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/Exo-SemiBold.ttf"));
+                    fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/Exo-SemiBold.ttf"));
                     fontPaint.Color = new SKColor(80, 73, 89);
                     fontPaint.Style = SKPaintStyle.Stroke;
                     fontPaint.StrokeWidth = 12;
@@ -1172,7 +1160,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 72;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/GeosansLight.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/GeosansLight.ttf"));
 
                 mainCanvas.DrawText(accountInfo.UserName, 210, 145, fontPaint);
             }
@@ -1185,7 +1173,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 38;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/GeosansLight.ttf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/GeosansLight.ttf"));
 
                 mainCanvas.DrawText(accountInfo.UserCode.ToString().Insert(6, " ").Insert(3, " "), 210, 192, fontPaint);
             }
@@ -1199,7 +1187,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 48;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/ark-pixel-12px-latin.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/ark-pixel-12px-latin.otf"));
 
                 mainCanvas.DrawText(playTime.ToString("yyyy-MM-dd HH:mm:ss"), 50, 40, fontPaint);
             }
@@ -1212,7 +1200,7 @@ namespace RinBot.Command.Arcaea
                 fontPaint.TextSize = 48;
                 fontPaint.IsAntialias = true;
                 fontPaint.TextAlign = SKTextAlign.Left;
-                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "fonts/ark-pixel-12px-latin.otf"));
+                fontPaint.Typeface = SKTypeface.FromFile(Path.Combine(ARCAEA_RESOURCE_PATH, "font/ark-pixel-12px-latin.otf"));
 
                 mainCanvas.DrawText("Generated By RinBot", 50, 990, fontPaint);
             }
@@ -1384,42 +1372,63 @@ namespace RinBot.Command.Arcaea
             return score.ToString().PadLeft(8, '0').Insert(5, "\'").Insert(2, "\'");
         }
 
-        public SKBitmap GetCoverImg(string sid, bool beyond = false)
+        public byte[]? GetSongCover(Chart chart)
         {
-            string path = Path.Combine(ARCAEA_RESOURCE_PATH, $"covers/{sid}{(beyond ? " byd" : "")}.jpg");
-            if (!File.Exists(path))
+            string path = Path.Combine(ArcaeaModule.COVER_DIR_PATH, $"{chart.SongId}_{((int)chart.RatingClass)}.jpg");
+            if (chart.RatingClass == RatingClass.Past)
             {
-                File.WriteAllBytes(path, ArcaeaUnlimitedAPI.Instance.GetSongCover(sid, beyond).Result);
+                if (File.Exists(path))
+                    return File.ReadAllBytes(path);
+                else
+                {
+                    var bytes = ArcaeaModule.ArcaeaUnlimitedAPI.GetSongCover(chart.SongId, chart.RatingClass).Result;
+                    File.WriteAllBytesAsync(path, bytes);
+                    return bytes;
+                }
             }
-
-            return SKBitmap.Decode(path);
+            else
+            {
+                if (chart.JacketOverride)
+                    if (File.Exists(path))
+                        return File.ReadAllBytes(path);
+                    else
+                    {
+                        var bytes = ArcaeaModule.ArcaeaUnlimitedAPI.GetSongCover(chart.SongId, chart.RatingClass).Result;
+                        File.WriteAllBytesAsync(path, bytes);
+                        return bytes;
+                    }
+                else
+                {
+                    chart.RatingClass--;
+                    return GetSongCover(chart);
+                }
+            }
         }
 
         private SKBitmap GetCharaImg(uint chara, bool isUncapped = false)
         {
-            if (!File.Exists(Path.Combine(ARCAEA_RESOURCE_PATH, $"charas/{chara}{(isUncapped ? "u" : "")}.png")))
+            if (!File.Exists(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}.png")))
             {
-                File.WriteAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"charas/{chara}{(isUncapped ? "u" : "")}.png"), ArcaeaUnlimitedAPI.Instance.GetCharacterImage(chara, isUncapped).Result);
+                File.WriteAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}.png"), ArcaeaModule.ArcaeaUnlimitedAPI.GetCharaIllust(chara, isUncapped).Result);
             }
 
-            return SKBitmap.Decode(Path.Combine(ARCAEA_RESOURCE_PATH, $"charas/{chara}{(isUncapped ? "u" : "")}.png"));
+            return SKBitmap.Decode(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}.png"));
         }
 
         private SKBitmap GetCharaIcon(uint chara, bool isUncapped = false)
         {
-            if (!File.Exists(Path.Combine(ARCAEA_RESOURCE_PATH, $"charas/{chara}{(isUncapped ? "u" : "")}_icon.png")))
+            if (!File.Exists(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png")))
             {
-                File.WriteAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"charas/{chara}{(isUncapped ? "u" : "")}_icon.png"), ArcaeaUnlimitedAPI.Instance.GetCharacterIcon(chara, isUncapped).Result);
+                File.WriteAllBytes(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png"), ArcaeaModule.ArcaeaUnlimitedAPI.GetCharaIllust(chara, isUncapped).Result);
             }
 
-            return SKBitmap.Decode(Path.Combine(ARCAEA_RESOURCE_PATH, $"charas/{chara}{(isUncapped ? "u" : "")}_icon.png"));
+            return SKBitmap.Decode(Path.Combine(ARCAEA_RESOURCE_PATH, $"chara/{chara}{(isUncapped ? "u" : "")}_icon.png"));
         }
 
         private SKColor GetAverageColor(SKBitmap bitmap)
         {
-            var pixelCount = bitmap.Width * bitmap.Height;
             var resized = new SKBitmap(1, 1);
-            bitmap.ScalePixels(resized, SKFilterQuality.Medium);
+            bitmap.ScalePixels(resized, SKFilterQuality.High);
             var color = resized.GetPixel(0, 0);
 
             return new SKColor((byte)(color.Red / 1.5), (byte)(color.Green / 1.5), (byte)(color.Blue / 1.5));

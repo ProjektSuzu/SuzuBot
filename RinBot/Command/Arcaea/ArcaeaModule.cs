@@ -68,13 +68,13 @@ namespace RinBot.Command.Arcaea
         internal static readonly string COVER_DIR_PATH = Path.Combine(RESOURCE_DIR_PATH, "cover");
 
         internal static ArcaeaSongDatabase ArcaeaSongDatabase
-            => ArcaeaSongDatabase.Instance;
+            => new ArcaeaSongDatabase();
         internal static ArcaeaUserDatabase ArcaeaUserDatabase
-            => ArcaeaUserDatabase.Instance;
+            => new ArcaeaUserDatabase();
         internal static ArcaeaUnlimitedAPI ArcaeaUnlimitedAPI
-            => ArcaeaUnlimitedAPI.Instance;
+            => new ArcaeaUnlimitedAPI();
         internal static GraphGenerator GraphGenerator
-            => GraphGenerator.Instance;
+            => new GraphGenerator();
 
         public ArcaeaModule()
         {

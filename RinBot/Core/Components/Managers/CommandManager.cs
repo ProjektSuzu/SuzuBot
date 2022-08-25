@@ -65,7 +65,6 @@ namespace RinBot.Core.Components.Managers
             }
             Logger.Info($"{ModuleTable.Count} Module(s), {CommandTable.Count} Command(s) Loaded.");
         }
-
         public void OnBotCommand(RinEventArgs rinEvent)
         {
             if (rinEvent is MessageEventArgs messageEvent)
@@ -81,7 +80,6 @@ namespace RinBot.Core.Components.Managers
                 throw new NotImplementedException();
             }
         }
-
         public void HandleCommand(MessageEventArgs messageEvent)
         {
             var rawContent = messageEvent.Message.Chain.ToString();
@@ -150,8 +148,11 @@ namespace RinBot.Core.Components.Managers
                 {
                     Logger.Error($"Error Occured When Execute {module.Name}|{command.Name} "
                                  + $"By {messageEvent.Subject.Name}({messageEvent.Subject.Uin})|{messageEvent.Sender.Name}({messageEvent.Sender.Uin})\n"
-                                 + $"{ex.InnerException?.ToString()} {ex.InnerException?.Message}\n{ex.InnerException?.StackTrace}\n"
-                                 + $"{ex} {ex.Message}\n{ex.StackTrace}");
+                                 + $"{ex.InnerException?.GetType().FullName} {ex.InnerException?.Message}\n{ex.InnerException?.StackTrace}\n"
+                                 + $"{ex.GetType().FullName} {ex.Message}\n{ex.StackTrace}");
+                    messageEvent.Subject.SendMessage(new Konata.Core.Message.MessageBuilder($"执行命令 {module.Name}|{command.Name} 时发生错误: {ex.InnerException?.GetType().FullName ?? ex.GetType().FullName}\n" +
+                        $"{ex.InnerException?.Message ?? ex.Message}\n" +
+                        $"请联系开发者以获取支持").Build());
                 }
             }
         }
@@ -175,7 +176,6 @@ namespace RinBot.Core.Components.Managers
                 }
             }
         }
-
         public bool HasPrefix(string command)
         {
             foreach (string prefix in CommandPrefixs)
@@ -184,7 +184,6 @@ namespace RinBot.Core.Components.Managers
             }
             return false;
         }
-
         public string DropPrefix(string command)
         {
             command = command.Trim();
@@ -197,7 +196,6 @@ namespace RinBot.Core.Components.Managers
             }
             return command;
         }
-
         public CommandStruct? Interprete(string command)
         {
             if (!HasPrefix(command)) return null;
@@ -213,7 +211,6 @@ namespace RinBot.Core.Components.Managers
                 FuncArgs = args,
             };
         }
-
         public ModuleInfo? GetModuleInfo(string moduleId)
         {
             if (ModuleTable.TryGetValue(moduleId, out var module))
@@ -230,7 +227,6 @@ namespace RinBot.Core.Components.Managers
                 return null;
 
         }
-
         public ModuleInfo? GetModuleInfoByName(string moduleName)
         {
             foreach (var module in ModuleTable)
@@ -240,19 +236,16 @@ namespace RinBot.Core.Components.Managers
             }
             return null;
         }
-
         public BotCommand? GetCommand(string command)
         {
             if (CommandTable.TryGetValue(command, out var module)) return module;
             else return null;
         }
-
         public void ReloadModules()
         {
             CommandTable.Clear();
             OnInit();
         }
-
         public void RegisterCommand(BotCommand command)
         {
             foreach (var func in command.Tokens)
@@ -260,7 +253,6 @@ namespace RinBot.Core.Components.Managers
                 CommandTable.TryAdd(func, command);
             }
         }
-
         public void RegsiterModule(BotModule module)
         {
             foreach (var cmd in module.Commands)
@@ -269,7 +261,6 @@ namespace RinBot.Core.Components.Managers
             }
             ModuleTable.TryAdd(module.ModuleId, module);
         }
-
         public BotModule LoadModule(Type type, ModuleAttribute attribute)
         {
             var methods = type.GetMethods();
@@ -293,7 +284,6 @@ namespace RinBot.Core.Components.Managers
                     commands
                 );
         }
-
         public BotCommand LoadCommand(MethodInfo method, CommandHandlerAttribute attribute, string parentId)
         {
             Logger.Info($"\tLoading Command: {parentId}|{attribute.Name}");

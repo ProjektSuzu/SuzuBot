@@ -73,7 +73,7 @@ namespace RinBot.Command
             int friendCount = GlobalScope.KonataBot.Bot.GetFriendList(true).Result.Count;
             StringBuilder stringBuilder = new();
             stringBuilder.AppendLine($"[RinBot]{RinBotBuildStamp.Version}");
-            stringBuilder.AppendLine($"{RinBotBuildStamp.CommitHash.Substring(RinBotBuildStamp.CommitHash.Length - 8)}@{RinBotBuildStamp.Branch}");
+            stringBuilder.AppendLine($"{RinBotBuildStamp.CommitHash[^8..]}@{RinBotBuildStamp.Branch}");
             stringBuilder.AppendLine($"当前系统平台: {RuntimeInformation.RuntimeIdentifier} {processorCount} Thread(s).");
             stringBuilder.AppendLine($"DotNET 版本: {RuntimeInformation.FrameworkDescription}.");
             stringBuilder.AppendLine($"内存占用: {usedMemoryMB} MB.");
@@ -83,10 +83,10 @@ namespace RinBot.Command
             stringBuilder.AppendLine($"载入了 {GlobalScope.CommandManager.ModuleCount} 个模块, {GlobalScope.CommandManager.CommandCount} 个命令.");
             stringBuilder.AppendLine();
             stringBuilder.AppendLine($"[Konata.Core]{CoreBuildStamp.Version}");
-            stringBuilder.AppendLine($"{CoreBuildStamp.CommitHash.Substring(CoreBuildStamp.CommitHash.Length - 8)}@{CoreBuildStamp.Branch}");
+            stringBuilder.AppendLine($"{CoreBuildStamp.CommitHash[^8..]}@{CoreBuildStamp.Branch}");
             stringBuilder.AppendLine($"共有 {friendCount} 个好友, {groupCount} 个群.");
-            stringBuilder.AppendLine("EOT");
             stringBuilder.AppendLine($"{DateTime.Now:O}");
+            stringBuilder.AppendLine("EOT");
 
             messageEvent.Reply(stringBuilder.ToString());
         }
@@ -114,13 +114,13 @@ namespace RinBot.Command
                 foreach (var module in moduleList)
                 {
                     if (!module.IsEnabled)
-                        builder.Append("⬛");
+                        builder.Append('⬛');
                     else if (module.EnableType == ModuleEnableType.NormallyEnabled && groupModuleIds.Contains(module.ModuleId))
                         builder.Append("🔷");
                     else if (module.EnableType == ModuleEnableType.NormallyDisabled && !groupModuleIds.Contains(module.ModuleId))
                         builder.Append("🔷");
                     else
-                        builder.Append("⚪");
+                        builder.Append('⚪');
 
                     builder.Append($" {module.Name}\n");
                 }
@@ -194,16 +194,19 @@ namespace RinBot.Command
         public void OnReload(MessageEventArgs messageEvent)
         {
             GlobalScope.CommandManager.ReloadModules();
-            messageEvent.Reply($"载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.");
+            messageEvent.Reply($"[CMD]\n载入了 {CommandManager.Instance.ModuleCount} 个模块, {CommandManager.Instance.CommandCount} 个命令.");
         }
 
-        [TextCommand("测试", "test")]
-        public void OnTest(MessageEventArgs messageEvent)
+        [TextCommand("查看日志", "log", UserPermission.Root)]
+        public void OnPeekLog(MessageEventArgs messageEvent)
         {
-            var builder = new MessageBuilder();
-            var datetime = Utils.GetUnixDateTimeMilliseconds(1590927077539);
-            builder.Text(datetime.ToString());
-            messageEvent.Reply(builder);
+            string path = Path.Combine(GlobalScope.ROOT_DIR_PATH, "log\\log.txt");
+            FileStream fs = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            StreamReader streamReader = new(fs, Encoding.UTF8);
+            var log = streamReader.ReadToEnd()
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .TakeLast(20);
+            messageEvent.Reply(string.Join(Environment.NewLine, log));
         }
 
     }

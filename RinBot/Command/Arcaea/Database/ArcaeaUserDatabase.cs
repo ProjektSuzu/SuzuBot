@@ -5,15 +5,13 @@ namespace RinBot.Command.Arcaea.Database
 {
     internal class ArcaeaUserDatabase
     {
-        #region Singleton
-        public static ArcaeaUserDatabase Instance = new Lazy<ArcaeaUserDatabase>(() => new ArcaeaUserDatabase()).Value;
-        private ArcaeaUserDatabase()
+        public ArcaeaUserDatabase()
         {
             dbConnection = new(ARCAEA_USER_DB_PATH);
             dbConnection.CreateTableAsync<ArcaeaBindInfo>();
             dbConnection.CreateTableAsync<ArcaeaPlayerInfo>();
         }
-        #endregion
+
         private static string ARCAEA_USER_DB_PATH => Path.Combine(ArcaeaModule.DATABASE_DIR_PATH, "arcaea.db");
         private SQLiteAsyncConnection dbConnection;
         public SQLiteAsyncConnection DBConnection

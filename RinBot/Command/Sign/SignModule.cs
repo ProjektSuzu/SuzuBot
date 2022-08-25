@@ -33,7 +33,7 @@ namespace RinBot.Command.Sign
         private Timer clearTimer;
         private void SaveList() => File.WriteAllTextAsync(SIGN_LIST_PATH, JsonConvert.SerializeObject(signList));
 
-        [TextCommand("签到", new[] { "sign", "签到" , "打卡" })]
+        [TextCommand("签到", new[] { "sign", "签到", "打卡" })]
         public void OnSign(MessageEventArgs messageEvent)
         {
             var builder = new MessageBuilder("[Sign]\n");
@@ -70,20 +70,18 @@ namespace RinBot.Command.Sign
     {
         public Dictionary<uint, SignInfo> List { get; set; } = new();
         public DateTime DateTime { get; set; } = DateTime.Now;
-
         public uint SignCountToday { get; set; } = 0u;
-
         public void Flush()
         {
             List<SignInfo> temp = List.Values.ToList();
             temp.RemoveAll(x => DateTime.Today - x.LastSign > new TimeSpan(48, 0, 0));
             List.Clear();
+            SignCountToday = 0;
             foreach (var sign in temp)
             {
                 List.Add(sign.Uin, sign);
             }
         }
-
         public SignInfo Sign(uint Uin)
         {
             SignCountToday++;

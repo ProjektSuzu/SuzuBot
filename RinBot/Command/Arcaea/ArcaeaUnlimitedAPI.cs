@@ -8,9 +8,7 @@ namespace RinBot.Command.Arcaea
 {
     internal class ArcaeaUnlimitedAPI
     {
-        #region Singleton
-        public static ArcaeaUnlimitedAPI Instance = new Lazy<ArcaeaUnlimitedAPI>(() => new ArcaeaUnlimitedAPI()).Value;
-        private ArcaeaUnlimitedAPI()
+        public ArcaeaUnlimitedAPI()
         {
             if (File.Exists(AUTH_PATH))
             {
@@ -34,10 +32,9 @@ namespace RinBot.Command.Arcaea
                 }
             }
         }
-        #endregion
-
         public static string AUTH_PATH => Path.Combine(ArcaeaModule.RESOURCE_DIR_PATH, "auth.json");
         public static string STATUS_PATH => Path.Combine(ArcaeaModule.RESOURCE_DIR_PATH, "aua_status.json");
+
         private readonly Auth auth;
         private Dictionary<int, AUAStatus> statusTable;
         private static RestClient RestClient;

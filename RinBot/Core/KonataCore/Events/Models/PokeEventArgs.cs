@@ -2,11 +2,6 @@
 using RinBot.Core.Components;
 using RinBot.Core.KonataCore.Contacts;
 using RinBot.Core.KonataCore.Contacts.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RinBot.Core.KonataCore.Events
 {

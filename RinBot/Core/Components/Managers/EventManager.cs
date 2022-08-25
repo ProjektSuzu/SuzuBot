@@ -1,5 +1,4 @@
-﻿using Konata.Core.Events.Model;
-using RinBot.Core.KonataCore.Events;
+﻿using RinBot.Core.KonataCore.Events;
 
 namespace RinBot.Core.Components.Managers
 {

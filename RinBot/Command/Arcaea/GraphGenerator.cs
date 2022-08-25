@@ -10,17 +10,7 @@ namespace RinBot.Command.Arcaea
         private static readonly string ARCAEA_RESOURCE_PATH = ArcaeaModule.RESOURCE_DIR_PATH;
         private Logger Logger = LogManager.GetLogger("ARCIMG");
 
-        //单例模式
-        private static GraphGenerator instance;
-        public static GraphGenerator Instance
-        {
-            get
-            {
-                instance ??= new GraphGenerator();
-                return instance;
-            }
-        }
-        private GraphGenerator()
+        public GraphGenerator()
         {
 
         }

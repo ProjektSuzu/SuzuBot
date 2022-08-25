@@ -274,23 +274,18 @@ namespace RinBot.Command.Arcaea
                         if (bestPlayInfo == null)
                         {
                             messageBuilder.Text($"无法连接到服务器");
-                            messageEvent.Reply(messageBuilder);
-                            return;
                         }
                         else if (bestPlayInfo.Status != 0)
                         {
                             var status = ArcaeaUnlimitedAPI.GetStatus(bestPlayInfo.Status);
                             messageBuilder.Text(status.Translation);
-                            messageEvent.Reply(messageBuilder);
-                            return;
                         }
                         else
                         {
                             var bytes = GraphGenerator.GeneratePlayerResult(bestPlayInfo);
                             messageBuilder.Image(bytes);
-                            messageEvent.Reply(messageBuilder);
-                            return;
                         }
+                        break;
                     }
                 case QueryResult.NotFound:
                     {
@@ -321,8 +316,8 @@ namespace RinBot.Command.Arcaea
                         messageBuilder.Text(stringBuilder.ToString());
                         break;
                     }
-                messageEvent.Reply(messageBuilder);
             }
+            messageEvent.Reply(messageBuilder);
         }
         public void OnBind(MessageEventArgs messageEvent, CommandStruct command)
         {

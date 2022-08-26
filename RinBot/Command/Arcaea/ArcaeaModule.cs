@@ -5,6 +5,7 @@ using RinBot.Core.Components.Attributes;
 using RinBot.Core.Components.Commands;
 using RinBot.Core.KonataCore.Events;
 using System.Text;
+using System.Xml.Linq;
 
 namespace RinBot.Command.Arcaea
 {
@@ -98,6 +99,13 @@ namespace RinBot.Command.Arcaea
                 command.FuncArgs = command.FuncArgs[1..];
                 switch (subCommand)
                 {
+                    // 别名查询
+                    case "alias":
+                        {
+                            OnAlias(messageEvent, command);
+                            return;
+                        }
+
                     // 最佳成绩
                     case "best":
                     case "info":
@@ -323,16 +331,16 @@ namespace RinBot.Command.Arcaea
         {
             var messageBuilder = new MessageBuilder("[Arcaea]Bind\n");
             var bindInfo = ArcaeaUserDatabase.GetBindInfo(messageEvent.Sender.Uin).Result;
-            if (bindInfo != null)
-            {
-                var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result;
-                messageBuilder.Text("已存在绑定记录:\n" +
-                    $"{playerInfo.UserName}({playerInfo.UserCode})\n" +
-                    $"如需解除绑定 请使用:\n" +
-                    $"/arc unbind");
-                messageEvent.Reply(messageBuilder);
-                return;
-            }
+            //if (bindInfo != null)
+            //{
+            //    var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result;
+            //    messageBuilder.Text("已存在绑定记录:\n" +
+            //        $"{playerInfo.UserName}({playerInfo.UserCode})\n" +
+            //        $"如需解除绑定 请使用:\n" +
+            //        $"/arc unbind");
+            //    messageEvent.Reply(messageBuilder);
+            //    return;
+            //}
             if (command.FuncArgs.Length <= 0)
             {
                 messageBuilder.Text("缺少参数: <userName/userCode>");
@@ -362,8 +370,15 @@ namespace RinBot.Command.Arcaea
                 if (ArcaeaUserDatabase.GetPlayerInfo(accountInfo.UserCode) == null)
                     ArcaeaUserDatabase.AddPlayerInfo(accountInfo.UserCode, accountInfo.UserName);
                 ArcaeaUserDatabase.UpdateQueryRecord(accountInfo.UserCode, DateTime.Now, (float)accountInfo.Rating / 100);
-
-                messageBuilder.Text($"已绑定:\n{accountInfo.UserName}({accountInfo.UserCode})");
+                if (bindInfo == null)
+                {
+                    messageBuilder.Text($"已绑定:\n{accountInfo.UserName}({accountInfo.UserCode})");
+                }
+                else
+                {
+                    var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result!;
+                    messageBuilder.Text($"{playerInfo.UserName}({playerInfo.UserCode})\n绑定已更换:\n{accountInfo.UserName}({accountInfo.UserCode})");
+                }
                 messageEvent.Reply(messageBuilder);
                 return;
             }
@@ -521,6 +536,75 @@ namespace RinBot.Command.Arcaea
                             stringBuilder.AppendLine(name);
                         }
                         stringBuilder.AppendLine($"等 {count} 个结果\n请尝试补全关键字");
+                        break;
+                    }
+            }
+            messageEvent.Reply(messageBuilder);
+        }
+        public void OnAlias(MessageEventArgs messageEvent, CommandStruct command)
+        {
+            var messageBuilder = new MessageBuilder("[Arcaea]Alias\n");
+            if (command.FuncArgs.Length <= 0)
+            {
+                messageBuilder.Text("缺少参数: <keyword>");
+                messageEvent.Reply(messageBuilder);
+                return;
+            }
+            var queryArgs = new SongQueryArgs(string.Join(' ', command.FuncArgs));
+            List<Chart> charts;
+            var result = TryQueryCharts(queryArgs, out charts);
+            switch (result)
+            {
+                case QueryResult.OK:
+                    {
+                        var first = charts[0];
+                        var alias = ArcaeaSongDatabase.GetAlias(first.SongId).Result;
+                        List<string> names = new();
+                        charts = charts.OrderBy(x => x.RatingClass).ToList();
+                        foreach (var chart in charts)
+                        {
+                            if (!names.Contains(chart.NameEN))
+                                names.Add(chart.NameEN);
+                            if (!names.Contains(chart.NameJP))
+                                names.Add(chart.NameJP);
+                        }
+                        var stringBuilder = new StringBuilder();
+                        foreach (var name in names)
+                            stringBuilder.AppendLine(name);
+                        stringBuilder.AppendLine("该曲具有以下别名:");
+                        foreach (var alia in alias)
+                            stringBuilder.AppendLine(alia.SongAlias);
+
+                        messageBuilder.Text(stringBuilder.ToString());
+                        break;
+                    }
+                case QueryResult.NotFound:
+                    {
+                        messageBuilder.Text($"找不到歌曲: {queryArgs.SongName}");
+                        break;
+                    }
+                case QueryResult.Ambiguous:
+                    {
+                        List<string> list = new();
+                        while (charts.Count > 0)
+                        {
+                            var chart = charts.First();
+                            list.Add(chart.NameEN);
+                            if (chart.NameJP != string.Empty)
+                                list.Add(chart.NameJP);
+                            charts.RemoveAll(x => x.SongId == chart.SongId);
+                        }
+                        StringBuilder stringBuilder = new();
+                        stringBuilder.AppendLine($"关键字 {queryArgs.SongName} 具有二义性:");
+                        int count = list.Count;
+                        if (count > 5)
+                            list = list.Take(5).ToList();
+                        foreach (var name in list)
+                        {
+                            stringBuilder.AppendLine(name);
+                        }
+                        stringBuilder.AppendLine($"等 {count} 个结果\n请尝试补全关键字");
+                        messageBuilder.Text(stringBuilder.ToString());
                         break;
                     }
             }

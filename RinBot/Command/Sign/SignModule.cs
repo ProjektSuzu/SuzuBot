@@ -56,19 +56,16 @@ namespace RinBot.Command.Sign
 
                 // 基础部分
                 var coin = random.Next(1, 100);
-                var exp = random.Next(1, 50);
                 var favor = random.Next(1, 10);
 
                 var info = GlobalScope.PermissionManager.GetUserInfo(messageEvent.Sender.Uin);
                 info.Coin += coin;
-                info.Exp += exp;
                 info.Favor += favor;
                 GlobalScope.PermissionManager.UpdateUserInfo(info);
                 builder.Text($"{messageEvent.Sender.Name}\n签到成功\n" +
                     $"你是今天第 {signList.SignCountToday} 个签到的\n" +
                     $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}" +
                     $"RC +{coin}\n" +
-                    $"经验 +{exp}\n" +
                     $"好感度 +{favor}\n\n");
 
                 // 抽签部分

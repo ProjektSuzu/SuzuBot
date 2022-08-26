@@ -12,9 +12,6 @@ namespace RinBot.Core.Components.Databases.Tables
         [Column("level")]
         public UserPermission Level { get; set; }
 
-        [Column("exp")]
-        public long Exp { get; set; }
-
         [Column("coin")]
         public long Coin { get; set; }
 

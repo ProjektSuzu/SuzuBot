@@ -62,6 +62,17 @@ namespace RinBot.Command
             }
         }
 
+        [TextCommand("查看信息", "info")]
+        public void OnInfo(MessageEventArgs messageEvent)
+        {
+            var info = GlobalScope.PermissionManager.GetUserInfo(messageEvent.Sender.Uin);
+            messageEvent.Reply("[Info]\n" +
+                $"{messageEvent.Sender.Name}\n" +
+                $"用户组: {info.Level}\n" +
+                $"RC: {info.Coin}\n" +
+                $"好感度: {info.Favor}\n");
+        }
+
         [TextCommand("状态汇报", "status")]
         public void OnStatus(MessageEventArgs messageEvent)
         {

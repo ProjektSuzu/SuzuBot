@@ -100,6 +100,7 @@ namespace RinBot.Command.Sign
             temp.RemoveAll(x => DateTime.Today - x.LastSign > new TimeSpan(24, 0, 0));
             if (DateTime.Today - DateTime > new TimeSpan(24, 0, 0))
                 SignCountToday = 0;
+            List.Clear();
             foreach (var sign in temp)
             {
                 List.Add(sign.Uin, sign);

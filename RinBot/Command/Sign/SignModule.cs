@@ -93,7 +93,6 @@ namespace RinBot.Command.Sign
     {
         public Dictionary<uint, SignInfo> List { get; set; } = new();
         public DateTime DateTime { get; set; } = DateTime.Now;
-        [JsonProperty]
         public uint SignCountToday { get; set; } = 0u;
         public void Flush()
         {

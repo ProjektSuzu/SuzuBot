@@ -55,9 +55,9 @@ namespace RinBot.Command.Sign
                 var random = new Random((int)seed);
 
                 // 基础部分
-                var coin = random.Next(100);
-                var exp = random.Next(50);
-                var favor = random.Next(10);
+                var coin = random.Next(1, 100);
+                var exp = random.Next(1, 50);
+                var favor = random.Next(1, 10);
 
                 var info = GlobalScope.PermissionManager.GetUserInfo(messageEvent.Sender.Uin);
                 info.Coin += coin;

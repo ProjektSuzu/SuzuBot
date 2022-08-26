@@ -64,7 +64,6 @@ namespace RinBot.Core.Components.Managers
                     Uin = uin,
                     Level = UserPermission.User,
                     Coin = 0,
-                    Exp = 0,
                     Favor = 0,
                 };
                 _ = GlobalScope.DatabaseManager.DBConnection

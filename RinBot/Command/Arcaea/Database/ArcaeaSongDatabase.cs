@@ -79,7 +79,7 @@ namespace RinBot.Command.Arcaea.Database
             }
 
             // 尝试从aua获取
-            charts = ArcaeaModule.ArcaeaUnlimitedAPI.GetSongInfo(keyword).Result?.Content.Difficulties ?? new();
+            charts = ArcaeaModule.ArcaeaUnlimitedAPI.GetSongInfo(keyword).Result?.Content?.Difficulties ?? new();
             return charts;
         }
         public async Task<List<Alias>> GetAlias(string songId)

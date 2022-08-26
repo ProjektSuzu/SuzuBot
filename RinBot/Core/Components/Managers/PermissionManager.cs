@@ -21,10 +21,7 @@ namespace RinBot.Core.Components.Managers
                 throw new NotSupportedException();
             }
 
-            var userInfo = GlobalScope.DatabaseManager.DBConnection
-                .Table<QQUserInfo>()
-                .Where(x => x.Uin == user.Uin)
-                .FirstOrDefaultAsync().Result;
+            var userInfo = GetUserInfo(user.Uin);
 
             if (user is Member member)
             {

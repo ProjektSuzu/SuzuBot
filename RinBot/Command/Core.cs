@@ -200,7 +200,7 @@ namespace RinBot.Command
         [TextCommand("查看日志", "log", UserPermission.Root)]
         public void OnPeekLog(MessageEventArgs messageEvent)
         {
-            string path = Path.Combine(GlobalScope.ROOT_DIR_PATH, "log\\log.txt");
+            string path = Path.Combine(GlobalScope.ROOT_DIR_PATH, "log", "log.txt");
             FileStream fs = new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             StreamReader streamReader = new(fs, Encoding.UTF8);
             var log = streamReader.ReadToEnd()

@@ -4,7 +4,7 @@ using RinBot.Command.TarotCard;
 using RinBot.Core;
 using RinBot.Core.Components.Attributes;
 using RinBot.Core.KonataCore.Events;
-using System.ComponentModel;
+using System.Security.Cryptography;
 
 namespace RinBot.Command.Sign
 {
@@ -51,9 +51,8 @@ namespace RinBot.Command.Sign
                 SaveList();
 
                 // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
-                var bytes = System.Text.Encoding.ASCII.GetBytes(DateTime.Today.ToString("yyyyMMdd") + messageEvent.Sender.Uin.ToString());
-                int seed = BitConverter.ToInt32(bytes);
-                var random = new Random(seed);
+                var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.Sender.Uin;
+                var random = new Random((int)seed);
 
                 // 基础部分
                 var coin = random.Next(100);

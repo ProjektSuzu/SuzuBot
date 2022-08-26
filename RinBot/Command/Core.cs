@@ -69,8 +69,8 @@ namespace RinBot.Command
             messageEvent.Reply("[Info]\n" +
                 $"{messageEvent.Sender.Name}\n" +
                 $"用户组: {info.Level}\n" +
-                $"RC: {info.Coin}\n" +
-                $"好感度: {info.Favor}\n");
+                $"当前拥有 {info.Coin} RC\n" +
+                $"当前好感度为 {info.Favor}\n");
         }
 
         [TextCommand("状态汇报", "status")]

@@ -93,13 +93,14 @@ namespace RinBot.Command.Sign
     {
         public Dictionary<uint, SignInfo> List { get; set; } = new();
         public DateTime DateTime { get; set; } = DateTime.Now;
+        [JsonProperty]
         public uint SignCountToday { get; set; } = 0u;
         public void Flush()
         {
             List<SignInfo> temp = List.Values.ToList();
-            temp.RemoveAll(x => DateTime.Today - x.LastSign > new TimeSpan(48, 0, 0));
-            List.Clear();
-            SignCountToday = 0;
+            temp.RemoveAll(x => DateTime.Today - x.LastSign > new TimeSpan(24, 0, 0));
+            if (DateTime.Today - DateTime > new TimeSpan(24, 0, 0))
+                SignCountToday = 0;
             foreach (var sign in temp)
             {
                 List.Add(sign.Uin, sign);

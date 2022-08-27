@@ -68,6 +68,8 @@ namespace RinBot.Command.Arcaea
         internal static readonly string DATABASE_DIR_PATH = Path.Combine(RESOURCE_DIR_PATH, "database");
         internal static readonly string COVER_DIR_PATH = Path.Combine(RESOURCE_DIR_PATH, "cover");
 
+        private HashSet<uint> b30QuerySet = new();
+
         internal static ArcaeaSongDatabase ArcaeaSongDatabase
             => new ArcaeaSongDatabase();
         internal static ArcaeaUserDatabase ArcaeaUserDatabase
@@ -185,12 +187,22 @@ namespace RinBot.Command.Arcaea
                 messageEvent.Reply(messageBuilder);
                 return;
             }
+            if (b30QuerySet.Contains(messageEvent.Sender.Uin))
+            {
+                messageEvent.Reply("[Arcaea]Best30\n" +
+                "查询进程正在进行，请勿重复调用");
+                return;
+            }
+            messageEvent.Reply("[Arcaea]Best30\n" +
+                "正在查询B30数据，这可能需要一段时间");
+            b30QuerySet.Add(messageEvent.Sender.Uin);
 
             var best30Result = ArcaeaUnlimitedAPI.GetBest30Result(bindInfo.UserCode).Result;
             if (best30Result == null)
             {
-                messageBuilder.Text($"无法连接到服务器");
+                messageBuilder.Text($"服务器连接超时");
                 messageEvent.Reply(messageBuilder);
+                b30QuerySet.Remove(messageEvent.Sender.Uin);
                 return;
             }
             else if (best30Result.Status != 0)
@@ -198,6 +210,7 @@ namespace RinBot.Command.Arcaea
                 var status = ArcaeaUnlimitedAPI.GetStatus(best30Result.Status);
                 messageBuilder.Text(status.Translation);
                 messageEvent.Reply(messageBuilder);
+                b30QuerySet.Remove(messageEvent.Sender.Uin);
                 return;
             }
             else
@@ -207,6 +220,7 @@ namespace RinBot.Command.Arcaea
                 var bytes = GraphGenerator.GenerateBest30(best30Result);
                 messageBuilder.Image(bytes);
                 messageEvent.Reply(messageBuilder);
+                b30QuerySet.Remove(messageEvent.Sender.Uin);
                 return;
             }
         }

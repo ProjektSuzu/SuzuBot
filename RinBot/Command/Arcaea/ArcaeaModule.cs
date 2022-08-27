@@ -377,7 +377,7 @@ namespace RinBot.Command.Arcaea
             if (bindInfo != null)
                 ArcaeaUserDatabase.RemoveBindInfo(bindInfo.Uin);
             ArcaeaUserDatabase.AddBindInfo(messageEvent.Sender.Uin, accountInfo.UserCode);
-            if (ArcaeaUserDatabase.GetPlayerInfo(accountInfo.UserCode) == null)
+            if (ArcaeaUserDatabase.GetPlayerInfo(accountInfo.UserCode).Result == null)
                 ArcaeaUserDatabase.AddPlayerInfo(accountInfo.UserCode, accountInfo.UserName);
             ArcaeaUserDatabase.UpdateQueryRecord(accountInfo.UserCode, DateTime.Now, (float)accountInfo.Rating / 100);
             if (bindInfo == null)
@@ -386,7 +386,7 @@ namespace RinBot.Command.Arcaea
             }
             else
             {
-                var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result!;
+                var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result;
                 messageBuilder.Text($"{playerInfo.UserName}({playerInfo.UserCode})\n绑定已更换:\n{accountInfo.UserName}({accountInfo.UserCode})");
             }
             messageEvent.Reply(messageBuilder);

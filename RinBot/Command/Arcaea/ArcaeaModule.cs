@@ -348,8 +348,7 @@ namespace RinBot.Command.Arcaea
                 return;
             }
             var userToken = command.FuncArgs[0];
-            var userInfo = ArcaeaUnlimitedAPI.GetPlayerInfoByCode(userToken).Result
-                           ?? ArcaeaUnlimitedAPI.GetPlayerInfoByName(userToken).Result;
+            var userInfo = ArcaeaUnlimitedAPI.GetPlayerInfoByCode(userToken).Result;
             if (userInfo == null)
             {
                 messageBuilder.Text($"无法连接到服务器");
@@ -358,30 +357,40 @@ namespace RinBot.Command.Arcaea
             }
             else if (userInfo.Status != 0)
             {
-                var status = ArcaeaUnlimitedAPI.GetStatus(userInfo.Status);
-                messageBuilder.Text(status.Translation);
-                messageEvent.Reply(messageBuilder);
-                return;
+                userInfo = ArcaeaUnlimitedAPI.GetPlayerInfoByName(userToken).Result;
+                if (userInfo == null)
+                {
+                    messageBuilder.Text($"无法连接到服务器");
+                    messageEvent.Reply(messageBuilder);
+                    return;
+                }
+                else if (userInfo.Status != 0)
+                {
+                    var status = ArcaeaUnlimitedAPI.GetStatus(userInfo.Status);
+                    messageBuilder.Text(status.Translation);
+                    messageEvent.Reply(messageBuilder);
+                    return;
+                }
+            }
+
+            var accountInfo = userInfo.Content.AccountInfo;
+            if (bindInfo != null)
+                ArcaeaUserDatabase.RemoveBindInfo(bindInfo.Uin);
+            ArcaeaUserDatabase.AddBindInfo(messageEvent.Sender.Uin, accountInfo.UserCode);
+            if (ArcaeaUserDatabase.GetPlayerInfo(accountInfo.UserCode) == null)
+                ArcaeaUserDatabase.AddPlayerInfo(accountInfo.UserCode, accountInfo.UserName);
+            ArcaeaUserDatabase.UpdateQueryRecord(accountInfo.UserCode, DateTime.Now, (float)accountInfo.Rating / 100);
+            if (bindInfo == null)
+            {
+                messageBuilder.Text($"已绑定:\n{accountInfo.UserName}({accountInfo.UserCode})");
             }
             else
             {
-                var accountInfo = userInfo.Content.AccountInfo;
-                ArcaeaUserDatabase.AddBindInfo(messageEvent.Sender.Uin, accountInfo.UserCode);
-                if (ArcaeaUserDatabase.GetPlayerInfo(accountInfo.UserCode) == null)
-                    ArcaeaUserDatabase.AddPlayerInfo(accountInfo.UserCode, accountInfo.UserName);
-                ArcaeaUserDatabase.UpdateQueryRecord(accountInfo.UserCode, DateTime.Now, (float)accountInfo.Rating / 100);
-                if (bindInfo == null)
-                {
-                    messageBuilder.Text($"已绑定:\n{accountInfo.UserName}({accountInfo.UserCode})");
-                }
-                else
-                {
-                    var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result!;
-                    messageBuilder.Text($"{playerInfo.UserName}({playerInfo.UserCode})\n绑定已更换:\n{accountInfo.UserName}({accountInfo.UserCode})");
-                }
-                messageEvent.Reply(messageBuilder);
-                return;
+                var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result!;
+                messageBuilder.Text($"{playerInfo.UserName}({playerInfo.UserCode})\n绑定已更换:\n{accountInfo.UserName}({accountInfo.UserCode})");
             }
+            messageEvent.Reply(messageBuilder);
+            return;
         }
         public void OnUnbind(MessageEventArgs messageEvent)
         {

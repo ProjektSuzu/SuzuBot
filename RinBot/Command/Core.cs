@@ -36,7 +36,7 @@ namespace RinBot.Command
 
         private readonly string[] pingReplys;
 
-        [TextCommand("帮助", "help")]
+        [TextCommand("帮助", new[] { "help" , "帮助" })]
         public void OnHelp(MessageEventArgs messageEvent)
         {
             messageEvent.Reply($"[RinBot] {RinBotBuildStamp.Version}\n请访问 https://docs-rinbot.akulak.icu/modules/ 来获取帮助信息");
@@ -49,7 +49,7 @@ namespace RinBot.Command
             messageEvent.Reply(chains);
         }
 
-        [TextCommand("退群", "quit")]
+        [TextCommand("退群", new[] { "quit", "退群" })]
         public void OnQuit(MessageEventArgs messageEvent)
         {
             if (messageEvent.Subject is Group)
@@ -91,7 +91,7 @@ namespace RinBot.Command
             messageEvent.Reply(stringBuilder.ToString());
         }
 
-        [TextCommand("模块管理", "cmdctl", UserPermission.GroupAdmin)]
+        [TextCommand("模块管理", "cmdctl")]
         public void OnCommandControl(MessageEventArgs messageEvent, CommandStruct command)
         {
             var moduleList = GlobalScope.CommandManager.ModuleTable
@@ -137,6 +137,15 @@ namespace RinBot.Command
                 {
                     builder.AppendLine("该对话场景不支持此操作");
                     messageEvent.Reply(builder.ToString());
+                }
+                var level = GlobalScope.PermissionManager.GetUserLevel(messageEvent.Sender);
+                if (level < UserPermission.GroupAdmin)
+                {
+                    builder.AppendLine("你没有执行该操作的权限\n" +
+                        $"要求 {UserPermission.GroupAdmin}\n" +
+                        $"你的权限级别为 {level}");
+                    messageEvent.Reply(builder.ToString());
+                    return;
                 }
                 var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(messageEvent.Subject.Uin);
                 bool action = false;

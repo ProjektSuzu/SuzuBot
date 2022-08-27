@@ -6,6 +6,7 @@ using RinBot.Core;
 using RinBot.Core.Components;
 using RinBot.Core.Components.Attributes;
 using RinBot.Core.Components.Commands;
+using RinBot.Core.Components.Databases.Tables;
 using RinBot.Core.Components.Managers;
 using RinBot.Core.KonataCore.Contacts.Models;
 using RinBot.Core.KonataCore.Events;
@@ -65,10 +66,10 @@ namespace RinBot.Command
         [TextCommand("查看信息", "info")]
         public void OnInfo(MessageEventArgs messageEvent)
         {
-            var info = GlobalScope.PermissionManager.GetUserInfo(messageEvent.Sender.Uin);
+            QQUserInfo info = GlobalScope.PermissionManager.GetUserInfo(messageEvent.Sender.Uin);
             messageEvent.Reply("[Info]\n" +
                 $"{messageEvent.Sender.Name}\n" +
-                $"用户组: {info.Level}\n" +
+                $"用户组: {GlobalScope.PermissionManager.GetUserLevel(messageEvent.Sender)}\n" +
                 $"当前拥有 {info.Coin} RC\n" +
                 $"当前好感度为 {info.Favor}\n");
         }

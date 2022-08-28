@@ -28,7 +28,7 @@ namespace RinBot.Command.Sign
                 File.WriteAllTextAsync(SIGN_LIST_PATH, JsonConvert.SerializeObject(signList));
             }
 
-            clearTimer = new Timer(new TimerCallback((obj) => signList.Flush()));
+            clearTimer = new Timer(new TimerCallback((obj) => signList.Flush(true)));
             clearTimer.Change(DateTime.Today.AddDays(1) - DateTime.Now, new TimeSpan(24, 0, 0));
         }
         private SignList signList;
@@ -91,11 +91,11 @@ namespace RinBot.Command.Sign
         public Dictionary<uint, SignInfo> List { get; set; } = new();
         public DateTime DateTime { get; set; } = DateTime.Now;
         public uint SignCountToday { get; set; } = 0u;
-        public void Flush()
+        public void Flush(bool clearCounter = false)
         {
             List<SignInfo> temp = List.Values.ToList();
             temp.RemoveAll(x => DateTime.Today - x.LastSign > new TimeSpan(24, 0, 0));
-            if (DateTime.Today - DateTime > new TimeSpan(24, 0, 0))
+            if (clearCounter || DateTime.Today - DateTime > new TimeSpan(24, 0, 0))
                 SignCountToday = 0;
             List.Clear();
             foreach (var sign in temp)

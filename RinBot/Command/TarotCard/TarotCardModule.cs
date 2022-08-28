@@ -26,7 +26,7 @@ namespace RinBot.Command.TarotCard
             "全能的塔罗牌啊，请为 {name} 指点迷津吧！",
         };
 
-        [TextCommand("获取塔罗牌", "tarot")]
+        [TextCommand("获取塔罗牌", new[] { "tarot", "塔罗牌" })]
         public void OnGetTarot(MessageEventArgs messageEvent, CommandStruct command)
         {
             var messageBuilder = new MessageBuilder();

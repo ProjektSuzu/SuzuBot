@@ -15,5 +15,8 @@ namespace RinBot.Core.KonataCore.Contacts
             Name = name;
             Uin = uin;
         }
+
+        protected bool IsBot()
+            => Uin == GlobalScope.KonataBot.Bot.Uin;
     }
 }

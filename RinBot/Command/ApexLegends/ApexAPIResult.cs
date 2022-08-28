@@ -7,11 +7,48 @@ using System.Threading.Tasks;
 namespace RinBot.Command.ApexLegends
 {
 
-    public class Rootobject
+    public class PredatorResult
     {
+        public RP RP { get; set; }
+        public AP AP { get; set; }
+        public string Error { get; set; }
+    }
+
+    public class RP
+    {
+        public PC PC { get; set; }
+    }
+
+    public class PC
+    {
+        public int foundRank { get; set; }
+        public int val { get; set; }
+        public string uid { get; set; }
+        public int updateTimestamp { get; set; }
+        public int totalMastersAndPreds { get; set; }
+    }
+
+    public class AP
+    {
+        public PC1 PC { get; set; }
+    }
+
+    public class PC1
+    {
+        public int foundRank { get; set; }
+        public int val { get; set; }
+        public string uid { get; set; }
+        public int updateTimestamp { get; set; }
+        public int totalMastersAndPreds { get; set; }
+    }
+
+    public class PlayerInfoResult
+    {
+        public string Error { get; set; }
         public Global global { get; set; }
         public Realtime realtime { get; set; }
         public Legends legends { get; set; }
+        public Club club { get; set; }
     }
 
     public class Global
@@ -43,31 +80,6 @@ namespace RinBot.Command.ApexLegends
         public int ladderPosPlatform { get; set; }
         public string rankImg { get; set; }
         public string rankedSeason { get; set; }
-        public string RankNameCN
-        {
-            get
-            {
-                return rankName switch
-                {
-                    "Bronze"
-                        => "青铜",
-                    "Silver"
-                        => "白银",
-                    "Gold"
-                        => "黄金",
-                    "Platinum"
-                        => "铂金",
-                    "Diamond"
-                        => "钻石",
-                    "Master"
-                        => "大师",
-                    "Apex Predator"
-                        => "APEX 猎杀者",
-                    _
-                        => "未定级",
-                };
-            }
-        }
     }
 
     public class Arena
@@ -78,31 +90,6 @@ namespace RinBot.Command.ApexLegends
         public int ladderPosPlatform { get; set; }
         public string rankImg { get; set; }
         public string rankedSeason { get; set; }
-        public string RankNameCN
-        {
-            get
-            {
-                return rankName switch
-                {
-                    "Bronze"
-                        => "青铜",
-                    "Silver"
-                        => "白银",
-                    "Gold"
-                        => "黄金",
-                    "Platinum"
-                        => "铂金",
-                    "Diamond"
-                        => "钻石",
-                    "Master"
-                        => "大师",
-                    "Apex Predator"
-                        => "APEX 猎杀者",
-                    _
-                        => "未定级",
-                };
-            }
-        }
     }
 
     public class Realtime
@@ -126,10 +113,33 @@ namespace RinBot.Command.ApexLegends
     public class Selected
     {
         public string LegendName { get; set; }
-        public object[] data { get; set; }
+        public Data[] data { get; set; }
         public Gameinfo gameInfo { get; set; }
         public Imgassets ImgAssets { get; set; }
     }
+
+
+    public class Data
+    {
+        public string name { get; set; }
+        public int value { get; set; }
+        public string key { get; set; }
+        public DataRank rank { get; set; }
+        public Rankplatformspecific rankPlatformSpecific { get; set; }
+    }
+
+    public class DataRank
+    {
+        public int rankPos { get; set; }
+        public float topPercent { get; set; }
+    }
+
+    public class Rankplatformspecific
+    {
+        public string rankPos { get; set; }
+        public string topPercent { get; set; }
+    }
+
 
     public class Gameinfo
     {
@@ -156,5 +166,39 @@ namespace RinBot.Command.ApexLegends
         public string icon { get; set; }
         public string banner { get; set; }
     }
+
+    public class Club
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public string tag { get; set; }
+        public long createdByUID { get; set; }
+        public int groupSize { get; set; }
+        public int maxGroupSize { get; set; }
+        public string datacenter { get; set; }
+        public string logo { get; set; }
+        public Joinconfig joinConfig { get; set; }
+        public Member[] members { get; set; }
+    }
+
+    public class Joinconfig
+    {
+        public bool canUserRequestMembership { get; set; }
+        public bool isFreeJoin { get; set; }
+        public bool isPwdProtected { get; set; }
+        public bool canInviteToJoin { get; set; }
+    }
+
+    public class Member
+    {
+        public long linkedOrigin { get; set; }
+        public long uid { get; set; }
+        public string platform { get; set; }
+        public string name { get; set; }
+        public long memberSince { get; set; }
+        public string role { get; set; }
+        public int roleId { get; set; }
+    }
+
 
 }

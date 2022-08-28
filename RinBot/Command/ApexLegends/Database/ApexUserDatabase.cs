@@ -30,6 +30,10 @@ namespace RinBot.Command.ApexLegends.Database
             };
             return dbConnection.InsertAsync(info).Result > 0;
         }
+        public bool UpdateBindInfo(ApexBindInfo info)
+        {
+            return dbConnection.UpdateAsync(info).Result > 0;
+        }
     }
 
     [Table("T_BIND_INFO")]

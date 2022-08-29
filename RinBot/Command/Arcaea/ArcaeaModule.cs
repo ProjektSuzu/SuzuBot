@@ -71,13 +71,13 @@ namespace RinBot.Command.Arcaea
         private HashSet<uint> b30QuerySet = new();
 
         internal static ArcaeaSongDatabase ArcaeaSongDatabase
-            => new ArcaeaSongDatabase();
+            = new ArcaeaSongDatabase();
         internal static ArcaeaUserDatabase ArcaeaUserDatabase
-            => new ArcaeaUserDatabase();
+            = new ArcaeaUserDatabase();
         internal static ArcaeaUnlimitedAPI ArcaeaUnlimitedAPI
-            => new ArcaeaUnlimitedAPI();
+            = new ArcaeaUnlimitedAPI();
         internal static GraphGenerator GraphGenerator
-            => new GraphGenerator();
+            = new GraphGenerator();
 
         public ArcaeaModule()
         {

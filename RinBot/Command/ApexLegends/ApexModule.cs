@@ -33,9 +33,9 @@ namespace RinBot.Command.ApexLegends
         }
 
         internal static ApexUserDatabase ApexUserDatabase
-            => new ApexUserDatabase();
+            = new ApexUserDatabase();
         internal static ApexAPI ApexAPI
-            => new ApexAPI();
+            = new ApexAPI();
         private Dictionary<string, string> legendNameTable;
 
         [TextCommand("Apex", "apex")]

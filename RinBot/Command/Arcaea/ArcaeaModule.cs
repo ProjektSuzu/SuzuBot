@@ -6,6 +6,7 @@ using RinBot.Core.Components.Commands;
 using RinBot.Core.KonataCore.Events;
 using System.Text;
 using System.Xml.Linq;
+using static RinBot.Command.Arcaea.AUAResult;
 
 namespace RinBot.Command.Arcaea
 {
@@ -311,6 +312,7 @@ namespace RinBot.Command.Arcaea
                         else
                         {
                             var bytes = GraphGenerator.GeneratePlayerResult(bestPlayInfo);
+                            ArcaeaUserDatabase.UpdateQueryRecord(bestPlayInfo.Content.AccountInfo.UserCode, DateTime.Now, (float)bestPlayInfo.Content.AccountInfo.Rating / 100);
                             messageBuilder.Image(bytes);
                         }
                         break;

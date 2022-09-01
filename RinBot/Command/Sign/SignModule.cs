@@ -41,18 +41,20 @@ namespace RinBot.Command.Sign
         public void OnSign(MessageEventArgs messageEvent)
         {
             var builder = new MessageBuilder("[Sign]\n");
+            // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
+            var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.Sender.Uin;
+            var random = new Random((int)seed);
+
             if (signList.List.TryGetValue(messageEvent.Sender.Uin, out var sign) && DateTime.Today == sign.LastSign.Date)
             {
-                builder.Text($"{messageEvent.Sender.Name}\n你今天已经签到过了");
+                builder.Text($"{messageEvent.Sender.Name}\n你今天已经签到过了\n" +
+                    $"你是今天第 {signList.SignCountToday} 个签到的\n" +
+                    $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}\n\n");
             }
             else
             {
                 sign = signList.Sign(messageEvent.Sender.Uin);
                 SaveList();
-
-                // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
-                var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.Sender.Uin;
-                var random = new Random((int)seed);
 
                 // 基础部分
                 var coin = random.Next(1, 100);
@@ -67,21 +69,21 @@ namespace RinBot.Command.Sign
                     $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}" +
                     $"RC +{coin}\n" +
                     $"好感度 +{favor}\n\n");
-
-                // 抽签部分
-                var stick = FortuneStick.GetStick(random);
-                builder.Text($"今日的运势是: {stick.GetFortuneName()}\n" +
-                    $"{stick.GetComment()}\n\n");
-
-                // 塔罗牌部分
-                var tarot = TarotCards.GetTarotCards(1, random).First();
-                builder.Text($"今日的塔罗牌是: {tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
-                builder.Image(File.ReadAllBytes(tarot.ImagePath));
-                builder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}\n\n");
-
-                // 免责声明
-                builder.Text($"结果仅供参考, 自己的命运要自己把握哦(・ω≦)☆");
             }
+
+            // 抽签部分
+            var stick = FortuneStick.GetStick(random);
+            builder.Text($"今日的运势是: {stick.GetFortuneName()}\n" +
+                $"{stick.GetComment()}\n\n");
+
+            // 塔罗牌部分
+            var tarot = TarotCards.GetTarotCards(1, random).First();
+            builder.Text($"今日的塔罗牌是: {tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
+            builder.Image(File.ReadAllBytes(tarot.ImagePath));
+            builder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}\n\n");
+
+            // 免责声明
+            builder.Text($"结果仅供参考, 自己的命运要自己把握哦(・ω≦)☆");
             messageEvent.Reply(builder);
         }
     }

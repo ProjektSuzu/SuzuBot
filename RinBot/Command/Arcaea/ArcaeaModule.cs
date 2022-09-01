@@ -68,7 +68,7 @@ namespace RinBot.Command.Arcaea
         internal static readonly string DATABASE_DIR_PATH = Path.Combine(RESOURCE_DIR_PATH, "database");
         internal static readonly string COVER_DIR_PATH = Path.Combine(RESOURCE_DIR_PATH, "cover");
 
-        private HashSet<uint> b30QuerySet = new();
+        //private HashSet<uint> b30QuerySet = new();
 
         internal static ArcaeaSongDatabase ArcaeaSongDatabase
             = new ArcaeaSongDatabase();
@@ -131,6 +131,13 @@ namespace RinBot.Command.Arcaea
                             return;
                         }
 
+                    // 绑定信息
+                    case "bindinfo":
+                        {
+                            OnBindInfo(messageEvent);
+                            return;
+                        }
+
                     // 铺面预览
                     case "chart":
                         {
@@ -187,22 +194,21 @@ namespace RinBot.Command.Arcaea
                 messageEvent.Reply(messageBuilder);
                 return;
             }
-            if (b30QuerySet.Contains(messageEvent.Sender.Uin))
-            {
-                messageEvent.Reply("[Arcaea]Best30\n" +
-                "查询进程正在进行，请勿重复调用");
-                return;
-            }
+            //if (b30QuerySet.Contains(messageEvent.Sender.Uin))
+            //{
+            //    messageEvent.Reply("[Arcaea]Best30\n" +
+            //    "查询进程正在进行，请勿重复调用");
+            //    return;
+            //}
             messageEvent.Reply("[Arcaea]Best30\n" +
                 "正在查询B30数据，这可能需要一段时间");
-            b30QuerySet.Add(messageEvent.Sender.Uin);
-
+            //b30QuerySet.Add(messageEvent.Sender.Uin);
             var best30Result = ArcaeaUnlimitedAPI.GetBest30Result(bindInfo.UserCode).Result;
             if (best30Result == null)
             {
                 messageBuilder.Text($"服务器连接超时");
                 messageEvent.Reply(messageBuilder);
-                b30QuerySet.Remove(messageEvent.Sender.Uin);
+                //b30QuerySet.Remove(messageEvent.Sender.Uin);
                 return;
             }
             else if (best30Result.Status != 0)
@@ -210,7 +216,7 @@ namespace RinBot.Command.Arcaea
                 var status = ArcaeaUnlimitedAPI.GetStatus(best30Result.Status);
                 messageBuilder.Text(status.Translation);
                 messageEvent.Reply(messageBuilder);
-                b30QuerySet.Remove(messageEvent.Sender.Uin);
+                //b30QuerySet.Remove(messageEvent.Sender.Uin);
                 return;
             }
             else
@@ -220,7 +226,7 @@ namespace RinBot.Command.Arcaea
                 var bytes = GraphGenerator.GenerateBest30(best30Result);
                 messageBuilder.Image(bytes);
                 messageEvent.Reply(messageBuilder);
-                b30QuerySet.Remove(messageEvent.Sender.Uin);
+                //b30QuerySet.Remove(messageEvent.Sender.Uin);
                 return;
             }
         }
@@ -403,6 +409,29 @@ namespace RinBot.Command.Arcaea
                 var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result;
                 messageBuilder.Text($"{playerInfo.UserName}({playerInfo.UserCode})\n绑定已更换:\n{accountInfo.UserName}({accountInfo.UserCode})");
             }
+            messageEvent.Reply(messageBuilder);
+            return;
+        }
+        public void OnBindInfo(MessageEventArgs messageEvent)
+        {
+            var messageBuilder = new MessageBuilder("[Arcaea]BindInfo Experimental\n");
+            var bindInfo = ArcaeaUserDatabase.GetBindInfo(messageEvent.Sender.Uin).Result;
+            if (bindInfo == null)
+            {
+                messageBuilder.Text("未存在绑定记录\n" +
+                    "请先使用\n" +
+                    "/arc bind <userName/userCode>\n" +
+                    "进行绑定\n" +
+                    "使用例:\n" +
+                    "/arc bind YajuuSenpai\n" +
+                    "或\n" +
+                    "/arc bind 114514810");
+                messageEvent.Reply(messageBuilder);
+                return;
+            }
+            var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result;
+            var bytes = GraphGenerator.GeneratePttTimeGraph(playerInfo);
+            messageBuilder.Image(bytes);
             messageEvent.Reply(messageBuilder);
             return;
         }

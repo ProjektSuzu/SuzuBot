@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SQLite;
+using System.Globalization;
 
 namespace RinBot.Command.Arcaea.Database
 {
@@ -63,10 +64,12 @@ namespace RinBot.Command.Arcaea.Database
             }
             else
             {
-                playerInfo.QueryRecords.Add
+                var newRecords = playerInfo.QueryRecords;
+                newRecords.Add
                     (
                         new(dateTime, potential)
                     );
+                playerInfo.QueryRecords = newRecords;
             }
             return UpdatePlayerInfo(playerInfo);
         }
@@ -114,7 +117,7 @@ namespace RinBot.Command.Arcaea.Database
 
         public QueryRecord(string text)
         {
-            DateTime = DateTime.ParseExact(text[..8], "yyyyMMdd", System.Globalization.CultureInfo.CurrentCulture);
+            DateTime = DateTime.ParseExact(text[..8], "yyyyMMdd", CultureInfo.InvariantCulture);
             Potential = float.Parse(text.Substring(8, 4)) / 100;
         }
 
@@ -126,7 +129,7 @@ namespace RinBot.Command.Arcaea.Database
 
         public override string ToString()
         {
-            return $"{DateTime:yyMMMMdd}{((int)(Potential * 100)).ToString().PadLeft(4, '0')}";
+            return $"{DateTime:yyyyMMdd}{((int)(Potential * 100)).ToString().PadLeft(4, '0')}";
         }
     }
 }

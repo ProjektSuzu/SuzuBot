@@ -1225,7 +1225,7 @@ namespace RinBot.Command.Arcaea
             var records = playerInfo.QueryRecords.OrderBy(x => x.DateTime).ToArray();
 
             var plotModel = new PlotModel() { Background = OxyColors.White, DefaultFont = "Ark Pixel 12px latin", Title = "BindInfo" };
-            plotModel.Axes.Add(new DateTimeAxis() { Position = AxisPosition.Bottom, Title = "Date", StringFormat = "yy/MM" });
+            plotModel.Axes.Add(new DateTimeAxis() { Position = AxisPosition.Bottom, Title = "Date", StringFormat = "yy/MM/dd" });
             plotModel.Axes.Add(new LinearAxis() { Position = AxisPosition.Left, Title = "Potential", StringFormat = "00.00" });
             var series = new LineSeries() { Color = OxyColors.SteelBlue };
 

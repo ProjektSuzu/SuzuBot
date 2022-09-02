@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SQLite;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace RinBot.Command.Arcaea.Database
@@ -51,6 +52,8 @@ namespace RinBot.Command.Arcaea.Database
         }
         public bool UpdateQueryRecord(string userCode, DateTime dateTime, float potential)
         {
+            if (potential < 0)
+                return false;
             var playerInfo = GetPlayerInfo(userCode).Result;
             if (playerInfo == null) return false;
 
@@ -101,7 +104,16 @@ namespace RinBot.Command.Arcaea.Database
             {
                 var list = JsonConvert.DeserializeObject<List<string>>(QueryRecordStr) ?? new();
                 if (list.Count <= 0) return new();
-                return list.Select(x => new QueryRecord(x)).ToList();
+                List<QueryRecord> result = new();
+                foreach (var str in list)
+                {
+                    var record = QueryRecord.Create(str);
+                    if (record != null)
+                    {
+                        result.Add(record);
+                    }
+                }
+                return result;
             }
             set
             {
@@ -115,10 +127,19 @@ namespace RinBot.Command.Arcaea.Database
         public DateTime DateTime { get; set; }
         public float Potential { get; set; }
 
-        public QueryRecord(string text)
+        public static QueryRecord? Create(string text)
         {
-            DateTime = DateTime.ParseExact(text[..8], "yyyyMMdd", CultureInfo.InvariantCulture);
-            Potential = float.Parse(text.Substring(8, 4)) / 100;
+
+            var datetime = DateTime.ParseExact(text[..8], "yyyyMMdd", CultureInfo.InvariantCulture);
+            if (float.TryParse(text.Substring(8, 4), out var potential))
+            {
+                potential /= 100;
+                return new QueryRecord(datetime, potential);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public QueryRecord(DateTime dateTime, float potential)

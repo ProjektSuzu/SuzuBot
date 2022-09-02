@@ -432,6 +432,13 @@ namespace RinBot.Command.Arcaea
                 return;
             }
             var playerInfo = ArcaeaUserDatabase.GetPlayerInfo(bindInfo.UserCode).Result;
+            if (playerInfo.QueryRecords.Count <= 0)
+            {
+                messageBuilder.Text("未存在查询记录\n" +
+                    "如果你隐藏了潜力值 将无法记录你的潜力值变化");
+                messageEvent.Reply(messageBuilder);
+                return;
+            }
             var bytes = GraphGenerator.GeneratePttTimeGraph(playerInfo);
             messageBuilder.Image(bytes);
             messageEvent.Reply(messageBuilder);

@@ -11,6 +11,7 @@ using RinBot.Core.Components.Managers;
 using RinBot.Core.KonataCore.Contacts.Models;
 using RinBot.Core.KonataCore.Events;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -181,6 +182,8 @@ namespace RinBot.Command
                     operateModuleIds = command.FuncArgs[1..].ToList();
                 }
 
+                var groupModules = groupInfo.ModuleIds.ToList();
+
                 foreach (var moduleId in operateModuleIds)
                 {
                     var module = GlobalScope.CommandManager.GetModuleInfo(moduleId)
@@ -191,21 +194,22 @@ namespace RinBot.Command
                     }
                     else if (module.IsCritical)
                     {
-                        builder.AppendLine($"不允许操作重要模块: {moduleId}");
+                        builder.AppendLine($"不允许操作重要模块: {module.Name}");
                     }
                     else
                     {
-                        if (groupInfo.ModuleIds.Contains(moduleId))
+                        if (groupModules.Contains(module.ModuleId))
                         {
-                            groupInfo.ModuleIds.Remove(moduleId);
+                            groupModules.Remove(module.ModuleId);
                         }
                         else
                         {
-                            groupInfo.ModuleIds.Add(moduleId);
+                            groupModules.Add(module.ModuleId);
                         }
                         builder.AppendLine($"模块 {module.Name} 操作成功");
                     }
                 }
+                groupInfo.ModuleIds = groupModules;
                 GlobalScope.PermissionManager.UpdateGroupInfo(groupInfo);
                 messageEvent.Reply(builder.ToString());
             }

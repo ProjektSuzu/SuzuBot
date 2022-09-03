@@ -64,7 +64,7 @@ namespace RinBot.Core.KonataCore
 
         public async Task<Friend?> GetFriend(uint uin)
         {
-            var friend = GlobalScope.KonataBot.Bot.GetFriendList().Result.FirstOrDefault(x => x.Uin == uin);
+            var friend = GlobalScope.KonataBot.Bot.GetFriendList(true).Result.FirstOrDefault(x => x.Uin == uin);
             if (friend == null)
             {
                 return null;
@@ -79,14 +79,14 @@ namespace RinBot.Core.KonataCore
         }
         public async Task<Group?> GetGroup(uint uin)
         {
-            var group = GlobalScope.KonataBot.Bot.GetGroupList().Result.FirstOrDefault(x => x.Uin == uin);
+            var group = GlobalScope.KonataBot.Bot.GetGroupList(true).Result.FirstOrDefault(x => x.Uin == uin);
             if (group == null)
             {
                 return null;
             }
             else
             {
-                var members = GlobalScope.KonataBot.Bot.GetGroupMemberList(uin).Result;
+                var members = GlobalScope.KonataBot.Bot.GetGroupMemberList(uin, true).Result;
                 var owner = members.First(x => x.Uin == group.OwnerUin);
                 var admins = members.Where(x => group.AdminUins.Contains(x.Uin));
                 var memberDict = new Dictionary<uint, Member>();

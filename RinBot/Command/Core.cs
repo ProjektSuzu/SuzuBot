@@ -114,9 +114,11 @@ namespace RinBot.Command
             if (command.FuncArgs.Length <= 0)
             {
                 string[] groupModuleIds;
+                bool whiteListed = false;
                 if (messageEvent.Subject is Group group)
                 {
                     var groupInfo = GlobalScope.PermissionManager.GetGroupInfo(group.Uin);
+                    whiteListed = GlobalScope.PermissionManager.IsGroupInWhiteList(group.Uin).Result;
                     groupModuleIds = groupInfo.ModuleIds.ToArray();
                 }
                 else
@@ -124,8 +126,11 @@ namespace RinBot.Command
                     groupModuleIds = Array.Empty<string>();
                 }
 
+
                 foreach (var module in moduleList)
                 {
+                    if (module.EnableType == ModuleEnableType.WhiteListOnly && !whiteListed)
+                        continue;
                     if (!module.IsEnabled)
                         builder.Append('⬛');
                     else if (module.EnableType == ModuleEnableType.NormallyEnabled && groupModuleIds.Contains(module.ModuleId))
@@ -184,10 +189,12 @@ namespace RinBot.Command
 
                 var groupModules = groupInfo.ModuleIds.ToList();
 
-                foreach (var moduleId in operateModuleIds)
+                foreach (var moduleName in operateModuleIds)
                 {
-                    var module = GlobalScope.CommandManager.GetModuleInfo(moduleId)
-                                 ?? GlobalScope.CommandManager.GetModuleInfoByName(moduleId);
+                    var moduleId = GlobalScope.CommandManager.GetModuleInfo(moduleName)?.ModuleId
+                                 ?? GlobalScope.CommandManager.GetModuleInfoByName(moduleName)?.ModuleId;
+                    var module = GlobalScope.CommandManager.ModuleTable[moduleId];
+
                     if (module == null)
                     {
                         builder.AppendLine($"找不到模块: {moduleId}");
@@ -198,15 +205,34 @@ namespace RinBot.Command
                     }
                     else
                     {
-                        if (groupModules.Contains(module.ModuleId))
+
+                        if (action)
                         {
-                            groupModules.Remove(module.ModuleId);
+                            if (module.EnableType == ModuleEnableType.NormallyDisabled)
+                            {
+                                if (!groupModules.Contains(moduleId))
+                                    groupModules.Add(moduleId);
+                            }
+                            else
+                            {
+                                if (groupModules.Contains(moduleId))
+                                    groupModules.Remove(moduleId);
+                            }
                         }
                         else
                         {
-                            groupModules.Add(module.ModuleId);
+                            if (module.EnableType == ModuleEnableType.NormallyDisabled)
+                            {
+                                if (groupModules.Contains(moduleId))
+                                    groupModules.Remove(moduleId);
+                            }
+                            else
+                            {
+                                if (!groupModules.Contains(moduleId))
+                                    groupModules.Add(moduleId);
+                            }
                         }
-                        builder.AppendLine($"模块 {module.Name} 操作成功");
+                        builder.AppendLine($"模块 {module.Name} {(action ? "已开启" : "已关闭")}");
                     }
                 }
                 groupInfo.ModuleIds = groupModules;

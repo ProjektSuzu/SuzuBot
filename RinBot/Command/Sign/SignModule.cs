@@ -43,7 +43,7 @@ namespace RinBot.Command.Sign
             var builder = new MessageBuilder("[Sign]\n");
             // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
             var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.Sender.Uin;
-            var random = new Random((int)seed);
+            var fortuneRandom = new Random((int)seed);
 
             if (signList.List.TryGetValue(messageEvent.Sender.Uin, out var sign) && DateTime.Today == sign.LastSign.Date)
             {
@@ -57,6 +57,7 @@ namespace RinBot.Command.Sign
                 SaveList();
 
                 // 基础部分
+                var random = new Random();
                 var coin = random.Next(1, 100);
                 var favor = random.Next(1, 10);
 
@@ -72,12 +73,12 @@ namespace RinBot.Command.Sign
             }
 
             // 抽签部分
-            var stick = FortuneStick.GetStick(random);
+            var stick = FortuneStick.GetStick(fortuneRandom);
             builder.Text($"今日的运势是: {stick.GetFortuneName()}\n" +
                 $"{stick.GetComment()}\n\n");
 
             // 塔罗牌部分
-            var tarot = TarotCards.GetTarotCards(1, random).First();
+            var tarot = TarotCards.GetTarotCards(1, fortuneRandom).First();
             builder.Text($"今日的塔罗牌是: {tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
             builder.Image(File.ReadAllBytes(tarot.ImagePath));
             builder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}\n\n");

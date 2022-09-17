@@ -568,6 +568,7 @@ namespace RinBot.Command.Arcaea
                             messageBuilder.Text($"服务器连接超时或铺面难度不存在: {queryArgs.SongName} {queryArgs.RatingClass}");
                             break;
                         }
+                        messageBuilder.Text($"{charts[0].NameEN} - {queryArgs.RatingClass}");
                         messageBuilder.Image(bytes);
                         break;
                     }

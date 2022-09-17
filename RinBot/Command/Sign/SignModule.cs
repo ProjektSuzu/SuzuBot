@@ -47,9 +47,9 @@ namespace RinBot.Command.Sign
 
             if (signList.List.TryGetValue(messageEvent.Sender.Uin, out var sign) && DateTime.Today == sign.LastSign.Date)
             {
-                builder.Text($"{messageEvent.Sender.Name}\n你今天已经签到过了\n" +
-                    $"你是今天第 {signList.SignCountToday} 个签到的\n" +
-                    $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}\n\n");
+                builder.Text($"{messageEvent.Sender.Name}\n你今天已经签到过了");
+                messageEvent.Reply(builder);
+                return;
             }
             else
             {
@@ -69,7 +69,7 @@ namespace RinBot.Command.Sign
                     $"你是今天第 {signList.SignCountToday} 个签到的\n" +
                     $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}" +
                     $"RC +{coin}\n" +
-                    $"好感度 +{favor}\n\n");
+                    $"好感度 +{favor}\n");
             }
 
             // 抽签部分
@@ -77,11 +77,13 @@ namespace RinBot.Command.Sign
             builder.Text($"今日的运势是: {stick.GetFortuneName()}\n" +
                 $"{stick.GetComment()}\n\n");
 
-            // 塔罗牌部分
-            var tarot = TarotCards.GetTarotCards(1, fortuneRandom).First();
-            builder.Text($"今日的塔罗牌是: {tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
-            builder.Image(File.ReadAllBytes(tarot.ImagePath));
-            builder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}\n\n");
+            //// 塔罗牌部分
+            //var tarot = TarotCards.GetTarotCards(1, fortuneRandom).First();
+            //builder.Text($"今日的塔罗牌是: {tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
+            //builder.Image(File.ReadAllBytes(tarot.ImagePath));
+            //builder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}\n\n");
+            builder.Text($"为避免刷屏 自 RinBot-4.1.2 后不再在签到模块中提供塔罗牌抽卡\n" +
+                $"请自行使用 /tarot 进行抽取\n\n");
 
             // 免责声明
             builder.Text($"结果仅供参考, 自己的命运要自己把握哦(・ω≦)☆");

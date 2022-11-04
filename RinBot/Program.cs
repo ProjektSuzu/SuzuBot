@@ -1,29 +1,31 @@
-﻿using NLog;
-using RinBot.BuildStamp;
+﻿using Microsoft.Extensions.Logging;
 using RinBot.Core;
-using System.Runtime.InteropServices;
+using RinBot.Utils;
 
-namespace RinBot
+namespace RinBot;
+public static class Program
 {
-    internal class Program
+    private static ILogger _logger = LoggerUtils.LoggerFactory.CreateLogger("Boot");
+
+    public static async Task Main()
     {
-        private static Logger Logger = LogManager.GetLogger("BOOT");
-        public static int Main()
-        {
-            Console.WriteLine(@"    ____  _       ____        __ ");
-            Console.WriteLine(@"   / __ \(_)___  / __ )____  / /_");
-            Console.WriteLine(@"  / /_/ / / __ \/ __  / __ \/ __/");
-            Console.WriteLine(@" / _, _/ / / / / /_/ / /_/ / /_  ");
-            Console.WriteLine(@"/_/ |_/_/_/ /_/_____/\____/\__/  ");
-            Console.WriteLine(@"=================================");
-            Console.WriteLine("RinBot Copyright (C) 2020 AkulaKirov\n");
+        string title =
+            """
+            ______ _      ______       _   
+            | ___ (_)     | ___ \     | |  
+            | |_/ /_ _ __ | |_/ / ___ | |_ 
+            |    /| | '_ \| ___ \/ _ \| __|
+            | |\ \| | | | | |_/ / (_) | |_ 
+            \_| \_|_|_| |_\____/ \___/ \__|
+            ===============================
+            RinBot   RinBotDev 2020 GPL-3.0
+            """;
 
-            Logger.Info($"RinBot-{RinBotBuildStamp.Version}");
-            Logger.Info($"CommitHash: {RinBotBuildStamp.CommitHash}@{RinBotBuildStamp.Branch}");
-            Logger.Info($"Running on: {RuntimeInformation.RuntimeIdentifier} with {RuntimeInformation.FrameworkDescription}");
+        Console.WriteLine(title);
+        _logger.LogInformation($"Version: RinBot_{RinBotBuildStamp.Version}");
+        _logger.LogInformation($"Branch: {RinBotBuildStamp.Branch}@{RinBotBuildStamp.CommitHash[..8]}");
 
-            GlobalScope.BootStrap();
-            return 0;
-        }
+        Context context = new();
+        await context.StartAsync();
     }
 }

@@ -4,19 +4,13 @@
 
 ![](Resource/avatar.png)
 
-[![.NET](https://github.com/ProjektRin/ProjektRin.Bot/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/ProjektRin/ProjektRin.Bot/actions/workflows/dotnet.yml)
-[![](https://img.shields.io/github/license/ProjektRin/ProjektRin.Bot)](./LICENSE)
-[![](https://img.shields.io/badge/.NET-6.0-blue)](https://dotnet.microsoft.com/zh-cn/)
+[![.NET](https://github.com/RinBotDev/RinBot/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/RinBotDev/RinBot/actions/workflows/dotnet.yml)
+[![](https://img.shields.io/github/license/RinBotDev/RinBot)](./LICENSE)
+[![](https://img.shields.io/badge/.NET-7.0-blue)](https://dotnet.microsoft.com/zh-cn/)
 [![wakatime](https://wakatime.com/badge/user/8389ce29-a5be-481a-bb7c-8012f59d1858/project/9c579517-a8aa-43a7-b439-2741c0345b30.svg)](https://wakatime.com/badge/user/8389ce29-a5be-481a-bb7c-8012f59d1858/project/9c579517-a8aa-43a7-b439-2741c0345b30)
 
-Simple bot for multi IM platform. 
+Multi-Usage QQ Bot
 </div>
-
-# Support Platform
-| IM  | Adapter | Support |
-|:----:|:--------:|:--------:|
-| QQ | Konata | 🟢 |
-| Telegram | Working | Working |
 
 # Document
 [RinBot.Docs](https://docs-rinbot.akulak.icu/) (Simplified Chinese Only)

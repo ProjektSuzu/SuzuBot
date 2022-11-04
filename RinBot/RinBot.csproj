@@ -8,12 +8,21 @@
     <Nullable>enable</Nullable>
     <StartupObject>RinBot.Program</StartupObject>
     <NeutralLanguage>zh-Hans</NeutralLanguage>
-    <Company>ProjektRin</Company>
+    <Company>RinBotDev</Company>
     <Authors>AkulaKirov</Authors>
-    <RepositoryUrl>https://github.com/AkulaKirov/RinBot</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/AkulaKirov/RinBot</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RinBotDev/RinBot.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/RinBotDev/RinBot</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>4.1.2</Version>
+    <Version>5.0.0</Version>
+    <UserSecretsId>63b2a825-48f2-4470-8889-0f59a10fbdbb</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,15 +30,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta1" />
-    <PackageReference Include="NLog" Version="5.0.2" />
-    <PackageReference Include="OxyPlot.SkiaSharp" Version="2.1.0" />
-    <PackageReference Include="RestSharp" Version="108.0.1" />
-    <PackageReference Include="SkiaSharp" Version="2.88.1" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.1" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.1" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.5.0-preview-20221003-04" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta2" />
+    <PackageReference Include="NLog" Version="5.0.5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.1.0" />
+    <PackageReference Include="NLog.Schema" Version="5.0.5" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -37,13 +48,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
   </ItemGroup>
 
   <ItemGroup>
-    <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 	  <!-- Get Build Stamp -->

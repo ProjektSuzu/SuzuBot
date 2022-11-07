@@ -22,6 +22,10 @@ internal class ModuleManager : BaseManager
     public ImmutableDictionary<string, BaseModule> Modules => _modules.ToImmutableDictionary();
     public ImmutableList<BaseCommand> Commands => _commands.ToImmutableList();
 
+    public ulong ExecuteCount { get; private set; } = 0L;
+    public ulong ExceptionCount { get; private set; } = 0L;
+    public Exception? LastException { get; private set; } = null;
+
     public ModuleManager(Context context) : base(context)
     {
         _prefixs = new()
@@ -113,9 +117,12 @@ internal class ModuleManager : BaseManager
                 _logger.LogInformation($"{result.Item2.FullName} Invoked By {eventArgs.SenderId}" +
                     $"{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.ReceiverId}" : "")}");
                 await Record(eventArgs, result.Item2, CommandExecuteResult.Success);
+                ExecuteCount++;
             }
             catch (Exception ex)
             {
+                ExceptionCount++;
+                LastException = ex;
                 _logger.LogError(ex, $"Unhandled Exception Threw When Execute Command {result.Item2.FullName}");
                 await Record(eventArgs, result.Item2, CommandExecuteResult.Error);
                 string message = $"[ERROR]\n" +
@@ -132,8 +139,8 @@ internal class ModuleManager : BaseManager
             Date = eventArgs.EventTime,
             Id = eventArgs.SenderId,
             Name = eventArgs.SenderName,
-            GroupId = eventArgs.ReceiverId,
-            GroupName = eventArgs.ReceiverName,
+            ReceiverId = eventArgs.ReceiverId,
+            ReceiverName = eventArgs.ReceiverName,
             Command = command.FullName,
             Message = eventArgs.Chains.ToString(),
             Result = result
@@ -157,7 +164,7 @@ internal class ModuleManager : BaseManager
         module.Name = moduleAttr.Name;
         module.IsCritical = moduleAttr.IsCritical;
         module.Context = Context;
-        module.ResourceDirPath = Path.Combine("resources", module.Id);
+        module.ResourceDirPath = Path.Combine(Context.BaseDirPath, "resources", module.Id);
 
         foreach (var method in type.GetMethods())
         {
@@ -249,7 +256,7 @@ internal class ModuleManager : BaseManager
                 });
 
             }).ToArray();
-            
+
         }
     }
 }

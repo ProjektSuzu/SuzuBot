@@ -7,6 +7,9 @@ public class PrivateMessageEventArgs : MessageEventArgs
 {
     public BotFriend Friend => Bot.GetFriendList().Result.Where(x => x.Uin == SenderId).First();
 
+    public override string SenderName => Friend.Name;
+    public override string ReceiverName => Bot.Name;
+
     public override Task<bool> SendMessage(MessageChain chains)
         => Bot.SendFriendMessage(SenderId, chains);
 }

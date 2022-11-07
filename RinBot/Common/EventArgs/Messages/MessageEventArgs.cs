@@ -8,9 +8,9 @@ public abstract class MessageEventArgs : AbstractEventArgs
     public MessageStruct Message { get; set; }
     public MessageChain Chains => Message.Chain;
     public uint SenderId => Message.Sender.Uin;
-    public string SenderName => Message.Sender.Name;
+    public virtual string SenderName => Message.Sender.Name;
     public uint ReceiverId => Message.Receiver.Uin;
-    public string ReceiverName => Message.Receiver.Name;
+    public virtual string ReceiverName => Message.Receiver.Name;
 
     public abstract Task<bool> SendMessage(MessageChain chains);
     public Task<bool> SendMessage(MessageBuilder builder)

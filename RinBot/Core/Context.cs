@@ -20,6 +20,7 @@ internal class Context
     private readonly string _configPath = Path.Combine("configs", "config.json");
     private readonly string _devicePath = Path.Combine("configs", "device.json");
     private readonly string _keyStorePath = Path.Combine("configs", "keyStore.json");
+    public readonly string BaseDirPath = AppContext.BaseDirectory;
     public Bot Bot { get; private set; }
 
     public AuthManager AuthManager { get; private set; }

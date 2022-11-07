@@ -21,7 +21,7 @@ public class CommandAttribute : Attribute
     public bool AuthFailWarning { get; set; } = false;
     public MatchType MatchType { get; set; } = MatchType.Equal;
     public SourceType SourceType { get; set; } = SourceType.All;
-    public HandlerType HandlerType { get; set; } = HandlerType.Pass;
+    public HandlerType HandlerType { get; set; } = HandlerType.Block;
 
     public CommandAttribute(string name, string command)
     {

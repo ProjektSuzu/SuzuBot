@@ -81,6 +81,7 @@ internal class ArcaeaModule : BaseModule
                     return Unbind(eventArgs);
                 }
             case "recent":
+            case "r":
                 {
                     return Recent(eventArgs, neko);
                 }
@@ -217,7 +218,6 @@ internal class ArcaeaModule : BaseModule
         var bytes = image.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray();
         await eventArgs.Reply(new MessageBuilder("[Arcaea]Best30\n").Image(bytes));
     }
-
     public async Task SongInfo(MessageEventArgs eventArgs, string queryStr, bool neko = false)
     {
         if (string.IsNullOrWhiteSpace(queryStr))
@@ -297,7 +297,6 @@ internal class ArcaeaModule : BaseModule
         builder.Text(stringBuilder.ToString());
         await eventArgs.Reply(builder);
     }
-
     public async Task Bind(MessageEventArgs eventArgs, string userCode)
     {
         int code;

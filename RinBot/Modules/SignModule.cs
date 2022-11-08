@@ -38,7 +38,7 @@ internal class SignModule : BaseModule
     private void SaveList()
         => File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(_signList));
 
-    [Command("签到", "sign", "签到")]
+    [Command("签到", "sign", "签到", "打卡")]
     public async Task Sign(MessageEventArgs messageEvent)
     {
         var builder = new MessageBuilder("[Sign]\n");

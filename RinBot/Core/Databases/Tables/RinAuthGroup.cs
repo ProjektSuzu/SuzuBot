@@ -1,5 +1,7 @@
 ﻿using SQLite;
 
+#pragma warning disable CS8618
+
 namespace RinBot.Core.Databases.Tables;
 
 [Table("t_auth_group")]

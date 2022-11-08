@@ -1,6 +1,8 @@
 ﻿using Konata.Core.Message;
 using Konata.Core.Message.Model;
 
+#pragma warning disable CS8618
+
 namespace RinBot.Common.EventArgs.Messages;
 
 public abstract class MessageEventArgs : AbstractEventArgs

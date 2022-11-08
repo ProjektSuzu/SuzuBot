@@ -1,5 +1,7 @@
 ﻿using Konata.Core;
 
+#pragma warning disable CS8618
+
 namespace RinBot.Common.EventArgs;
 public abstract class AbstractEventArgs : System.EventArgs
 {

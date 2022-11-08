@@ -16,7 +16,7 @@ public class CommandAttribute : Attribute
 {
     public string Name { get; set; }
     public string[] Commands { get; set; }
-    public byte Priority { get; set; } = 1;
+    public byte Priority { get; set; } = 127;
     public string AuthGroup { get; set; } = "user";
     public bool AuthFailWarning { get; set; } = false;
     public MatchType MatchType { get; set; } = MatchType.Equal;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Konata.Core;
@@ -11,13 +12,15 @@ using RinBot.Common.EventArgs.Messages;
 using RinBot.Core.Databases.Tables;
 using RinBot.Utils;
 
+#pragma warning disable CA2254
+
 namespace RinBot.Core.Modules;
 internal class ModuleManager : BaseManager
 {
     private readonly ILogger _logger = LoggerUtils.LoggerFactory.CreateLogger<ModuleManager>();
-    private Dictionary<string, BaseModule> _modules = new();
-    private List<BaseCommand> _commands = new();
-    private List<string> _prefixs = new();
+    private readonly Dictionary<string, BaseModule> _modules = new();
+    private readonly List<BaseCommand> _commands = new();
+    private readonly List<string> _prefixs = new();
 
     public ImmutableDictionary<string, BaseModule> Modules => _modules.ToImmutableDictionary();
     public ImmutableList<BaseCommand> Commands => _commands.ToImmutableList();
@@ -25,6 +28,7 @@ internal class ModuleManager : BaseManager
     public ulong ExecuteCount { get; private set; } = 0L;
     public ulong ExceptionCount { get; private set; } = 0L;
     public Exception? LastException { get; private set; } = null;
+    public long LastCommandCostMillisecond { get; private set; } = 0L;
 
     public ModuleManager(Context context) : base(context)
     {
@@ -48,7 +52,7 @@ internal class ModuleManager : BaseManager
             Message = messageEvent.Message,
         };
 
-        InvokeCommand(eventArgs);
+        _ = InvokeCommand(eventArgs);
     }
     public void PrivateMessageHandler(Bot bot, FriendMessageEvent messageEvent)
     {
@@ -60,9 +64,8 @@ internal class ModuleManager : BaseManager
             Message = messageEvent.Message,
         };
 
-        InvokeCommand(eventArgs);
+        _ = InvokeCommand(eventArgs);
     }
-
     public async Task InvokeCommand(MessageEventArgs eventArgs)
     {
         _logger.LogInformation(eventArgs.EventMessage);
@@ -71,6 +74,7 @@ internal class ModuleManager : BaseManager
         var matches = _commands
             .Select(x => (x.Match(eventArgs), x).ToTuple())
             .Where(x => x.Item1.IsMatch == true)
+            .OrderBy(x => x.Item2.Priority)
             .ToArray();
         if (!matches.Any()) return;
 
@@ -96,9 +100,8 @@ internal class ModuleManager : BaseManager
 
         foreach (var denied in authDenieds)
         {
-            _logger.LogInformation($"{denied.Item2.FullName} Access Denied {eventArgs.SenderId}" +
-                    $"{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.ReceiverId}" : "")}");
-            await Record(eventArgs, denied.Item2, CommandExecuteResult.AuthFail);
+            _logger.LogInformation($"{denied.Item2.FullName} Access Denied {eventArgs.SenderId}{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.ReceiverId}" : "")}");
+            await Record(eventArgs, denied.Item2, 0L, CommandExecuteResult.AuthFail);
             string message = $"[Auth]\n" +
                 $"权限不足o(*≧д≦)o!!\n" +
                     $"{denied.Item2.Module.Name}|{denied.Item2.Name} 需要权限组 {denied.Item2.AuthGroup}\n" +
@@ -111,28 +114,36 @@ internal class ModuleManager : BaseManager
 
         foreach (var result in matches)
         {
+            Stopwatch stopwatch = new Stopwatch();
             try
             {
-                await result.Item2.Invoke(eventArgs, result.Item1.Arguments);
-                _logger.LogInformation($"{result.Item2.FullName} Invoked By {eventArgs.SenderId}" +
+                var args = result.Item1.Arguments.SelectMany(x => x.Split(' ', StringSplitOptions.RemoveEmptyEntries)).ToArray();
+                _logger.LogInformation($"{result.Item2.FullName} Begin Invoke By {eventArgs.SenderId}" +
                     $"{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.ReceiverId}" : "")}");
-                await Record(eventArgs, result.Item2, CommandExecuteResult.Success);
+                stopwatch.Start();
+                await result.Item2.Invoke(eventArgs, args);
+                stopwatch.Stop();
+                LastCommandCostMillisecond = stopwatch.ElapsedMilliseconds;
+                _logger.LogInformation($"{result.Item2.FullName} Invoke Completed Cost {stopwatch.ElapsedMilliseconds} ms");
+                await Record(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Success);
                 ExecuteCount++;
             }
             catch (Exception ex)
             {
+                stopwatch.Stop();
+                LastCommandCostMillisecond = stopwatch.ElapsedMilliseconds;
                 ExceptionCount++;
                 LastException = ex;
                 _logger.LogError(ex, $"Unhandled Exception Threw When Execute Command {result.Item2.FullName}");
-                await Record(eventArgs, result.Item2, CommandExecuteResult.Error);
-                string message = $"[ERROR]\n" +
+                await Record(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Error);
+                string message = $"[Error]\n" +
                     $"出现了意料之外的错误Σ( ° △ °|||)\n" +
                     $"{ex.GetType()}: {ex.Message}";
                 await eventArgs.Reply(message);
             }
         }
     }
-    public Task Record(MessageEventArgs eventArgs, BaseCommand command, CommandExecuteResult result)
+    public Task Record(MessageEventArgs eventArgs, BaseCommand command, long milliseconds, CommandExecuteResult result)
     {
         ExecutionRecord record = new()
         {
@@ -142,20 +153,20 @@ internal class ModuleManager : BaseManager
             ReceiverId = eventArgs.ReceiverId,
             ReceiverName = eventArgs.ReceiverName,
             Command = command.FullName,
+            TotalMillisecond = milliseconds,
             Message = eventArgs.Chains.ToString(),
             Result = result
         };
         return Context.DataBaseManager.Connection
             .InsertAsync(record);
     }
-
     public void RegisterModule(Type type)
     {
         if (!type.IsSubclassOf(typeof(BaseModule)))
             return;
 
         var moduleAttr = type.GetCustomAttribute<ModuleAttribute>();
-        if (moduleAttr == null)
+        if (moduleAttr is null)
             return;
 
         _logger.LogInformation($"Register Module {moduleAttr.Name}({type.Name})");
@@ -172,30 +183,12 @@ internal class ModuleManager : BaseManager
             if (!attrs.Any())
                 continue;
 
-            var param = method.GetParameters();
-            if (param.Length != 2 &&
-                !param[0].ParameterType.IsInstanceOfType(typeof(MessageEventArgs)) &&
-                param[1].ParameterType != typeof(string[]))
-                continue;
-
             foreach (var methodAttr in attrs)
             {
                 _logger.LogInformation($"{module.Name}|Register Command {methodAttr.Name}({method.Name})");
 
                 var regexes = ParseCommands(methodAttr, _prefixs.ToArray());
-
-                var command = new BaseCommand()
-                {
-                    Module = module,
-                    Method = method,
-                    Name = methodAttr.Name,
-                    Commands = regexes,
-                    Priority = methodAttr.Priority,
-                    AuthGroup = methodAttr.AuthGroup,
-                    AuthFailWarning = methodAttr.AuthFailWarning,
-                    HandlerType = methodAttr.HandlerType,
-                    SourceType = methodAttr.SourceType,
-                };
+                var command = new BaseCommand(module, method, methodAttr, regexes);
 
                 _commands.Add(command);
                 _commands.Sort((a, b) => a.Priority.CompareTo(b.Priority));
@@ -212,25 +205,19 @@ internal class ModuleManager : BaseManager
             if (type.IsSubclassOf(typeof(BaseModule)))
                 RegisterModule(type);
     }
-    public Regex[] ParseCommands(CommandAttribute attribute, string[] prefixs)
+    public static Regex[] ParseCommands(CommandAttribute attribute, string[] prefixs)
     {
         if (attribute.MatchType.HasFlag(Common.Attributes.MatchType.NoPrefix))
         {
             return attribute.Commands.Select(cmd =>
             {
-                switch (attribute.MatchType)
+                return attribute.MatchType switch
                 {
-                    case Common.Attributes.MatchType.Equal:
-                        return new Regex($"^{cmd}$");
-                    case Common.Attributes.MatchType.StartsWith:
-                        return new Regex($"^{cmd}");
-                    case Common.Attributes.MatchType.EndsWith:
-                        return new Regex($"{cmd}$");
-                    case Common.Attributes.MatchType.Contains:
-                    case Common.Attributes.MatchType.Regex:
-                    default:
-                        return new Regex(cmd);
-                }
+                    Common.Attributes.MatchType.Equal => new Regex($"^{cmd}$"),
+                    Common.Attributes.MatchType.StartsWith => new Regex($"^{cmd}\\s?"),
+                    Common.Attributes.MatchType.EndsWith => new Regex($"{cmd}$"),
+                    _ => new Regex(cmd),
+                };
             }).ToArray();
         }
         else
@@ -240,19 +227,13 @@ internal class ModuleManager : BaseManager
             {
                 return prefixs.Select(prefix =>
                 {
-                    switch (attribute.MatchType)
+                    return attribute.MatchType switch
                     {
-                        case Common.Attributes.MatchType.Equal:
-                            return new Regex($"^{prefix}\\s*{cmd}$");
-                        case Common.Attributes.MatchType.StartsWith:
-                            return new Regex($"^{prefix}\\s*{cmd}");
-                        case Common.Attributes.MatchType.EndsWith:
-                            return new Regex($"{cmd}$");
-                        case Common.Attributes.MatchType.Contains:
-                        case Common.Attributes.MatchType.Regex:
-                        default:
-                            return new Regex(cmd);
-                    }
+                        Common.Attributes.MatchType.Equal => new Regex($"^{prefix}\\s?{cmd}$"),
+                        Common.Attributes.MatchType.StartsWith => new Regex($"^{prefix}\\s?{cmd}\\s?"),
+                        Common.Attributes.MatchType.EndsWith => new Regex($"{cmd}$"),
+                        _ => new Regex(cmd),
+                    };
                 });
 
             }).ToArray();

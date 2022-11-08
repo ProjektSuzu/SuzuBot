@@ -42,9 +42,9 @@ internal class AuthManager : BaseManager
     }
     public byte GetMemberAuth(uint memberUin, uint groupUin)
     {
-        BotMember member = Context.Bot.GetGroupMemberList(groupUin).Result
+        BotMember? member = Context.Bot.GetGroupMemberList(groupUin).Result
             .Where(x => x.Uin == memberUin).FirstOrDefault();
-        if (member == null) return 0;
+        if (member is null) return 0;
         else
         {
             if (member.Role >= RoleType.Admin) return GetAuthGroupPriority("operator");

@@ -1,13 +1,10 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
-using Konata.Core.Interfaces.Api;
-using Konata.Core.Message;
+﻿using Konata.Core.Message;
 using Newtonsoft.Json;
 using RinBot.Common;
 using RinBot.Common.Attributes;
 using RinBot.Common.EventArgs.Messages;
-using RinBot.Utils;
+
+#pragma warning disable CS8618
 
 namespace RinBot.Modules;
 
@@ -15,8 +12,8 @@ namespace RinBot.Modules;
 internal class SignModule : BaseModule
 {
     private string _signListPath;
-    private SignList signList;
-    private Timer clearTimer;
+    private SignList _signList;
+    private Timer _clearTimer;
 
     public override void Init()
     {
@@ -24,32 +21,32 @@ internal class SignModule : BaseModule
         _signListPath = Path.Combine(ResourceDirPath, "signList.json");
         if (!File.Exists(_signListPath))
         {
-            signList = new SignList();
+            _signList = new SignList();
         }
         else
         {
-            signList = JsonConvert.DeserializeObject<SignList>(File.ReadAllText(_signListPath))
+            _signList = JsonConvert.DeserializeObject<SignList>(File.ReadAllText(_signListPath))
                            ?? new();
-            signList.Flush();
-            File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(signList));
+            _signList.Flush();
+            File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(_signList));
         }
 
-        clearTimer = new Timer(new TimerCallback((obj) => signList.Flush(true)));
-        clearTimer.Change(DateTime.Today.AddDays(1) - DateTime.Now, new TimeSpan(24, 0, 0));
+        _clearTimer = new Timer(new TimerCallback((obj) => _signList.Flush(true)));
+        _clearTimer.Change(DateTime.Today.AddDays(1) - DateTime.Now, new TimeSpan(24, 0, 0));
     }
 
-    private void SaveList() 
-        => File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(signList));
+    private void SaveList()
+        => File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(_signList));
 
     [Command("签到", "sign", "签到")]
-    public async Task Sign(MessageEventArgs messageEvent, string[] args)
+    public async Task Sign(MessageEventArgs messageEvent)
     {
         var builder = new MessageBuilder("[Sign]\n");
         // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
         var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.SenderId;
         var fortuneRandom = new Random((int)seed);
 
-        if (signList.List.TryGetValue(messageEvent.SenderId, out var sign) && DateTime.Today == sign.LastSign.Date)
+        if (_signList.List.TryGetValue(messageEvent.SenderId, out var sign) && DateTime.Today == sign.LastSign.Date)
         {
             builder.Text($"{messageEvent.SenderName}\n你今天已经签到过了");
             await messageEvent.Reply(builder);
@@ -57,7 +54,7 @@ internal class SignModule : BaseModule
         }
         else
         {
-            sign = signList.Sign(messageEvent.SenderId);
+            sign = _signList.Sign(messageEvent.SenderId);
             SaveList();
 
             // 基础部分
@@ -68,9 +65,9 @@ internal class SignModule : BaseModule
             var info = await Context.DataBaseManager.GetUserInfo(messageEvent.SenderId);
             info.Coin += coin;
             info.Favor += favor;
-            Context.DataBaseManager.UpdateUserInfo(info);
+            _ = Context.DataBaseManager.UpdateUserInfo(info);
             builder.Text($"{messageEvent.SenderName}\n签到成功\n" +
-                $"你是今天第 {signList.SignCountToday} 个签到的\n" +
+                $"你是今天第 {_signList.SignCountToday} 个签到的\n" +
                 $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}" +
                 $"RC +{coin}\n" +
                 $"好感度 +{favor}\n");
@@ -166,6 +163,7 @@ internal class FortuneStick
             => LotComment.Great[random.Next(LotComment.Great.Length)],
             FortuneStickType.OMGYouAreTheChoosenOne
             => LotComment.Pure[random.Next(LotComment.Pure.Length)],
+            _ => "???"
         };
     }
     public string GetFortuneName()
@@ -177,6 +175,7 @@ internal class FortuneStick
             FortuneStickType.Nice => "小吉",
             FortuneStickType.Wunderbar => "吉",
             FortuneStickType.OMGYouAreTheChoosenOne => "大吉",
+            _ => "???"
         };
     }
 

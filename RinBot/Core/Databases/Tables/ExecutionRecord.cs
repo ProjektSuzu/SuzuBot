@@ -1,5 +1,7 @@
 ﻿using SQLite;
 
+#pragma warning disable CS8618
+
 namespace RinBot.Core.Databases.Tables;
 
 public enum CommandExecuteResult
@@ -26,6 +28,8 @@ internal class ExecutionRecord
     public string Command { get; set; }
     [Column("message")]
     public string Message { get; set; }
+    [Column("time_millisecond")]
+    public long TotalMillisecond { get; set; }
     [Column("result")]
     public CommandExecuteResult Result { get; set; }
 }

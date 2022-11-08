@@ -1,6 +1,8 @@
 ﻿using RinBot.Core;
 
 namespace RinBot.Common;
+
+#pragma warning disable CS8618
 internal abstract class BaseModule
 {
     public string Id { get; set; }

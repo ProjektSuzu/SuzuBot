@@ -13,20 +13,25 @@ internal class DataBaseManager : BaseManager
     {
         _dbPath = Path.Combine("databases", "rinbot.db");
         _connection = new(_dbPath);
+
+        // Create tables if not exist
+        _connection.CreateTableAsync<RinUserInfo>().Wait();
+        _connection.CreateTableAsync<RinAuthGroup>().Wait();
+        _connection.CreateTableAsync<ExecutionRecord>().Wait();
     }
 
     public async Task<RinUserInfo> GetUserInfo(uint uin)
     {
         var info = await Connection.FindAsync<RinUserInfo>(uin);
-        if (info == null) 
+        if (info == null)
         {
             info = new()
-            { Uin= uin };
+            { Uin = uin };
             await Connection.InsertOrReplaceAsync(info);
         }
         return info;
     }
 
     public async Task<bool> UpdateUserInfo(RinUserInfo info)
-        => await Connection.UpdateAsync(info) > 0; 
+        => await Connection.UpdateAsync(info) > 0;
 }

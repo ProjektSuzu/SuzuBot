@@ -47,6 +47,8 @@ internal class CoreModule : BaseModule
             builder.AppendLine(Context.ModuleManager.LastException.Message);
         }
         builder.AppendLine();
+        builder.AppendLine($"LastCommandCostMillisecond: {Context.ModuleManager.LastCommandCostMillisecond} ms");
+        builder.AppendLine();
         builder.AppendLine("[Konata.Core]");
         builder.AppendLine($"Konata.Core-{KonataBuildStamp.Version}");
         builder.AppendLine($"Branch: {KonataBuildStamp.Branch}@{KonataBuildStamp.CommitHash[..8]}");

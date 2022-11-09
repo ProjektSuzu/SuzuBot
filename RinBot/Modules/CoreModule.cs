@@ -16,6 +16,7 @@ namespace RinBot.Modules;
 internal class CoreModule : BaseModule
 {
     string[] _pingReplys = Array.Empty<string>();
+    public const uint RinBotGroup = 955578812U;
 
     public override void Init()
     {
@@ -28,61 +29,30 @@ internal class CoreModule : BaseModule
     {
         return eventArgs.Reply(_pingReplys[new Random().Next(_pingReplys.Length)]);
     }
-    [Command("状态汇报", "status", Priority = 0)]
-    public Task BotStatusReport(MessageEventArgs eventArgs)
-    {
-        StringBuilder builder = new("[RinBot]\n");
-        builder.AppendLine($"RinBot-{RinBotBuildStamp.Version}");
-        builder.AppendLine($"Branch: {RinBotBuildStamp.Branch}@{RinBotBuildStamp.CommitHash[..8]}");
-        builder.AppendLine($"Runtime: {RuntimeInformation.FrameworkDescription}");
-        builder.AppendLine($"Architecture: {RuntimeInformation.RuntimeIdentifier} {Environment.ProcessorCount} Thread(s)");
-        builder.AppendLine($"Memory: {Environment.WorkingSet / 1000000} MB");
-        builder.AppendLine($"UpTime: {DateTime.Now - Process.GetCurrentProcess().StartTime:dd\\d\\ hh\\h\\ mm\\m\\ ss\\s}");
-        builder.AppendLine();
-        builder.AppendLine($"Modules/Commands: {Context.ModuleManager.Modules.Count}/{Context.ModuleManager.Commands.Count}");
-        builder.AppendLine($"ExecuteCount: {Context.ModuleManager.ExecuteCount}");
-        builder.AppendLine($"ExceptionCount: {Context.ModuleManager.ExceptionCount}");
-        if (Context.ModuleManager.LastException is not null)
-        {
-            builder.AppendLine($"LastException: {Context.ModuleManager.LastException.GetType().Name}");
-        }
-        builder.AppendLine();
-        builder.AppendLine($"LastCommandCostMillisecond: {Context.ModuleManager.LastCommandCostMillisecond} ms");
-        builder.AppendLine();
-        builder.AppendLine("[Konata.Core]");
-        builder.AppendLine($"Konata.Core-{KonataBuildStamp.Version}");
-        builder.AppendLine($"Branch: {KonataBuildStamp.Branch}@{KonataBuildStamp.CommitHash[..8]}");
-        builder.AppendLine($"Groups/Friends: {eventArgs.Bot.GetGroupList().Result.Count}/{eventArgs.Bot.GetFriendList().Result.Count}");
-        builder.AppendLine(DateTime.UtcNow.ToString("O"));
-
-        return eventArgs.Reply(builder.ToString());
-    }
-    [Command("历史错误", "exception", "error", Priority = 0, AuthGroup = "admin", AuthFailWarning = true)]
-    public async Task LastExceptions(MessageEventArgs eventArgs)
-    {
-        StringBuilder builder = new StringBuilder("[Exceptions]\n");
-        var exceptions = await Context.DataBaseManager.Connection
-            .Table<ExceptionRecord>()
-            .OrderByDescending(x => x.Date)
-            .Take(7).ToArrayAsync();
-        if (!exceptions.Any())
-        {
-            builder.AppendLine("No Exceptions");
-            await eventArgs.Reply(builder.ToString());
-            return;
-        }
-
-        foreach (var ex in exceptions)
-        {
-            builder.AppendLine($"{ex.Date:g} {ex.Type}\n{ex.Message}\n");
-        }
-
-        await eventArgs.Reply(builder.ToString());
-    }
     [Command("Echo", "echo", MatchType = Common.Attributes.MatchType.StartsWith, Priority = 0)]
     public Task Echo(MessageEventArgs eventArgs, string[] args)
     {
         if (!args.Any()) return Task.CompletedTask;
         else return eventArgs.SendMessage(MessageBuilder.Eval(string.Join(' ', args)));
+    }
+    [Command("反馈", "report", MatchType = Common.Attributes.MatchType.StartsWith, Priority = 0)]
+    public async Task Report(MessageEventArgs eventArgs, string[] args)
+    {
+        MessageBuilder builder = new MessageBuilder("[Report]\n")
+            .Text($"来自用户 {eventArgs.SenderName}({eventArgs.SenderId})|{eventArgs.ReceiverName}({eventArgs.ReceiverId}) 的反馈\n")
+            ;
+        MessageBuilder evalBuilder = MessageBuilder.Eval(string.Join(' ', args));
+        await eventArgs.Bot.SendGroupMessage(RinBotGroup, builder + evalBuilder);
+        builder = new MessageBuilder("[Report]\n已收到你的反馈\n(〃^ω^) 感谢你帮助 RinBot 变得更好");
+        await eventArgs.Reply(builder);
+    }
+    [Command("帮助", "help", Priority = 0)]
+    public Task Help(MessageEventArgs eventArgs)
+    {
+        var builder = new MessageBuilder("[Help]\n")
+            .Text($"RinBot-{RinBotBuildStamp.Version}\n")
+            .Text("AkulaKirov 2018 GPL-3.0")
+            .Text(@"帮助文档请查阅: http://docs.rinbot.top/");
+        return eventArgs.Reply(builder);
     }
 }

@@ -82,7 +82,7 @@ internal class Context
         Bot.OnFriendMessage += ModuleManager.PrivateMessageHandler;
         Bot.OnGroupMessage += ModuleManager.GroupMessageHandler;
     }
-
+    
     private void Bot_OnCaptcha(Bot sender, Konata.Core.Events.Model.CaptchaEvent args)
     {
         switch (args.Type)
@@ -150,6 +150,8 @@ internal class Context
         {
             File.WriteAllText(_keyStorePath, JsonConvert.SerializeObject(Bot.KeyStore, Formatting.Indented));
             _contextLogger.LogInformation("Bot Login Success");
+            foreach (var module in ModuleManager.Modules)
+                module.Value.Enable();
         }
         else
         {

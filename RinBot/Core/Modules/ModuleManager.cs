@@ -40,6 +40,13 @@ internal class ModuleManager : BaseManager
         };
     }
 
+    public void ClearModules()
+    {
+        _commands.Clear();
+        foreach (var module in _modules)
+            module.Value.Disable();
+        _modules.Clear();
+    }
     public void GroupMessageHandler(Bot bot, GroupMessageEvent messageEvent)
     {
         if (messageEvent.MemberUin == bot.Uin) return;
@@ -208,7 +215,6 @@ internal class ModuleManager : BaseManager
         }
 
         module.Init();
-        module.Enable();
         _modules.Add(module.Id, module);
     }
     public void RegisterModule(Assembly assembly)

@@ -47,8 +47,10 @@ internal class AuthManager : BaseManager
         if (member is null) return 0;
         else
         {
-            if (member.Role >= RoleType.Admin) return GetAuthGroupPriority("operator");
-            else return GetUserAuth(memberUin);
+            var priority = member.Role >= RoleType.Admin
+                ? GetAuthGroupPriority("operator")
+                : GetAuthGroupPriority("user");
+            return Math.Max(GetUserAuth(memberUin), priority);
         }
     }
 }

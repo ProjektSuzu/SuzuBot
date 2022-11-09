@@ -45,7 +45,7 @@ internal class ArcaeaModule : BaseModule
         _utils = new(ResourceDirPath, _client);
     }
 
-    [Command("Arcaea", "arc", MatchType = Common.Attributes.MatchType.StartsWith)]
+    [Command("Arcaea", "arc", "arcaea", MatchType = Common.Attributes.MatchType.StartsWith)]
     [Command("Arcaea", "a", MatchType = Common.Attributes.MatchType.StartsWith, Priority = 128)]
     public Task Arcaea(MessageEventArgs eventArgs, string[] args, bool neko = false)
     {

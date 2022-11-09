@@ -101,7 +101,7 @@ internal class ModuleManager : BaseManager
         foreach (var denied in authDenieds)
         {
             _logger.LogInformation($"{denied.Item2.FullName} Access Denied {eventArgs.SenderId}{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.ReceiverId}" : "")}");
-            await Record(eventArgs, denied.Item2, 0L, CommandExecuteResult.AuthFail);
+            await RecordInvoke(eventArgs, denied.Item2, 0L, CommandExecuteResult.AuthFail);
             string message = $"[Auth]\n" +
                 $"权限不足o(*≧д≦)o!!\n" +
                     $"{denied.Item2.Module.Name}|{denied.Item2.Name} 需要权限组 {denied.Item2.AuthGroup}\n" +
@@ -125,7 +125,7 @@ internal class ModuleManager : BaseManager
                 stopwatch.Stop();
                 LastCommandCostMillisecond = stopwatch.ElapsedMilliseconds;
                 _logger.LogInformation($"{result.Item2.FullName} Invoke Completed Cost {stopwatch.ElapsedMilliseconds} ms");
-                await Record(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Success);
+                await RecordInvoke(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Success);
                 ExecuteCount++;
             }
             catch (Exception ex)
@@ -135,15 +135,27 @@ internal class ModuleManager : BaseManager
                 ExceptionCount++;
                 LastException = ex;
                 _logger.LogError(ex, $"Unhandled Exception Threw When Execute Command {result.Item2.FullName}");
-                await Record(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Error);
+                await RecordException(ex);
+                await RecordInvoke(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Error);
                 string message = $"[Error]\n" +
                     $"出现了意料之外的错误Σ( ° △ °|||)\n" +
-                    $"{ex.GetType()}: {ex.Message}";
+                    $"{ex.GetType()}";
                 await eventArgs.Reply(message);
             }
         }
     }
-    public Task Record(MessageEventArgs eventArgs, BaseCommand command, long milliseconds, CommandExecuteResult result)
+    public Task RecordException(Exception ex)
+    {
+        ExceptionRecord record = new ExceptionRecord()
+        {
+            Date = DateTime.UtcNow,
+            Type = ex.GetType().Name,
+            Message = ex.Message
+        };
+        return Context.DataBaseManager.Connection
+            .InsertAsync(record);
+    }
+    public Task RecordInvoke(MessageEventArgs eventArgs, BaseCommand command, long milliseconds, CommandExecuteResult result)
     {
         ExecutionRecord record = new()
         {

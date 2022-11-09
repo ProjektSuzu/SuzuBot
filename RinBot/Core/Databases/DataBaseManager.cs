@@ -18,6 +18,7 @@ internal class DataBaseManager : BaseManager
         _connection.CreateTableAsync<RinUserInfo>().Wait();
         _connection.CreateTableAsync<RinAuthGroup>().Wait();
         _connection.CreateTableAsync<ExecutionRecord>().Wait();
+        _connection.CreateTableAsync<ExceptionRecord>().Wait();
     }
 
     public async Task<RinUserInfo> GetUserInfo(uint uin)

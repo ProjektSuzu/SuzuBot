@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using RinBot.Common;
 using RinBot.Common.Attributes;
 using RinBot.Common.EventArgs.Messages;
+using RinBot.Core.Databases.Tables;
 using RinBot.Utils;
 
 namespace RinBot.Modules;
@@ -44,7 +45,6 @@ internal class CoreModule : BaseModule
         if (Context.ModuleManager.LastException is not null)
         {
             builder.AppendLine($"LastException: {Context.ModuleManager.LastException.GetType().Name}");
-            builder.AppendLine(Context.ModuleManager.LastException.Message);
         }
         builder.AppendLine();
         builder.AppendLine($"LastCommandCostMillisecond: {Context.ModuleManager.LastCommandCostMillisecond} ms");
@@ -56,6 +56,28 @@ internal class CoreModule : BaseModule
         builder.AppendLine(DateTime.UtcNow.ToString("O"));
 
         return eventArgs.Reply(builder.ToString());
+    }
+    [Command("历史错误", "exception", "error", Priority = 0, AuthGroup = "admin", AuthFailWarning = true)]
+    public async Task LastExceptions(MessageEventArgs eventArgs)
+    {
+        StringBuilder builder = new StringBuilder("[Exceptions]\n");
+        var exceptions = await Context.DataBaseManager.Connection
+            .Table<ExceptionRecord>()
+            .OrderByDescending(x => x.Date)
+            .Take(7).ToArrayAsync();
+        if (!exceptions.Any())
+        {
+            builder.AppendLine("No Exceptions");
+            await eventArgs.Reply(builder.ToString());
+            return;
+        }
+
+        foreach (var ex in exceptions)
+        {
+            builder.AppendLine($"{ex.Date:g} {ex.Type}\n{ex.Message}\n");
+        }
+
+        await eventArgs.Reply(builder.ToString());
     }
     [Command("Echo", "echo", MatchType = Common.Attributes.MatchType.StartsWith, Priority = 0)]
     public Task Echo(MessageEventArgs eventArgs, string[] args)

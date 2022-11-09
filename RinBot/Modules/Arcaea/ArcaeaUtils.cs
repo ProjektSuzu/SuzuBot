@@ -51,6 +51,7 @@ internal class ArcaeaUtils
     private readonly SQLiteAsyncConnection _songDbConnection;
     private readonly SQLiteAsyncConnection _userDbConnection;
     public SKTypeface NotoSansRegular;
+    public SKTypeface SourceHanSansVF;
     public SKTypeface NotoSansCJKscRegular;
     public SKTypeface ExoRegular;
     public SKTypeface ExoSemiBold;
@@ -75,6 +76,7 @@ internal class ArcaeaUtils
         _userDbConnection = new SQLiteAsyncConnection(Path.Combine(resourceDirPath, "arcuser.db"));
         NotoSansRegular = SKTypeface.FromFile(Path.Combine(resourceDirPath, "fonts", "NotoSans-Regular.ttf"));
         NotoSansCJKscRegular = SKTypeface.FromFile(Path.Combine(resourceDirPath, "fonts", "NotoSansCJKsc-Regular.otf"));
+        SourceHanSansVF = SKTypeface.FromFile(Path.Combine(resourceDirPath, "fonts", "SourceHanSans-VF.otf.ttc"));
         ExoRegular = SKTypeface.FromFile(Path.Combine(resourceDirPath, "fonts", "Exo-Regular.ttf"));
         ExoSemiBold = SKTypeface.FromFile(Path.Combine(resourceDirPath, "fonts", "Exo-SemiBold.ttf"));
         GeosansLight = SKTypeface.FromFile(Path.Combine(resourceDirPath, "fonts", "GeosansLight.ttf"));
@@ -348,15 +350,10 @@ internal class ArcaeaUtils
 
             SKRect rect = new();
             //fontPaint.Color = NoteTypeColors.MaxPure;
-            string maxPureStr = $"Pure: {record.PerfectCount}";
+            string maxPureStr = $"Pure: {record.PerfectCount} [-{record.PerfectCount - record.ShinyPerfectCount}]";
             fontPaint.MeasureText(maxPureStr, ref rect);
             var offset = rect.Width + 8;
             mainCanvas.DrawShapedText(maxPureStr, 325, 200 + rect.Height, fontPaint);
-
-            //fontPaint.Color = NoteTypeColors.Pure;
-            string pureStr = $"-{record.PerfectCount - record.ShinyPerfectCount}";
-            fontPaint.MeasureText(pureStr, ref rect);
-            mainCanvas.DrawShapedText(pureStr, 325 + offset, 200 + rect.Height, fontPaint);
 
             //fontPaint.Color = NoteTypeColors.Far;
             string farStr = $"Far: {record.NearCount}";
@@ -382,7 +379,7 @@ internal class ArcaeaUtils
             string achStr = $"Ach: {CalcSongAchievingRate(record, chartInfo) * 100:00.000}%";
             SKRect rect = new();
             fontPaint.MeasureText(achStr, ref rect);
-            mainCanvas.DrawShapedText(achStr, 880, 250 + rect.Height, fontPaint);
+            mainCanvas.DrawShapedText(achStr, 880, 260 + rect.Height, fontPaint);
         }
         #endregion
 
@@ -694,7 +691,8 @@ internal class ArcaeaUtils
             fontPaint.TextAlign = SKTextAlign.Left;
             fontPaint.IsAntialias = true;
             fontPaint.TextSize = 64;
-            fontPaint.Typeface = ExoRegular;
+            fontPaint.Typeface = SourceHanSansVF;
+            fontPaint.FakeBoldText = true;
 
             mainCanvas.DrawShapedText(chartInfo.NameEn, 30, 150, fontPaint);
 

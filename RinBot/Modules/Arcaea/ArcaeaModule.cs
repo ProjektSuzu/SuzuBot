@@ -253,10 +253,10 @@ internal class ArcaeaModule : BaseModule
         }
 
         var chart = result.ChartInfos[0];
-        var nameEns = result.ChartInfos.Select(x => x.NameEn).Distinct();
+        var nameEns = result.ChartInfos.Select(x => x.NameEn.Trim()).Distinct();
         StringBuilder stringBuilder = new StringBuilder();
         foreach (var name in nameEns)
-            stringBuilder.AppendLine(chart.NameEn);
+            stringBuilder.AppendLine(name);
         if (!string.IsNullOrWhiteSpace(chart.NameJp))
             stringBuilder.AppendLine(chart.NameJp);
         stringBuilder.AppendLine($"曲包: {chart.SetFriendly}");
@@ -280,19 +280,22 @@ internal class ArcaeaModule : BaseModule
 
         MessageBuilder builder = new MessageBuilder("[Arcaea]SongInfo\n");
         int count = 0;
-        var coverResult = result.ChartInfos
-            .Select(x => (count++, x.JacketOverride))
-            .Where(x => x.JacketOverride)
-            .Select(x => _utils.GetSongCover(result.SongId, x.Item1, neko).Result).ToArray();
-        if (coverResult.Any())
+        var coverQuery = result.ChartInfos
+            .Select(x => (count++, x.JacketOverride)).ToArray();
+        byte[][] coverResult;
+        if (coverQuery.All(x => x.JacketOverride == false))
         {
-            foreach (var image in coverResult)
-                builder.Image(image);
+            coverResult = new byte[1][] { _utils.GetSongCover(result.SongId, 0, neko).Result };
         }
         else
         {
-            builder.Image(await _utils.GetSongCover(result.SongId, 0, neko));
+            var baseCover = coverQuery.First(x => !x.JacketOverride);
+            coverQuery = coverQuery.Where(x => x.JacketOverride).Append(baseCover).OrderBy(x => x.Item1).ToArray();
+            coverResult = coverQuery.Select(x => _utils.GetSongCover(result.SongId, x.Item1, neko).Result).ToArray();
         }
+
+        foreach (var image in coverResult)
+            builder.Image(image);
 
         builder.Text(stringBuilder.ToString());
         await eventArgs.Reply(builder);

@@ -494,7 +494,7 @@ internal class ArcaeaModule : BaseModule
                 return (songName, 0);
 
             default:
-                return (queryStr, 0);
+                return (queryStr, 2);
         }
     }
 }

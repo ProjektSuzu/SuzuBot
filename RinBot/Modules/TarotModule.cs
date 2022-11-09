@@ -12,7 +12,7 @@ namespace RinBot.Modules;
 [Module("塔罗牌")]
 internal class TarotModule : BaseModule
 {
-    private static Dictionary<int, TarotCardInfo> _tarotCards = new();
+    private Dictionary<int, TarotCardInfo> _tarotCards = new();
 
     // 没有十年脑血栓写不出这些文本
     private string[] tarotDrawText = new[]
@@ -44,7 +44,7 @@ internal class TarotModule : BaseModule
         {
             if (!int.TryParse(args[0], out num) || num <= 0 || num > 6)
             {
-                messageBuilder.Text($"[TarotCard]\n参数非法: {args[0]} => [<num>]");
+                messageBuilder.Text($"[Tarot]\n参数非法: {args[0]} => [<num>]");
                 return eventArgs.Reply(messageBuilder);
             }
         }
@@ -52,7 +52,7 @@ internal class TarotModule : BaseModule
         if (num == 1)
         {
             var tarot = RandomTarotCards()[0];
-            messageBuilder.Text($"[TarotCard]\n{tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
+            messageBuilder.Text($"[Tarot]\n{tarot.Name} {(tarot.IsReversed ? "逆位" : "正位")}\n");
             messageBuilder.Image(File.ReadAllBytes(tarot.ImagePath));
             messageBuilder.Text($"\n释义: \n{(tarot.IsReversed ? tarot.Info.ReverseDescribe : tarot.Info.Describe)}");
             return eventArgs.Reply(messageBuilder);
@@ -60,7 +60,7 @@ internal class TarotModule : BaseModule
         else
         {
             var multiMsg = new MultiMsgChain();
-            multiMsg.Add(new MessageStruct(eventArgs.Bot.Uin, eventArgs.Bot.Name, new MessageBuilder("[TarotCard]\n" +
+            multiMsg.Add(new MessageStruct(eventArgs.Bot.Uin, eventArgs.Bot.Name, new MessageBuilder("[Tarot]\n" +
                 tarotDrawText[new Random().Next(tarotDrawText.Length)].Replace(
                     "{name}",
                     eventArgs.SenderName)).Build()));

@@ -1,0 +1,114 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net70</TargetFramework>
+	<SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <StartupObject>SuzuBot.Program</StartupObject>
+    <NeutralLanguage>zh-Hans</NeutralLanguage>
+    <Company>SuzuBotDev</Company>
+    <Authors>AkulaKirov</Authors>
+    <RepositoryUrl>https://github.com/RinBotDev/RinBot.git</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/RinBotDev/RinBot</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>5.0.1</Version>
+    <UserSecretsId>63b2a825-48f2-4470-8889-0f59a10fbdbb</UserSecretsId>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\AkulaKirov\.nuget\packages\nlog.config\4.7.13\contentFiles\any\any\NLog.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ArcaeaUnlimitedAPI.Lib" Version="2.1.0" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.3" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.5.0-preview-20221003-04" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2-beta2" />
+    <PackageReference Include="NLog" Version="5.0.5" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.1.0" />
+    <PackageReference Include="NLog.Schema" Version="5.0.5" />
+    <PackageReference Include="SkiaSharp" Version="2.88.3" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.3" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.3" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
+    <PackageReference Include="xunit" Version="2.4.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Konata.Core\Konata.Core\Konata.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+	  <!-- Get Build Stamp -->
+  <Target Name="GetBuildStamp" BeforeTargets="GenerateBuildStamp" Condition="'$(BuildHash)' == ''">
+    <PropertyGroup>
+      <BuildStampFile>$(IntermediateOutputPath)BuildStamp</BuildStampFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BuildDate>$([System.DateTime]::Now.ToString(s))</BuildDate>
+    </PropertyGroup>
+
+    <!-- Git Branch -->
+    <Exec Command="git -C $(ProjectDir) rev-parse --abbrev-ref HEAD &gt; $(BuildStampFile)" />
+
+    <!-- Git Commit Hash -->
+    <Exec Command="git -C $(ProjectDir) rev-parse HEAD &gt;&gt; $(BuildStampFile)" />
+
+    <!--Build Date -->
+    <Exec Command="echo $(BuildDate) &gt;&gt; $(BuildStampFile)" />
+
+    <ReadLinesFromFile File="$(BuildStampFile)">
+      <Output TaskParameter="Lines" ItemName="Stamp" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <BuildStamp>@(Stamp)</BuildStamp>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Generate Build Stamp -->
+  <Target Name="GenerateBuildStamp" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <CustomAssemblyInfoFile>$(IntermediateOutputPath)CustomAssemblyInfo.cs</CustomAssemblyInfoFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="$(CustomAssemblyInfoFile)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AssemblyAttributes Include="AssemblyMetadata">
+        <_Parameter1>BuildStamp</_Parameter1>
+        <_Parameter2>$(BuildStamp)</_Parameter2>
+      </AssemblyAttributes>
+    </ItemGroup>
+
+    <WriteCodeFragment Language="C#" OutputFile="$(CustomAssemblyInfoFile)" AssemblyAttributes="@(AssemblyAttributes)" />
+  </Target>
+
+
+</Project>

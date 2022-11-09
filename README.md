@@ -1,6 +1,6 @@
 <div align="center">
 
-# RinBot
+# SuzuBot
 
 ![](Resource/avatar.png)
 
@@ -13,7 +13,7 @@ Multi-Usage QQ Bot
 </div>
 
 # Document
-[RinBot.Docs](https://docs-rinbot.akulak.icu/) (Simplified Chinese Only)
+[SuzuBot.Docs](https://docs-rinbot.akulak.icu/) (Simplified Chinese Only)
 
 # Special Thanks
 RinBot could not have been created without these projects.

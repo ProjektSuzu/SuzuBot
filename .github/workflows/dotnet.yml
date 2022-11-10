@@ -55,8 +55,8 @@ jobs:
       uses: garygrossgarten/github-action-ssh@v0.6.3
       with:
         command: |
-          sudo chmod 755 /home/RinBot/RinBot &&
-          sudo systemctl restart rinbot.service
+          sudo chmod 755 /home/SuzuBot/SuzuBot.dll &&
+          sudo systemctl restart suzubot.service
         host: ${{ secrets.host }}
         port: ${{ secrets.port }}
         username: ${{ secrets.username }}

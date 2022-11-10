@@ -67,6 +67,11 @@ internal class ArcaeaModule : BaseModule
                 {
                     return Best(eventArgs, arguments, neko);
                 }
+            case "preview":
+            case "chart":
+                {
+                    return ChartPreview(eventArgs, arguments);
+                }
             case "songinfo":
             case "song":
                 {
@@ -299,6 +304,43 @@ internal class ArcaeaModule : BaseModule
 
         builder.Text(stringBuilder.ToString());
         await eventArgs.Reply(builder);
+    }
+    public async Task ChartPreview(MessageEventArgs eventArgs, string queryStr)
+    {
+        if (string.IsNullOrWhiteSpace(queryStr))
+        {
+            await EmptyQueryString(eventArgs);
+            return;
+        }
+
+        var query = ParseSongQueryRequest(queryStr);
+        var result = _utils.QueryChartCoarse(query.SongName);
+        switch (result.ResultType)
+        {
+            case ChartQueryResultType.Success:
+                {
+                    if (result.ChartInfos.Length < query.Difficulty)
+                    {
+                        await InvalidChartDifficulty(eventArgs, result.ChartInfos, query.Difficulty);
+                        return;
+                    }
+
+                    break;
+                }
+            case ChartQueryResultType.NotFound:
+                {
+                    await SongNotFound(eventArgs, query.SongName);
+                    return;
+                }
+            case ChartQueryResultType.Ambiguous:
+                {
+                    await AmbiguousSongResult(eventArgs, query.SongName, result.ChartInfos);
+                    return;
+                }
+        }
+
+        var bytes = await _client.Assets.Preview(result.SongId, (ArcaeaDifficulty)query.Difficulty);
+        await eventArgs.Reply(new MessageBuilder($"[Arcaea]Preview\n{result.ChartInfos[query.Difficulty].NameEn} - {(ArcaeaDifficulty)query.Difficulty}\n").Image(bytes));
     }
     public async Task Bind(MessageEventArgs eventArgs, string userCode)
     {

@@ -57,6 +57,10 @@ internal class ArcaeaModule : BaseModule
 
         switch (funcName)
         {
+            case "alias":
+                {
+                    return Alias(eventArgs, arguments);
+                }
             case "best30":
             case "b30":
                 {
@@ -147,15 +151,15 @@ internal class ArcaeaModule : BaseModule
             return;
         }
 
-        var query = ParseSongQueryRequest(queryStr);
-        var result = _utils.QueryChartCoarse(query.SongName);
-        switch (result.ResultType)
+        var (SongName, Difficulty) = ParseSongQueryRequest(queryStr);
+        var (ResultType, SongId, ChartInfos) = _utils.QueryChartCoarse(SongName);
+        switch (ResultType)
         {
             case ChartQueryResultType.Success:
                 {
-                    if (result.ChartInfos.Length < query.Difficulty)
+                    if (ChartInfos.Length < Difficulty)
                     {
-                        await InvalidChartDifficulty(eventArgs, result.ChartInfos, query.Difficulty);
+                        await InvalidChartDifficulty(eventArgs, ChartInfos, Difficulty);
                         return;
                     }
 
@@ -163,12 +167,12 @@ internal class ArcaeaModule : BaseModule
                 }
             case ChartQueryResultType.NotFound:
                 {
-                    await SongNotFound(eventArgs, query.SongName);
+                    await SongNotFound(eventArgs, SongName);
                     return;
                 }
             case ChartQueryResultType.Ambiguous:
                 {
-                    await AmbiguousSongResult(eventArgs, query.SongName, result.ChartInfos);
+                    await AmbiguousSongResult(eventArgs, SongName, ChartInfos);
                     return;
                 }
         }
@@ -176,7 +180,7 @@ internal class ArcaeaModule : BaseModule
         AuaUserBestContent best;
         try
         {
-            best = await _client.User.Best(int.Parse(info.UserCode), result.SongId, (ArcaeaDifficulty)query.Difficulty);
+            best = await _client.User.Best(int.Parse(info.UserCode), SongId, (ArcaeaDifficulty)Difficulty);
         }
         catch (AuaException ex)
         {
@@ -231,15 +235,15 @@ internal class ArcaeaModule : BaseModule
             return;
         }
 
-        var query = ParseSongQueryRequest(queryStr);
-        var result = _utils.QueryChartCoarse(query.SongName);
-        switch (result.ResultType)
+        var (SongName, Difficulty) = ParseSongQueryRequest(queryStr);
+        var (ResultType, SongId, ChartInfos) = _utils.QueryChartCoarse(SongName);
+        switch (ResultType)
         {
             case ChartQueryResultType.Success:
                 {
-                    if (result.ChartInfos.Length < query.Difficulty)
+                    if (ChartInfos.Length < Difficulty)
                     {
-                        await InvalidChartDifficulty(eventArgs, result.ChartInfos, query.Difficulty);
+                        await InvalidChartDifficulty(eventArgs, ChartInfos, Difficulty);
                         return;
                     }
 
@@ -247,18 +251,18 @@ internal class ArcaeaModule : BaseModule
                 }
             case ChartQueryResultType.NotFound:
                 {
-                    await SongNotFound(eventArgs, query.SongName);
+                    await SongNotFound(eventArgs, SongName);
                     return;
                 }
             case ChartQueryResultType.Ambiguous:
                 {
-                    await AmbiguousSongResult(eventArgs, query.SongName, result.ChartInfos);
+                    await AmbiguousSongResult(eventArgs, SongName, ChartInfos);
                     return;
                 }
         }
 
-        var chart = result.ChartInfos[0];
-        var nameEns = result.ChartInfos.Select(x => x.NameEn.Trim()).Distinct();
+        var chart = ChartInfos[0];
+        var nameEns = ChartInfos.Select(x => x.NameEn.Trim()).Distinct();
         StringBuilder stringBuilder = new StringBuilder();
         foreach (var name in nameEns)
             stringBuilder.AppendLine(name);
@@ -277,26 +281,26 @@ internal class ArcaeaModule : BaseModule
                 stringBuilder.AppendLine("未知之侧"); break;
         }
         stringBuilder.AppendLine("难度    定数    物量");
-        stringBuilder.AppendLine(string.Format("PST {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(result.ChartInfos[0].Difficulty), (float)result.ChartInfos[0].Rating / 10, result.ChartInfos[0].Note));
-        stringBuilder.AppendLine(string.Format("PRS {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(result.ChartInfos[1].Difficulty), (float)result.ChartInfos[1].Rating / 10, result.ChartInfos[1].Note));
-        stringBuilder.AppendLine(string.Format("FTR {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(result.ChartInfos[2].Difficulty), (float)result.ChartInfos[2].Rating / 10, result.ChartInfos[2].Note));
-        if (result.ChartInfos.Length > 3)
-            stringBuilder.AppendLine(string.Format("BYD {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(result.ChartInfos[3].Difficulty), (float)result.ChartInfos[3].Rating / 10, result.ChartInfos[3].Note));
+        stringBuilder.AppendLine(string.Format("PST {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(ChartInfos[0].Difficulty), (float)ChartInfos[0].Rating / 10, ChartInfos[0].Note));
+        stringBuilder.AppendLine(string.Format("PRS {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(ChartInfos[1].Difficulty), (float)ChartInfos[1].Rating / 10, ChartInfos[1].Note));
+        stringBuilder.AppendLine(string.Format("FTR {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(ChartInfos[2].Difficulty), (float)ChartInfos[2].Rating / 10, ChartInfos[2].Note));
+        if (ChartInfos.Length > 3)
+            stringBuilder.AppendLine(string.Format("BYD {0,-4}{1,-8:0.00}{2,-8}", ArcaeaUtils.GetDifficultyFriendly(ChartInfos[3].Difficulty), (float)ChartInfos[3].Rating / 10, ChartInfos[3].Note));
 
         MessageBuilder builder = new MessageBuilder("[Arcaea]SongInfo\n");
         int count = 0;
-        var coverQuery = result.ChartInfos
+        var coverQuery = ChartInfos
             .Select(x => (count++, x.JacketOverride)).ToArray();
         byte[][] coverResult;
         if (coverQuery.All(x => x.JacketOverride == false))
         {
-            coverResult = new byte[1][] { _utils.GetSongCover(result.SongId, 0, neko).Result };
+            coverResult = new byte[1][] { _utils.GetSongCover(SongId, 0, neko).Result };
         }
         else
         {
             var baseCover = coverQuery.First(x => !x.JacketOverride);
             coverQuery = coverQuery.Where(x => x.JacketOverride).Append(baseCover).OrderBy(x => x.Item1).ToArray();
-            coverResult = coverQuery.Select(x => _utils.GetSongCover(result.SongId, x.Item1, neko).Result).ToArray();
+            coverResult = coverQuery.Select(x => _utils.GetSongCover(SongId, x.Item1, neko).Result).ToArray();
         }
 
         foreach (var image in coverResult)
@@ -304,6 +308,48 @@ internal class ArcaeaModule : BaseModule
 
         builder.Text(stringBuilder.ToString());
         await eventArgs.Reply(builder);
+    }
+    public async Task Alias(MessageEventArgs eventArgs, string queryStr)
+    {
+        if (string.IsNullOrWhiteSpace(queryStr))
+        {
+            await EmptyQueryString(eventArgs);
+            return;
+        }
+
+        var (SongName, Difficulty) = ParseSongQueryRequest(queryStr, false);
+        var (ResultType, SongId, ChartInfos) = _utils.QueryChartCoarse(SongName);
+        switch (ResultType)
+        {
+            case ChartQueryResultType.Success:
+                {
+                    if (ChartInfos.Length < Difficulty)
+                    {
+                        await InvalidChartDifficulty(eventArgs, ChartInfos, Difficulty);
+                        return;
+                    }
+
+                    break;
+                }
+            case ChartQueryResultType.NotFound:
+                {
+                    await SongNotFound(eventArgs, SongName);
+                    return;
+                }
+            case ChartQueryResultType.Ambiguous:
+                {
+                    await AmbiguousSongResult(eventArgs, SongName, ChartInfos);
+                    return;
+                }
+        }
+
+        var alias = await _utils.GetSongAlias(SongId);
+        StringBuilder builder = new StringBuilder("[Arcaea]Alias\n");
+        builder.AppendLine($"{queryStr} 具有以下别名");
+        foreach (var alia in alias)
+            builder.AppendLine(alia);
+        
+        await eventArgs.Reply(builder.ToString());
     }
     public async Task ChartPreview(MessageEventArgs eventArgs, string queryStr)
     {
@@ -313,15 +359,15 @@ internal class ArcaeaModule : BaseModule
             return;
         }
 
-        var query = ParseSongQueryRequest(queryStr);
-        var result = _utils.QueryChartCoarse(query.SongName);
-        switch (result.ResultType)
+        var (SongName, Difficulty) = ParseSongQueryRequest(queryStr);
+        var (ResultType, SongId, ChartInfos) = _utils.QueryChartCoarse(SongName);
+        switch (ResultType)
         {
             case ChartQueryResultType.Success:
                 {
-                    if (result.ChartInfos.Length < query.Difficulty)
+                    if (ChartInfos.Length < Difficulty)
                     {
-                        await InvalidChartDifficulty(eventArgs, result.ChartInfos, query.Difficulty);
+                        await InvalidChartDifficulty(eventArgs, ChartInfos, Difficulty);
                         return;
                     }
 
@@ -329,18 +375,18 @@ internal class ArcaeaModule : BaseModule
                 }
             case ChartQueryResultType.NotFound:
                 {
-                    await SongNotFound(eventArgs, query.SongName);
+                    await SongNotFound(eventArgs, SongName);
                     return;
                 }
             case ChartQueryResultType.Ambiguous:
                 {
-                    await AmbiguousSongResult(eventArgs, query.SongName, result.ChartInfos);
+                    await AmbiguousSongResult(eventArgs, SongName, ChartInfos);
                     return;
                 }
         }
 
-        var bytes = await _client.Assets.Preview(result.SongId, (ArcaeaDifficulty)query.Difficulty);
-        await eventArgs.Reply(new MessageBuilder($"[Arcaea]Preview\n{result.ChartInfos[query.Difficulty].NameEn} - {(ArcaeaDifficulty)query.Difficulty}\n").Image(bytes));
+        var bytes = await _client.Assets.Preview(SongId, (ArcaeaDifficulty)Difficulty);
+        await eventArgs.Reply(new MessageBuilder($"[Arcaea]Preview\n{ChartInfos[Difficulty].NameEn} - {(ArcaeaDifficulty)Difficulty}\n").Image(bytes));
     }
     public async Task Bind(MessageEventArgs eventArgs, string userCode)
     {
@@ -512,8 +558,11 @@ internal class ArcaeaModule : BaseModule
     {
         return int.TryParse(userCode, out code) && userCode.Length == 9;
     }
-    public static (string SongName, int Difficulty) ParseSongQueryRequest(string queryStr)
+    public static (string SongName, int Difficulty) ParseSongQueryRequest(string queryStr, bool processDifficuly = true)
     {
+        if (!processDifficuly)
+            return (queryStr, 2);
+
         var array = queryStr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var songName = string.Join(' ', array.SkipLast(1));
         switch (array.Last().ToLower())

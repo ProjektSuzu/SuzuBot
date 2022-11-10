@@ -133,7 +133,7 @@ internal class ArcaeaUtils
         {
             var songId = songIdResult[0].SongId;
             if (songIdResult.All(x => x.SongId == songId))
-                return (ChartQueryResultType.Success, songIdResult[0].SongId, songIdResult.Select(ToAuaChartInfo).ToArray());
+                return QueryChartPrecise(songId);
             else
                 return (ChartQueryResultType.Ambiguous, songIdResult[0].SongId, songIdResult.Select(ToAuaChartInfo).ToArray());
         }
@@ -146,7 +146,7 @@ internal class ArcaeaUtils
         {
             var songId = songNameResult[0].SongId;
             if (songNameResult.All(x => x.SongId == songId))
-                return (ChartQueryResultType.Success, songNameResult[0].SongId, songNameResult.Select(ToAuaChartInfo).ToArray());
+                return QueryChartPrecise(songId);
             else
                 return (ChartQueryResultType.Ambiguous, songNameResult[0].SongId, songNameResult.Select(ToAuaChartInfo).ToArray());
         }

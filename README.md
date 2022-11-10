@@ -4,8 +4,8 @@
 
 ![](Resource/avatar.png)
 
-[![.NET](https://github.com/RinBotDev/RinBot/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/RinBotDev/RinBot/actions/workflows/dotnet.yml)
-[![](https://img.shields.io/github/license/RinBotDev/RinBot)](./LICENSE)
+[![.NET](https://github.com/SuzuBotDev/SuzuBot/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/SuzuBotDev/SuzuBot/actions/workflows/dotnet.yml)
+[![](https://img.shields.io/github/license/SuzuBotDev/SuzuBot)](./LICENSE)
 [![](https://img.shields.io/badge/.NET-7.0-blue)](https://dotnet.microsoft.com/zh-cn/)
 [![wakatime](https://wakatime.com/badge/user/8389ce29-a5be-481a-bb7c-8012f59d1858/project/9c579517-a8aa-43a7-b439-2741c0345b30.svg)](https://wakatime.com/badge/user/8389ce29-a5be-481a-bb7c-8012f59d1858/project/9c579517-a8aa-43a7-b439-2741c0345b30)
 

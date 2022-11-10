@@ -168,7 +168,20 @@ internal class ArcaeaUtils
                     .SelectMany(x => QueryChartPrecise(x.Key).ChartInfos).ToArray());
         }
 
-        return (ChartQueryResultType.NotFound, string.Empty, Array.Empty<AuaChartInfo>());
+        // Api fallback
+        try
+        {
+            var apiResult = _client.Song.Info(songName).Result;
+            if (apiResult is null)
+                return (ChartQueryResultType.NotFound, string.Empty, Array.Empty<AuaChartInfo>());
+
+            var charts = apiResult.Difficulties;
+            return (ChartQueryResultType.Success, apiResult.SongId, charts);
+        }
+        catch
+        {
+            return (ChartQueryResultType.NotFound, string.Empty, Array.Empty<AuaChartInfo>());
+        }
     }
     public Task<ArcaeaBindInfo?> GetBindInfo(uint userId)
     {

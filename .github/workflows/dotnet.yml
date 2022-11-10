@@ -23,11 +23,6 @@ jobs:
         include-prerelease: true # optional
     - name: Restore dependencies
       run: dotnet restore
-    - name: Build
-      run: |
-        dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
     - name: Publish
       run:  dotnet publish -c Release --no-self-contained -r linux-x64 -f net70 -o publish
       

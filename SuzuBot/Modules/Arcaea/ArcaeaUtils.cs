@@ -85,19 +85,36 @@ internal class ArcaeaUtils
 
     public (ChartQueryResultType ResultType, string SongId, AuaChartInfo[] ChartInfos) QueryChartPrecise(string songName)
     {
-        // Full match SongId
+        // Precise match SongId
         var chartQuery = _songDbConnection.Table<ChartInfoMapping>()
             .Where(x => x.SongId == songName)
             .ToArrayAsync().Result;
         if (chartQuery.Any())
             return (ChartQueryResultType.Success, chartQuery[0].SongId, chartQuery.Select(ToAuaChartInfo).ToArray());
 
-        // Full match SongName
+        // Precise match SongName
         chartQuery = _songDbConnection.Table<ChartInfoMapping>()
             .Where(x => x.NameEn == songName || x.NameJp == songName)
             .ToArrayAsync().Result;
         if (chartQuery.Any())
             return (ChartQueryResultType.Success, chartQuery[0].SongId, chartQuery.Select(ToAuaChartInfo).ToArray());
+
+        // Precise match Alias
+        var aliasResult = _songDbConnection.Table<AliasMapping>()
+            .Where(x => x.Alias == songName)
+            .ToArrayAsync().Result;
+        if (aliasResult.Any())
+        {
+            var songId = aliasResult[0].SongId;
+            if (aliasResult.All(x => x.SongId == songId))
+                return QueryChartPrecise(songId);
+            else
+                return (ChartQueryResultType.Ambiguous,
+                        aliasResult[0].SongId,
+                    aliasResult
+                    .GroupBy(x => x.SongId)
+                    .SelectMany(x => QueryChartPrecise(x.Key).ChartInfos).ToArray());
+        }
 
         return (ChartQueryResultType.NotFound, string.Empty, Array.Empty<AuaChartInfo>());
     }
@@ -134,25 +151,8 @@ internal class ArcaeaUtils
                 return (ChartQueryResultType.Ambiguous, songNameResult[0].SongId, songNameResult.Select(ToAuaChartInfo).ToArray());
         }
 
-        // Precise match Alias
-        var aliasResult = _songDbConnection.Table<AliasMapping>()
-            .Where(x => x.Alias == songName)
-            .ToArrayAsync().Result;
-        if (aliasResult.Any())
-        {
-            var songId = aliasResult[0].SongId;
-            if (aliasResult.All(x => x.SongId == songId))
-                return QueryChartPrecise(songId);
-            else
-                return (ChartQueryResultType.Ambiguous,
-                        aliasResult[0].SongId,
-                    aliasResult
-                    .GroupBy(x => x.SongId)
-                    .SelectMany(x => QueryChartPrecise(x.Key).ChartInfos).ToArray());
-        }
-
         // Coarse match Alias
-        aliasResult = _songDbConnection.Table<AliasMapping>()
+        var aliasResult = _songDbConnection.Table<AliasMapping>()
             .Where(x => x.Alias.Contains(songName))
             .ToArrayAsync().Result;
         if (aliasResult.Any())

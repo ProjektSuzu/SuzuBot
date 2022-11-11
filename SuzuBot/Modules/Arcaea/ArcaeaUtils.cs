@@ -987,7 +987,7 @@ internal class ArcaeaUtils
         var chartInfo = (await GetChartInfo(songId)).ElementAtOrDefault(difficulty);
         if (chartInfo == null)
             throw new FileNotFoundException();
-        var dirPath = Path.Combine(_resourceDirPath, neko ? "nekoCovers" : "covers", chartInfo.RemoteDownload ? $"dl_{songId}" : songId);
+        var dirPath = Path.Combine(_resourceDirPath, neko ? Path.Combine("Arcanya", "songs") : "covers", chartInfo.RemoteDownload ? $"dl_{songId}" : songId);
         if (Directory.Exists(dirPath))
         {
             var files = Directory.GetFiles(dirPath);

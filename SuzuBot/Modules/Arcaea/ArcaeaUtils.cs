@@ -405,7 +405,7 @@ internal class ArcaeaUtils
             fontPaint.TextSize = 32;
             fontPaint.Typeface = ArkPixel;
 
-            DateTime playTime = DateTime.UnixEpoch.AddMilliseconds(record.TimePlayed);
+            DateTime playTime = DateTime.UnixEpoch.AddMilliseconds(record.TimePlayed).AddHours(8);
             string timeStr = playTime.ToString("yyyy-MM-dd HH:mm:ss");
             SKRect rect = new();
             fontPaint.MeasureText(timeStr, ref rect);
@@ -795,7 +795,7 @@ internal class ArcaeaUtils
             mainCanvas.DrawShapedText($"< {accountInfo.Code.Insert(6, " ").Insert(3, " ")} >", 180, 750, fontPaint);
 
             fontPaint.Typeface = NotoSansRegular;
-            mainCanvas.DrawShapedText($"Date: {DateTime.UnixEpoch.AddMilliseconds(record.TimePlayed):yyyy-MM-dd HH:mm:ss}", 180, 780, fontPaint);
+            mainCanvas.DrawShapedText($"Date: {DateTime.UnixEpoch.AddMilliseconds(record.TimePlayed).AddHours(8):yyyy-MM-dd HH:mm:ss}", 180, 780, fontPaint);
 
             if (accountInfo.Rating < 0)
             {

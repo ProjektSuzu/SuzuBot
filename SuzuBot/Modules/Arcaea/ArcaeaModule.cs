@@ -438,8 +438,8 @@ internal class ArcaeaModule : BaseModule
         }
         else
         {
+            bindInfo.UserCode = userInfoResult.AccountInfo.Code;
             var userInfo = await _utils.GetUserInfo(bindInfo.UserCode);
-            bindInfo.UserCode = userCode;
             if (userInfo is null)
             {
                 userInfo = new()

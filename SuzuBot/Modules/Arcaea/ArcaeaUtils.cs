@@ -209,7 +209,7 @@ internal class ArcaeaUtils
     }
     public bool DeleteBindInfo(uint userId)
     {
-        return _userDbConnection.DeleteAsync<ArcaeaUserInfo>(userId).Result > 0;
+        return _userDbConnection.DeleteAsync<ArcaeaBindInfo>(userId).Result > 0;
     }
 
     public async Task<SKImage> GenerateSongCard(AuaRecord record, int id = 1, bool neko = false)

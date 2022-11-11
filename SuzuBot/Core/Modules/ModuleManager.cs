@@ -146,7 +146,10 @@ internal class ModuleManager : BaseManager
                 await RecordInvoke(eventArgs, result.Item2, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Error);
                 string message = $"[Error]\n" +
                     $"出现了意料之外的错误Σ( ° △ °|||)\n" +
-                    $"{ex.GetType()}";
+                    $"{ex.GetType()}: {ex.Message}\n" +
+                    $"如果这个问题频繁出现 请使用\n" +
+                    $"/report 你想要反馈的内容\n" +
+                    $"进行反馈";
                 await eventArgs.Reply(message);
             }
         }

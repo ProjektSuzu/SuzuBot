@@ -206,16 +206,11 @@ internal class ArcaeaModule : BaseModule
 
             code = int.Parse(info.UserCode);
         }
-        else if (TryParseUserCode(userCode, out code))
-        {
-            await WrongUserCode(eventArgs, userCode);
-            return;
-        }
 
         AuaUserBest30Content best30;
         try
         {
-            best30 = await _client.User.Best30(code, 3);
+            best30 = await _client.User.Best30(userCode, 3);
         }
         catch (AuaException ex)
         {

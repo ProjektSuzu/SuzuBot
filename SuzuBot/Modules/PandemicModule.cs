@@ -1,11 +1,11 @@
 
-using SuzuBot.Common.Attributes;
-using SuzuBot.Common;
-using SuzuBot.Common.EventArgs.Messages;
+using System.Text;
+using Konata.Core.Message;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Konata.Core.Message;
-using System.Text;
+using SuzuBot.Common;
+using SuzuBot.Common.Attributes;
+using SuzuBot.Common.EventArgs.Messages;
 using MatchType = SuzuBot.Common.Attributes.MatchType;
 
 namespace SuzuBot.Modules;
@@ -30,7 +30,7 @@ internal class PandemicModule : BaseModule
     {
         var city = args[0];
         var result = await GetPandemicInfo(city);
-        if (result is null) 
+        if (result is null)
         {
             await eventArgs.Reply(new MessageBuilder("[Pandemic]\n无法识别的城市名"));
             return;
@@ -53,7 +53,8 @@ internal class PandemicModule : BaseModule
         if (result is null || !result.IsSuccessStatusCode)
             return null;
 
-        var content = await result.Content.ReadAsStringAsync();
+        var bytes = await result.Content.ReadAsByteArrayAsync();
+        var content = Encoding.UTF8.GetString(bytes);
         var array = JsonConvert.DeserializeObject<PandemicInfo[]>(content);
         if (array is null || !array.Any())
             return null;

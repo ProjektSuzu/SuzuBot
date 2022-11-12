@@ -1,14 +1,10 @@
-﻿using System;
-using System.Diagnostics.Metrics;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Text;
 using ArcaeaUnlimitedAPI.Lib;
 using ArcaeaUnlimitedAPI.Lib.Models;
 using ArcaeaUnlimitedAPI.Lib.Responses;
 using ArcaeaUnlimitedAPI.Lib.Utils;
 using Konata.Core.Message;
 using Newtonsoft.Json;
-using SuzuBot.Common.Attributes;
 using SuzuBot.Common;
 using SuzuBot.Common.Attributes;
 using SuzuBot.Common.EventArgs.Messages;
@@ -342,7 +338,7 @@ internal class ArcaeaModule : BaseModule
         builder.AppendLine($"{queryStr} 具有以下别名");
         foreach (var alia in alias)
             builder.AppendLine(alia);
-        
+
         await eventArgs.Reply(builder.ToString());
     }
     public async Task ChartPreview(MessageEventArgs eventArgs, string queryStr)

@@ -333,7 +333,7 @@ internal class ArcaeaUtils
             var text = chartInfo.NameEn;
             SKRect rect = new();
             fontPaint.MeasureText(text, ref rect);
-            while (rect.Width > 500)
+            while (rect.Width > 580)
             {
                 text = text.SkipLast(3) + "..";
                 fontPaint.MeasureText(text, ref rect);

@@ -1,7 +1,7 @@
 ﻿using Konata.Core.Message;
 using Newtonsoft.Json;
-using SuzuBot.Common.Attributes;
 using SuzuBot.Common;
+using SuzuBot.Common.Attributes;
 using SuzuBot.Common.EventArgs.Messages;
 
 #pragma warning disable CS8618

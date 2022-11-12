@@ -1,16 +1,8 @@
-﻿using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Reflection;
 using Konata.Core;
 using Konata.Core.Interfaces.Api;
-using Konata.Core.Message;
-using Newtonsoft.Json;
-using SuzuBot.Common.Attributes;
-using SuzuBot.Common.EventArgs.Messages;
-using SuzuBot.Core.Databases.Tables;
-using SuzuBot.Utils;
 using SuzuBot.Common;
+using SuzuBot.Common.Attributes;
 
 namespace SuzuBot.Modules;
 

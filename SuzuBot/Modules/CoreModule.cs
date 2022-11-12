@@ -1,8 +1,8 @@
 ﻿using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
 using Newtonsoft.Json;
-using SuzuBot.Common.Attributes;
 using SuzuBot.Common;
+using SuzuBot.Common.Attributes;
 using SuzuBot.Common.EventArgs.Messages;
 using SuzuBot.Utils;
 

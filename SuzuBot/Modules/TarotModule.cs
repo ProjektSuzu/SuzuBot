@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.Metrics;
-using System.Reflection;
+﻿using System.Reflection;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using Newtonsoft.Json;
-using SuzuBot.Common.Attributes;
 using SuzuBot.Common;
 using SuzuBot.Common.Attributes;
 using SuzuBot.Common.EventArgs.Messages;

@@ -558,7 +558,7 @@ internal class ArcaeaUtils
 
                 mainCanvas.DrawShapedText($"B30 Average: {best30Content.Best30Avg:00.0000}", 525, 380, fontPaint);
                 mainCanvas.DrawShapedText($"R10 Average: {best30Content.Recent10Avg:00.0000}", 525, 450, fontPaint);
-                mainCanvas.DrawShapedText($"Max Estimate: {(best30Content.Best30Avg + best30Content.Best30List.Take(10).Sum(x => x.Rating) / 10) / 2:00.0000}", 525, 520, fontPaint);
+                mainCanvas.DrawShapedText($"Max Estimate: {(best30Content.Best30List.Sum(x => x.Rating) + best30Content.Best30List.Take(10).Sum(x => x.Rating)) / 40:00.0000}", 525, 520, fontPaint);
             }
 
             using SKBitmap charaImg = SKBitmap.Decode(await GetCharaImg(best30Content.AccountInfo.Character, best30Content.AccountInfo.IsCharUncapped));

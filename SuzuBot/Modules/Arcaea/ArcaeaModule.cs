@@ -190,6 +190,7 @@ internal class ArcaeaModule : BaseModule
     }
     public async Task Best30(MessageEventArgs eventArgs, string userCode = "", bool neko = false)
     {
+        int code;
         if (string.IsNullOrWhiteSpace(userCode))
         {
             var info = await _utils.GetBindInfo(eventArgs.SenderId);
@@ -199,7 +200,7 @@ internal class ArcaeaModule : BaseModule
                 return;
             }
 
-            userCode = info.UserCode;
+            code = int.Parse(info.UserCode);
         }
 
         AuaUserBest30Content best30;

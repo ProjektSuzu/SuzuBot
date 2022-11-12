@@ -1,4 +1,3 @@
-
 using System.Text;
 using Konata.Core.Message;
 using Newtonsoft.Json;
@@ -10,7 +9,7 @@ using MatchType = SuzuBot.Common.Attributes.MatchType;
 
 namespace SuzuBot.Modules;
 
-[Module("疫情")]
+[Module("新冠肺炎疫情")]
 internal class PandemicModule : BaseModule
 {
     private const string _url = "http://111.231.75.86:8000/api/cities/CHN/?cityNames=";
@@ -25,7 +24,7 @@ internal class PandemicModule : BaseModule
         };
     }
 
-    [Command("疫情查询", "pandemic", "疫情", MatchType = MatchType.StartsWith)]
+    [Command("新冠肺炎疫情查询", "pandemic", "疫情", MatchType = MatchType.StartsWith)]
     public async Task Pandemic(MessageEventArgs eventArgs, string[] args)
     {
         var city = args[0];

@@ -333,9 +333,9 @@ internal class ArcaeaUtils
             var text = chartInfo.NameEn;
             SKRect rect = new();
             fontPaint.MeasureText(text, ref rect);
-            while (rect.Width > 580)
+            while (rect.Width > 550)
             {
-                text = text.SkipLast(3) + "..";
+                text = text[..^3] + "..";
                 fontPaint.MeasureText(text, ref rect);
             }
             mainCanvas.DrawShapedText(text, 320, 115 - rect.Height / 2, fontPaint);

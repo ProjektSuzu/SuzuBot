@@ -330,9 +330,15 @@ internal class ArcaeaUtils
             fontPaint.TextSize = 40;
             fontPaint.Typeface = NotoSansRegular;
 
+            var text = chartInfo.NameEn;
             SKRect rect = new();
-            fontPaint.MeasureText(chartInfo.NameEn, ref rect);
-            mainCanvas.DrawShapedText(chartInfo.NameEn, 320, 115 - rect.Height / 2, fontPaint);
+            fontPaint.MeasureText(text, ref rect);
+            while (rect.Width > 500)
+            {
+                text = text.SkipLast(3) + "..";
+                fontPaint.MeasureText(text, ref rect);
+            }
+            mainCanvas.DrawShapedText(text, 320, 115 - rect.Height / 2, fontPaint);
         }
         #endregion
 

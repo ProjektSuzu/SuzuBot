@@ -14,13 +14,16 @@ jobs:
       with:
         token: ${{ secrets.token }}
         submodules: 'true'
-    - name: Setup .NET Core SDK
+    - name: Setup .NET 7
       uses: actions/setup-dotnet@v2.1.0
       with:
         # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x
         dotnet-version: '7.0.x' # optional
-        # Whether prerelease versions should be matched with non-exact versions (for example 5.0.0-preview.6 being matched by 5, 5.0, 5.x or 5.0.x). Defaults to false if not provided.
-        include-prerelease: true # optional
+    - name: Setup .NET 6
+      uses: actions/setup-dotnet@v2.1.0
+      with:
+        # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x
+        dotnet-version: '6.0.x' # optional
     - name: Restore dependencies
       run: dotnet restore
     - name: Publish

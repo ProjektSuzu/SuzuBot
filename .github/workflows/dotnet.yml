@@ -24,20 +24,8 @@ jobs:
       with:
         # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x
         dotnet-version: '6.0.x' # optional
-    - name: Restore dependencies
-      run: dotnet restore
     - name: Publish
-      run:  dotnet publish -c Release --no-self-contained -o publish
-      
-#    - name: Stop current program
-#      uses: garygrossgarten/github-action-ssh@v0.6.3
-#      with:
-#        command: |
-#          sudo screen -S rin -X stuff $'\003'
-#        host: ${{ secrets.host }}
-#        port: ${{ secrets.port }}
-#        username: ${{ secrets.username }}
-#        password: ${{ secrets.password }}
+      run: dotnet publish SuzuBot -c Release --no-self-contained -o publish
         
     - name: Copy folder content recursively to remote
       uses: garygrossgarten/github-action-scp@v0.7.3

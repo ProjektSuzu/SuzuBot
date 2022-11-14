@@ -27,7 +27,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Publish
-      run:  dotnet publish -c Release --no-self-contained -r linux-x64 -o publish
+      run:  dotnet publish -c Release --no-self-contained -o publish
       
 #    - name: Stop current program
 #      uses: garygrossgarten/github-action-ssh@v0.6.3

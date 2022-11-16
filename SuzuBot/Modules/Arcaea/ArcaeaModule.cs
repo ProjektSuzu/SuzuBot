@@ -93,11 +93,12 @@ internal class ArcaeaModule : BaseModule
 
             default:
                 {
-                    StringBuilder builder = new();
-                    builder.AppendLine("[Arcaea]Error");
-                    builder.AppendLine("∑(O_O；)找不到功能");
-                    builder.AppendLine(funcName);
-                    return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+                    //StringBuilder builder = new();
+                    //builder.AppendLine("[Arcaea]Error");
+                    //builder.AppendLine("∑(O_O；)找不到功能");
+                    //builder.AppendLine(funcName);
+                    //return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+                    return Task.CompletedTask;
                 }
         }
     }

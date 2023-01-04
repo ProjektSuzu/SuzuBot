@@ -20,6 +20,7 @@ internal class PokeModule : BaseModule
         "我得重新集结部队",
         "为时已晚，有机体",
         "Ja, Treffer!",
+        "Ziel hat beschuss unbeschädigt überstanden."
     };
 
     public override bool Enable()

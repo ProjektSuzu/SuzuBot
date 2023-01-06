@@ -51,6 +51,17 @@ internal class CoreModule : BaseModule
             .Text(@"帮助文档请查阅: https://suzubot.akulak.icu/");
         return eventArgs.Reply(builder);
     }
+    [Command("信息", "info", Priority = 0)]
+    public async Task Info(MessageEventArgs eventArgs)
+    {
+        var info = await Context.DataBaseManager.GetUserInfo(eventArgs.SenderId);
+        var builder = new MessageBuilder("[Info]\n")
+            .Text($"{eventArgs.SenderName}\n")
+            .Text($"SC: {info.Coin}\n")
+            .Text($"好感: {info.Favor}\n")
+            .Text($"权限组: {info.AuthGroup}\n");
+        eventArgs.Reply(builder);
+    }
     [Command("退群", "quit", SourceType = SourceType.Group, Priority = 0, AuthGroup = "operator", AuthFailWarning = true)]
     public Task Quit(GroupMessageEventArgs eventArgs)
     {

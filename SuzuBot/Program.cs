@@ -1,14 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
 using SuzuBot.Core;
 using SuzuBot.Utils;
 
 namespace SuzuBot;
-public static class Program
-{
-    private static ILogger _logger = LoggerUtils.LoggerFactory.CreateLogger("Boot");
 
+public class Program
+{
     public static async Task Main()
     {
+        LogUtils.SetLoggerProvider<NLogLoggerProvider>();
+        ILogger _logger = LogUtils.CreateLogger("Boot");
         string title =
             """
               _____                 ____        _   
@@ -24,8 +26,8 @@ public static class Program
         Console.WriteLine(title);
         _logger.LogInformation($"Version: SuzuBot_{SuzuBotBuildStamp.Version}");
         _logger.LogInformation($"Branch: {SuzuBotBuildStamp.Branch}@{SuzuBotBuildStamp.CommitHash[..8]}");
-
-        Context context = new();
-        await context.StartAsync();
+        Context ctx = new();
+        if (!await ctx.StartAsync())
+            Environment.Exit(-1);
     }
 }

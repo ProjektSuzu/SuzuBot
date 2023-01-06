@@ -1,10 +1,12 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 using Konata.Core;
 
-#pragma warning disable CS8602
-
 namespace SuzuBot.Utils;
-
 public static class KonataBuildStamp
 {
     public static string Branch

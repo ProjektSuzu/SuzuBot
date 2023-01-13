@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Joins;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -178,7 +179,9 @@ public class ModuleManager : BaseManager
 
     public void RegisterCommand(BaseModule module, MethodInfo method, CommandAttribute attr)
     {
-        var regexes = ComplieRegexes(attr.Patterns);
+        var regexes = attr.Patterns
+            .Select(x => new Regex(x, RegexOptions.Singleline | RegexOptions.Compiled))
+            .ToArray();
         var cmd = new Command(module, method, attr.Name)
         {
             AuthGroup = attr.AuthGroup,
@@ -189,12 +192,5 @@ public class ModuleManager : BaseManager
         };
         Logger.LogInformation($"Register Command {cmd.FullName}");
         _commands.Add(cmd);
-    }
-
-    public Regex[] ComplieRegexes(string[] patterns)
-    {
-        return patterns
-            .Select(x => new Regex(x, RegexOptions.Singleline | RegexOptions.Compiled))
-            .ToArray();
     }
 }

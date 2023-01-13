@@ -71,6 +71,6 @@ public class Command
     }
     public Task Invoke(Bot bot, MessageEventArgs eventArgs, string[] args)
     {
-        return (Task)MethodInfo.Invoke(Module, new object[] { bot, eventArgs, args })!;
+        return (Task)MethodInfo.Invoke(Module, new object[] { eventArgs, args })!;
     }
 }

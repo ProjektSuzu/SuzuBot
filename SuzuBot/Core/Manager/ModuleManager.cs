@@ -46,7 +46,7 @@ public class ModuleManager : BaseManager
 
     public void OnMessage(MessageEventArgs eventArgs)
     {
-        string plainText = eventArgs.Chain.ToString();
+        string plainText = eventArgs.Chain.ToString().Trim();
         IEnumerable<Command> cmds = _commands.Where(x => x.IsEnabled);
         foreach (var prefix in _prefixs)
         {

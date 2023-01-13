@@ -16,6 +16,7 @@ public class Context
     public static string BaseDirectory { get; } = AppContext.BaseDirectory;
     public static string ConfigDirectory { get; } = Path.Combine(BaseDirectory, "configs");
     public static string DatabaseDirectory { get; } = Path.Combine(BaseDirectory, "databases");
+    public static string ResourceDirectory { get; } = Path.Combine(BaseDirectory, "resources");
 
     private Subject<SuzuEventArgs> _subject = new();
     private ILogger _contextLogger;

@@ -9,12 +9,5 @@ public class FriendMessageEventArgs : MessageEventArgs
 {
     public Lazy<Friend> Friend => new Lazy<Friend>(Contacts.Friend.GetSuzuFriend(Bot, Sender.Id));
 
-    public override Task<bool> Reply(MessageChain chain)
-    {
-        var builder = new MessageBuilder(chain)
-        {
-            ReplyChain.Create(Message)
-        };
-        return Bot.SendFriendMessage(Sender.Id, builder);
-    }
+    public override Task<bool> SendMessage(MessageChain chain) => Bot.SendFriendMessage(Sender.Id, chain);
 }

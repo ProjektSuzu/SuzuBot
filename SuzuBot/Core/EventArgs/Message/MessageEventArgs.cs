@@ -15,7 +15,7 @@ public abstract class MessageEventArgs : SuzuEventArgs
     public Task<bool> SendMessage(string text)
         => SendMessage(new MessageBuilder(text).Build());
 
-    public Task<bool> Reply(MessageChain chain) => SendMessage(new MessageBuilder().Add(ReplyChain.Create(Message)).Add(chains));
+    public Task<bool> Reply(MessageChain chain) => SendMessage(new MessageBuilder().Add(ReplyChain.Create(Message)).Add(chain));
     public Task<bool> Reply(MessageBuilder builder) => Reply(builder.Build());
     public Task<bool> Reply(string text) => Reply(new MessageBuilder(text).Build());
 }

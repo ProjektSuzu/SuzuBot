@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reactive.Joins;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -16,6 +15,9 @@ public class ModuleManager : BaseManager
     private List<string> _prefixs;
     private List<BaseModule> _modules = new();
     private List<Command> _commands = new();
+
+    public IReadOnlyList<BaseModule> Modules => _modules;
+    public IReadOnlyList<Command> Commands => _commands;
 
     public ulong ExecuteCount { get; private set; } = 0L;
     public ulong ExceptionCount { get; private set; } = 0L;
@@ -35,19 +37,31 @@ public class ModuleManager : BaseManager
             "铃酱",
             AtChain.Create(Context.Bot.Uin).ToString()
         };
-        
-        foreach (var type in Assembly.GetExecutingAssembly()
-                     .GetTypes()
-                     .Where(x => x.IsSubclassOf(typeof(BaseModule))))
-        {
-            RegisterModule(type);
-        }
+
+        ReloadModules();
     }
 
     public void OnMessage(MessageEventArgs eventArgs)
     {
         string plainText = eventArgs.Chain.ToString().Trim();
         IEnumerable<Command> cmds = _commands.Where(x => x.IsEnabled);
+        if (eventArgs is GroupMessageEventArgs)
+        {
+            var info = Context.DatabaseManager.GetGroupInfo(eventArgs.Subject.Id);
+            foreach (var module in info.Modules)
+            {
+                cmds = cmds.Where(x => x.Module.GetType().Name != module);
+            }
+
+            if (!info.WhiteListed)
+            {
+                cmds = cmds.Where(x => !x.Module.IsWhiteListOnly);
+            }
+        }
+        else
+        {
+            cmds = cmds.Where(x => !x.Module.IsWhiteListOnly);
+        }
         foreach (var prefix in _prefixs)
         {
             if (plainText.StartsWith(prefix))
@@ -59,7 +73,7 @@ public class ModuleManager : BaseManager
 
         cmds = cmds.Where(x => x.IgnorePrefix);
     Match:
-    var results = cmds
+        var results = cmds
         .Select(x =>
         {
             var result = x.Match(eventArgs, plainText);
@@ -75,6 +89,7 @@ public class ModuleManager : BaseManager
 
         if (!cmd.Auth(eventArgs))
         {
+            ExecuteCount++;
             Logger.LogWarning($"{cmd.FullName} Action Denied {eventArgs.Sender.Id}" +
                     $"{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.Subject.Id}" : "")}");
             RecordInvoke(eventArgs, cmd, 0, CommandExecuteResult.AuthFail);
@@ -86,7 +101,6 @@ public class ModuleManager : BaseManager
                     $"此事将被报告";
                 eventArgs.Reply(message).Wait();
             }
-            
             return;
         }
 
@@ -96,7 +110,7 @@ public class ModuleManager : BaseManager
             Logger.LogInformation($"{cmd.FullName} Begin Invoke By {eventArgs.Sender.Id}" +
                     $"{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.Subject.Id}" : "")}");
             stopwatch.Start();
-            cmd.Invoke(eventArgs.Bot, eventArgs, cmdArgs);
+            cmd.Invoke(eventArgs.Bot, eventArgs, cmdArgs).Wait();
             stopwatch.Stop();
             RecordInvoke(eventArgs, cmd, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Success);
         }
@@ -105,6 +119,8 @@ public class ModuleManager : BaseManager
             stopwatch.Stop();
             LastCommandCostMillisecond = stopwatch.ElapsedMilliseconds;
             Logger.LogError(ex, $"Unhandled Exception Threw When Execute Command {cmd.FullName}");
+            ExceptionCount++;
+            LastException = ex;
             RecordException(ex);
             RecordInvoke(eventArgs, cmd, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Error);
             string message = $"[Error]\n" +
@@ -117,7 +133,9 @@ public class ModuleManager : BaseManager
         }
         finally
         {
+            ExecuteCount++;
             long milliseconds = stopwatch.ElapsedMilliseconds;
+            LastCommandCostMillisecond = milliseconds;
             Logger.LogInformation($"{cmd.FullName} Completed In {milliseconds} ms");
         }
     }
@@ -156,7 +174,7 @@ public class ModuleManager : BaseManager
     {
         if (!type.IsSubclassOf(typeof(BaseModule)))
             return;
-        
+
         var instance = (BaseModule)Activator.CreateInstance(type)!;
         instance.Context = Context;
         instance.Init();
@@ -187,10 +205,30 @@ public class ModuleManager : BaseManager
             AuthGroup = attr.AuthGroup,
             Regexes = regexes,
             IgnorePrefix = attr.IgnorePrefix,
+            SourceType = attr.SourceType,
             WarnOnAuthFail = attr.WarnOnAuthFail,
             Priority = attr.Priority
         };
         Logger.LogInformation($"Register Command {cmd.FullName}");
         _commands.Add(cmd);
+        _commands.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+    }
+
+    internal void ReloadModules()
+    {
+        foreach (var module in _modules)
+        {
+            module.Disable();
+            module.Destory();
+        }
+        _commands.Clear();
+        _modules.Clear();
+
+        foreach (var type in Assembly.GetExecutingAssembly()
+                     .GetTypes()
+                     .Where(x => x.IsSubclassOf(typeof(BaseModule))))
+        {
+            RegisterModule(type);
+        }
     }
 }

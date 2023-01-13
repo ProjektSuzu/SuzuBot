@@ -33,7 +33,7 @@ public static class KirovUtils
         return JsonSerializer.Deserialize<dynamic>(json);
     }
 
-    public static T? DeserializeJson<T>(this string json)
+    public static T? DeserializeJson<T>(this string json, bool writeIndented = true)
     {
         return JsonSerializer.Deserialize<T?>(json);
     }

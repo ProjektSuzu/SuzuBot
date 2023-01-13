@@ -1,7 +1,5 @@
-﻿using Konata.Core;
-using Konata.Core.Interfaces.Api;
+﻿using Konata.Core.Interfaces.Api;
 using Konata.Core.Message;
-using Konata.Core.Message.Model;
 using SuzuBot.Core.Contacts;
 
 namespace SuzuBot.Core.EventArgs.Message;

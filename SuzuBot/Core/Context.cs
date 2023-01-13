@@ -5,6 +5,7 @@ using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
 using Microsoft.Extensions.Logging;
 using SuzuBot.Core.EventArgs;
+using SuzuBot.Core.EventArgs.Bot;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Manager;
 using SuzuBot.Utils;
@@ -55,6 +56,34 @@ public class Context
             };
             _subject.OnNext(args);
             _botLogger.LogInformation($"{e.Message.Receiver.Name}({e.Message.Receiver.Uin})|{e.Message.Sender.Name}({e.Message.Sender.Uin}): {e.Chain}");
+        };
+        Bot.OnFriendPoke += (s, e) =>
+        {
+            if (e.FriendUin == Bot.Uin) return;
+            var args = new PokeEventArgs()
+            {
+                Bot = s,
+                SenderId = e.FriendUin,
+                SubjectId = e.FriendUin,
+                ReceiverId = e.SelfUin,
+                PokeType = PokeType.Friend
+            };
+            _subject.OnNext(args);
+            _botLogger.LogInformation($"{e.FriendUin} {e.ActionPrefix} {e.SelfUin} {e.ActionSuffix}");
+        };
+        Bot.OnGroupPoke += (s, e) =>
+        {
+            if (e.OperatorUin == Bot.Uin) return;
+            var args = new PokeEventArgs()
+            {
+                Bot = s,
+                SenderId = e.OperatorUin,
+                SubjectId = e.GroupUin,
+                ReceiverId = e.MemberUin,
+                PokeType = PokeType.Group
+            };
+            _subject.OnNext(args);
+            _botLogger.LogInformation($"{e.GroupUin} {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
         };
     }
     private void UpdateKeyStore(BotKeyStore keyStore)

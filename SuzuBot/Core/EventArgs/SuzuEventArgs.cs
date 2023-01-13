@@ -1,10 +1,8 @@
-﻿using Konata.Core;
-
-namespace SuzuBot.Core.EventArgs;
+﻿namespace SuzuBot.Core.EventArgs;
 
 public abstract class SuzuEventArgs : System.EventArgs
 {
-    public Bot Bot { get; init; }
+    public Konata.Core.Bot Bot { get; init; }
     public string EventId { get; init; }
     public DateTime EventTime { get; init; }
 

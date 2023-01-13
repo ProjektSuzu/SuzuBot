@@ -1,12 +1,11 @@
-﻿using SuzuBot.Core.Contacts;
-
-namespace SuzuBot.Core.Modules;
+﻿namespace SuzuBot.Core.Modules;
 public abstract class BaseModule
 {
     public Context Context { get; set; }
     public string Name { get; set; }
     public string ResourceDirPath { get; set; }
     public bool IsEnabled { get; set; }
+    public bool IsWhiteListOnly { get; set; }
     public bool IsCritical { get; set; }
 
     public virtual bool Init()

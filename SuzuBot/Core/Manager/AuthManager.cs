@@ -1,5 +1,4 @@
 ﻿using SuzuBot.Core.Attributes;
-using SuzuBot.Core.Tables;
 
 namespace SuzuBot.Core.Manager;
 

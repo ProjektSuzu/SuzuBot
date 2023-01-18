@@ -1,18 +1,25 @@
-﻿using System.Data;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 using ArcaeaUnlimitedAPI.Lib;
 using ArcaeaUnlimitedAPI.Lib.Models;
 using ArcaeaUnlimitedAPI.Lib.Responses;
-using Newtonsoft.Json;
+using OxyPlot.Annotations;
+using OxyPlot.Axes;
+using OxyPlot.Series;
+using OxyPlot.SkiaSharp;
+using OxyPlot;
 using SkiaSharp;
 using SkiaSharp.HarfBuzz;
 using SQLite;
-
-#pragma warning disable CS8618
+using SuzuBot.Utils;
 
 namespace SuzuBot.Modules.Arcaea;
-
 internal static class DifficultyColors
 {
     public static SKColor Past = new(111, 189, 209);
@@ -20,7 +27,6 @@ internal static class DifficultyColors
     public static SKColor Future = new(153, 102, 153);
     public static SKColor Beyond = new(169, 36, 61);
 }
-
 internal static class NoteTypeColors
 {
     public static SKColor Lost = SKColors.LightGreen;
@@ -28,7 +34,6 @@ internal static class NoteTypeColors
     public static SKColor Pure = new(51, 153, 255);
     public static SKColor MaxPure = new(204, 102, 204);
 }
-
 internal static class ClearTypeColors
 {
     public static SKColor Normal = SKColors.White;
@@ -36,15 +41,13 @@ internal static class ClearTypeColors
     public static SKColor PureMemory = SKColors.DodgerBlue;
     public static SKColor MaxPure = new(228, 152, 57);
 }
-
 public enum ChartQueryResultType
 {
     Success,
     NotFound,
     Ambiguous
 }
-
-internal class ArcaeaUtils
+public class ArcaeaUtils
 {
     private readonly string _resourceDirPath;
     private readonly AuaClient _client;
@@ -187,7 +190,7 @@ internal class ArcaeaUtils
     {
         return _userDbConnection.FindAsync<ArcaeaBindInfo?>(userId);
     }
-    public Task<ArcaeaUserInfo?> GetUserInfo(string userCode)
+    public Task<ArcaeaUserInfo?> GetUserInfo(int userCode)
     {
         return _userDbConnection.FindAsync<ArcaeaUserInfo?>(userCode);
     }
@@ -198,6 +201,41 @@ internal class ArcaeaUtils
             return null;
 
         return await GetUserInfo(info.UserCode);
+    }
+    public async Task<bool> UpdateUserRecord(AuaAccountInfo accountInfo)
+    {
+        if (accountInfo.Rating <= 0) 
+            return false;
+
+        var info = await GetUserInfo(int.Parse(accountInfo.Code));
+        if (info is null)
+            return false;
+
+        var records = info.QueryRecords;
+        var record = records.LastOrDefault();
+        if (record is not null)
+        {
+            if (record.DateTime.Date == DateTime.Today)
+            {
+                int potential = (int)(record.Potential * 100);
+                if (potential < accountInfo.Rating)
+                {
+                    records.Remove(record);
+                    record.Potential = (float)accountInfo.Rating / 100;
+                    records.Add(record);
+                    info.QueryRecords = records;
+                    UpsertUserInfo(info);
+                    return true;
+                }
+                else return false;
+            }
+        }
+
+        var newRecord = new QueryRecord(DateTime.Today, (float)accountInfo.Rating / 100);
+        records.Add(newRecord);
+        info.QueryRecords = records;
+        UpsertUserInfo(info);
+        return true;
     }
     public bool UpsertBindInfo(ArcaeaBindInfo info)
     {
@@ -211,7 +249,6 @@ internal class ArcaeaUtils
     {
         return _userDbConnection.DeleteAsync<ArcaeaBindInfo>(userId).Result > 0;
     }
-
     public async Task<SKImage> GenerateSongCard(AuaRecord record, int id = 1, bool neko = false)
     {
         // 准备工作
@@ -377,7 +414,7 @@ internal class ArcaeaUtils
             //fontPaint.Color = NoteTypeColors.Far;
             string farStr = $"Far: {record.NearCount}";
             fontPaint.MeasureText(farStr, ref rect);
-            mainCanvas.DrawShapedText(farStr, 325, 252 + rect.Height, fontPaint);
+            mainCanvas.DrawShapedText(farStr, 325, 260 + rect.Height, fontPaint);
 
             //fontPaint.Color = NoteTypeColors.Lost;
             string lostStr = $"Lost: {record.MissCount}";
@@ -537,10 +574,10 @@ internal class ArcaeaUtils
                     fontPaint.Color = new(80, 73, 89);
                     fontPaint.Style = SKPaintStyle.Stroke;
                     fontPaint.StrokeWidth = 6;
-                    mainCanvas.DrawShapedText(pttDec, 284, 260, fontPaint);
+                    mainCanvas.DrawShapedText(pttDec, 280, 260, fontPaint);
                     fontPaint.Color = SKColors.White;
                     fontPaint.Style = SKPaintStyle.Fill;
-                    mainCanvas.DrawShapedText(pttDec, 284, 260, fontPaint);
+                    mainCanvas.DrawShapedText(pttDec, 280, 260, fontPaint);
                 }
             }
 
@@ -839,10 +876,10 @@ internal class ArcaeaUtils
                 fontPaint.Color = new(80, 73, 89);
                 fontPaint.Style = SKPaintStyle.Stroke;
                 fontPaint.StrokeWidth = 6;
-                mainCanvas.DrawShapedText(pttDec, 132, 782, fontPaint);
+                mainCanvas.DrawShapedText(pttDec, 130, 782, fontPaint);
                 fontPaint.Color = SKColors.White;
                 fontPaint.Style = SKPaintStyle.Fill;
-                mainCanvas.DrawShapedText(pttDec, 132, 782, fontPaint);
+                mainCanvas.DrawShapedText(pttDec, 130, 782, fontPaint);
             }
         }
         #endregion
@@ -871,7 +908,60 @@ internal class ArcaeaUtils
 
         return surface.Snapshot();
     }
+    public async Task<byte[]> GeneratePttTimeGraph(ArcaeaUserInfo info)
+    {
+        var records = info.QueryRecords.OrderBy(x => x.DateTime).ToArray();
 
+        var plotModel = new PlotModel() { Background = OxyColors.White, DefaultFont = "Ark Pixel 12px latin", Title = "BindInfo" };
+        plotModel.Axes.Add(new DateTimeAxis() { Position = AxisPosition.Bottom, Title = "Date", StringFormat = "yy/MM/dd" });
+        plotModel.Axes.Add(new LinearAxis() { Position = AxisPosition.Left, Title = "Potential", StringFormat = "00.00" });
+        var series = new LineSeries() { Color = OxyColors.SteelBlue };
+
+        foreach (var record in records)
+        {
+            series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(record.DateTime), record.Potential));
+        }
+        plotModel.Series.Add(series);
+        var current = new LineAnnotation()
+        {
+            Text = series.Points.Last().Y
+                .ToString("00.00"),
+            Type = LineAnnotationType.Horizontal,
+            Y = series.Points.Last().Y,
+            FontSize = 16,
+            Color = OxyColors.DarkBlue
+        };
+        var lowest = new LineAnnotation()
+        {
+            Text = series.Points.OrderBy(x => x.Y)
+                .First().Y
+                .ToString("00.00"),
+            Type = LineAnnotationType.Horizontal,
+            Y = series.Points.OrderBy(x => x.Y).First().Y,
+            TextVerticalAlignment = VerticalAlignment.Bottom,
+            FontSize = 16,
+            Color = OxyColors.LimeGreen
+        };
+        var highest = new LineAnnotation()
+        {
+            Text = series.Points.OrderBy(x => x.Y)
+                .Last().Y
+                .ToString("00.00"),
+            Type = LineAnnotationType.Horizontal,
+            Y = series.Points.OrderBy(x => x.Y).Last().Y,
+            FontSize = 16,
+            Color = OxyColors.Crimson
+        };
+        plotModel.Annotations.Add(current);
+        plotModel.Annotations.Add(highest);
+        plotModel.Annotations.Add(lowest);
+
+        using (var ms = new MemoryStream())
+        {
+            PngExporter.Export(plotModel, ms, 1000, 600, 128);
+            return ms.ToArray();
+        }
+    }
     public static string GetDifficultyFriendly(int difficulty)
     {
         string str = (difficulty / 2).ToString();
@@ -1076,22 +1166,22 @@ internal class ArcaeaUtils
         else
             return (float)record.Score / 10_000_000;
     }
-    private static SKColor GetAverageColor(SKBitmap bitmap)
-    {
-        using var resized = new SKBitmap(1, 1);
-        bitmap.ScalePixels(resized, SKFilterQuality.High);
-        var color = resized.GetPixel(0, 0);
+    //private static SKColor GetAverageColor(SKBitmap bitmap)
+    //{
+    //    using var resized = new SKBitmap(1, 1);
+    //    bitmap.ScalePixels(resized, SKFilterQuality.High);
+    //    var color = resized.GetPixel(0, 0);
 
-        return new SKColor((byte)(color.Red / 1.5), (byte)(color.Green / 1.5), (byte)(color.Blue / 1.5));
-    }
-    private SKColor GetDominantColor(SKBitmap bitmap, int depth = 2)
-    {
-        using var resized = new SKBitmap(256, 256);
-        bitmap.ScalePixels(resized, SKFilterQuality.High);
-        var color = resized.GetPixel(0, 0);
+    //    return new SKColor((byte)(color.Red / 1.5), (byte)(color.Green / 1.5), (byte)(color.Blue / 1.5));
+    //}
+    //private SKColor GetDominantColor(SKBitmap bitmap, int depth = 2)
+    //{
+    //    using var resized = new SKBitmap(256, 256);
+    //    bitmap.ScalePixels(resized, SKFilterQuality.High);
+    //    var color = resized.GetPixel(0, 0);
 
-        return GetDominantColor(bitmap.Pixels, depth);
-    }
+    //    return GetDominantColor(bitmap.Pixels, depth);
+    //}
     private SKColor GetDominantColor(SKColor[] cube, int depth)
     {
         if (depth == 0)
@@ -1142,10 +1232,11 @@ internal class ArcaeaUtils
 
         return (redWidth, greenWidth, blueWidth);
     }
+
 }
 
 [Table("charts")]
-internal class ChartInfoMapping
+public class ChartInfoMapping
 {
     [PrimaryKey]
     [Column("song_id")]
@@ -1214,7 +1305,7 @@ internal class ChartInfoMapping
 }
 
 [Table("packages")]
-internal class PackageMapping
+public class PackageMapping
 {
     [PrimaryKey]
     [Column("id")]
@@ -1224,7 +1315,7 @@ internal class PackageMapping
 }
 
 [Table("alias")]
-internal class AliasMapping
+public class AliasMapping
 {
     [PrimaryKey]
     [Column("alias")]
@@ -1234,21 +1325,21 @@ internal class AliasMapping
 }
 
 [Table("t_bind_info")]
-internal class ArcaeaBindInfo
+public class ArcaeaBindInfo
 {
     [PrimaryKey]
     [Column("user_id")]
     public uint UserId { get; set; }
     [Column("user_code")]
-    public string UserCode { get; set; }
+    public int UserCode { get; set; }
 }
 
 [Table("t_user_info")]
-internal class ArcaeaUserInfo
+public class ArcaeaUserInfo
 {
     [PrimaryKey]
     [Column("user_code")]
-    public string UserCode { get; set; }
+    public int UserCode { get; set; }
     [Column("user_name")]
     public string UserName { get; set; }
     [Column("query_record")]
@@ -1258,7 +1349,7 @@ internal class ArcaeaUserInfo
     {
         get
         {
-            var list = JsonConvert.DeserializeObject<List<string>>(QueryRecordStr) ?? new();
+            var list = QueryRecordStr.DeserializeJson<List<string>>() ?? new();
             if (list.Count <= 0) return new();
             List<QueryRecord> result = new();
             foreach (var str in list)
@@ -1274,12 +1365,12 @@ internal class ArcaeaUserInfo
         set
         {
             var list = value.Select(x => x.ToString()).ToList();
-            QueryRecordStr = JsonConvert.SerializeObject(list);
+            QueryRecordStr = JsonSerializer.Serialize(list);
         }
     }
 }
 
-internal class QueryRecord
+public class QueryRecord
 {
     public DateTime DateTime { get; set; }
     public float Potential { get; set; }

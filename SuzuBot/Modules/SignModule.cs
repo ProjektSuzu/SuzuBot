@@ -1,21 +1,20 @@
 ﻿using Konata.Core.Message;
-using Newtonsoft.Json;
-using SuzuBot.Common;
-using SuzuBot.Common.Attributes;
-using SuzuBot.Common.EventArgs.Messages;
-
-#pragma warning disable CS8618
+using SuzuBot.Core.Attributes;
+using SuzuBot.Core.EventArgs.Message;
+using SuzuBot.Core.Modules;
+using SuzuBot.Utils;
 
 namespace SuzuBot.Modules;
-
-[Module("签到")]
-internal class SignModule : BaseModule
+public class SignModule : BaseModule
 {
     private string _signListPath;
     private SignList _signList;
     private Timer _clearTimer;
-
-    public override void Init()
+    public SignModule()
+	{
+		Name = "签到";
+	}
+    public override bool Init()
     {
         base.Init();
         _signListPath = Path.Combine(ResourceDirPath, "signList.json");
@@ -25,63 +24,73 @@ internal class SignModule : BaseModule
         }
         else
         {
-            _signList = JsonConvert.DeserializeObject<SignList>(File.ReadAllText(_signListPath))
+            _signList = File.ReadAllText(_signListPath).DeserializeJson<SignList>()
                            ?? new();
             _signList.Flush();
-            File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(_signList));
+            SaveList();
         }
 
         _clearTimer = new Timer(new TimerCallback((obj) => _signList.Flush(true)));
         _clearTimer.Change(DateTime.Today.AddDays(1) - DateTime.Now, new TimeSpan(24, 0, 0));
+        return true;
     }
 
-    private void SaveList()
-        => File.WriteAllTextAsync(_signListPath, JsonConvert.SerializeObject(_signList));
-
-    [Command("签到", "sign", "签到", "打卡")]
-    public async Task Sign(MessageEventArgs messageEvent)
+    [Command("签到", "^sign$", "^签到$", "^打卡$")]
+    public async Task Sign(MessageEventArgs messageEvent, string[] args)
     {
         var builder = new MessageBuilder("[Sign]\n");
         // 万恶的 RandomNumberGenerator 额鹅鹅鹅啊啊啊啊
-        var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.SenderId;
+        var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.Sender.Id;
         var fortuneRandom = new Random((int)seed);
 
-        if (_signList.List.TryGetValue(messageEvent.SenderId, out var sign) && DateTime.Today == sign.LastSign.Date)
+        if (_signList.List.TryGetValue(messageEvent.Sender.Id, out var sign) && DateTime.Today == sign.LastSign.Date)
         {
-            builder.Text($"{messageEvent.SenderName}\n你今天已经签到过了");
+            builder.Text("你今天已经签到过了");
             await messageEvent.Reply(builder);
             return;
         }
         else
         {
-            sign = _signList.Sign(messageEvent.SenderId);
+            sign = _signList.Sign(messageEvent.Sender.Id);
             SaveList();
 
             // 基础部分
             var random = new Random();
             var coin = random.Next(1, 100);
-            var favor = random.Next(1, 10);
+            var exp = random.Next(1, 10);
 
-            var info = await Context.DataBaseManager.GetUserInfo(messageEvent.SenderId);
+            if (sign.ContinuousSign % 7 == 0 && sign.ContinuousSign > 0)
+                coin += 100;
+            if (_signList.SignCountToday == 1)
+            {
+                coin += 100;
+                exp += 10;
+            }
+
+            var info = Context.DatabaseManager.GetUserInfo(messageEvent.Sender.Id);
             info.Coin += coin;
-            info.Favor += favor;
-            _ = Context.DataBaseManager.UpdateUserInfo(info);
-            builder.Text($"{messageEvent.SenderName}\n签到成功\n" +
+            bool upgrade = info.GiveExp((uint)exp);
+            _ = Context.DatabaseManager.UpdateUserInfo(info);
+            builder.Text($"{messageEvent.Sender.Name}\n签到成功\n" +
                 $"你是今天第 {_signList.SignCountToday} 个签到的\n" +
                 $"{(sign.ContinuousSign > 1 ? $"你已连续签到 {sign.ContinuousSign} 天\n" : "")}" +
                 $"SC +{coin}\n" +
-                $"好感度 +{favor}\n");
+                $"经验 +{exp}\n" +
+                (upgrade ? $"升级了ヾ(≧▽≦*)o\n当前等级: {info.Level}\n" : $"距离 {info.Level + 1} 级还需 {info.NextLevelExp} exp\n"));
         }
 
         // 抽签部分
         var stick = FortuneStick.GetStick(fortuneRandom);
-        builder.Text($"今日的运势是: {stick.GetFortuneName()}\n" +
+        builder.Text($"\n今日的运势是: {stick.GetFortuneName()}\n" +
             $"{stick.GetComment()}\n\n");
 
         // 免责声明
         builder.Text($"结果仅供参考, 自己的命运要自己把握哦(・ω≦)☆");
         await messageEvent.Reply(builder);
     }
+
+    private void SaveList()
+        => File.WriteAllBytesAsync(_signListPath, _signList.SerializeJsonByteArray());
 }
 
 internal class SignList

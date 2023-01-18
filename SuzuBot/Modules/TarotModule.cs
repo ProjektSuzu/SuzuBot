@@ -1,17 +1,20 @@
-﻿using System.Reflection;
+﻿using System.Text.Json.Serialization;
 using Konata.Core.Message;
 using Konata.Core.Message.Model;
-using Newtonsoft.Json;
-using SuzuBot.Common;
-using SuzuBot.Common.Attributes;
-using SuzuBot.Common.EventArgs.Messages;
+using SuzuBot.Core.Attributes;
+using SuzuBot.Core.EventArgs.Message;
+using SuzuBot.Core.Modules;
+using SuzuBot.Utils;
 
 namespace SuzuBot.Modules;
-
-[Module("塔罗牌")]
-internal class TarotModule : BaseModule
+public class TarotModule : BaseModule
 {
     private Dictionary<int, TarotCardInfo> _tarotCards = new();
+
+    public TarotModule()
+    {
+        Name = "塔罗牌";
+    }
 
     // 没有十年脑血栓写不出这些文本
     private string[] tarotDrawText = new[]
@@ -21,27 +24,27 @@ internal class TarotModule : BaseModule
             "全能的塔罗牌啊，请为 {name} 指点迷津吧！",
     };
 
-    public override void Init()
+    public override bool Init()
     {
         base.Init();
-        var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, TarotCardInfo>>(File.ReadAllText(Path.Combine(ResourceDirPath, "descriptions.json")));
+        var jsonDict = File.ReadAllText(Path.Combine(ResourceDirPath, "descriptions.json")).DeserializeJson<Dictionary<string, TarotCardInfo>>();
         var images = new DirectoryInfo(Path.Combine(ResourceDirPath, "Image")).EnumerateFiles().ToArray();
         foreach (var keyPair in jsonDict)
         {
             keyPair.Value.ImagePath = images.First(x => x.Name.StartsWith(keyPair.Key.PadLeft(2, '0'))).FullName;
             _tarotCards.Add(int.Parse(keyPair.Key), keyPair.Value);
         }
+        return true;
     }
 
-
-    [Command("获取塔罗牌", "tarot", MatchType = Common.Attributes.MatchType.StartsWith)]
+    [Command("获取塔罗牌", "^tarot\\s?([0-9]*)?")]
     public Task GetTarotCards(MessageEventArgs eventArgs, string[] args)
     {
         var messageBuilder = new MessageBuilder();
         int num = 1;
         if (args.Any())
         {
-            if (!int.TryParse(args[0], out num) || num <= 0 || num > 6)
+            if (!int.TryParse(args[0], out num) || num <= 0 || num >= 9)
             {
                 messageBuilder.Text($"[Tarot]\n参数非法: {args[0]} => [<num>]");
                 return eventArgs.Reply(messageBuilder);
@@ -58,11 +61,13 @@ internal class TarotModule : BaseModule
         }
         else
         {
-            var multiMsg = new MultiMsgChain();
-            multiMsg.Add(new MessageStruct(eventArgs.Bot.Uin, eventArgs.Bot.Name, new MessageBuilder("[Tarot]\n" +
+            var multiMsg = new MultiMsgChain
+            {
+                new MessageStruct(eventArgs.Bot.Uin, eventArgs.Bot.Name, new MessageBuilder("[Tarot]\n" +
                 tarotDrawText[new Random().Next(tarotDrawText.Length)].Replace(
                     "{name}",
-                    eventArgs.SenderName)).Build()));
+                    eventArgs.Sender.Name)).Build())
+            };
 
             var tarots = RandomTarotCards(num);
             int counter = 0;
@@ -108,32 +113,32 @@ internal class TarotModule : BaseModule
 
 public class TarotCardInfo
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonProperty("name_en")]
+    [JsonPropertyName("name_en")]
     public string NameEN { get; set; }
     [JsonIgnore]
     public string ImagePath { get; set; }
     [JsonIgnore]
     public bool IsReversed { get; set; }
-    [JsonProperty("info")]
+    [JsonPropertyName("info")]
     public CardInfo Info { get; set; }
 
     public class CardInfo
     {
-        [JsonProperty("element")]
+        [JsonPropertyName("element")]
         public string Element { get; set; }
-        [JsonProperty("match")]
+        [JsonPropertyName("match")]
         public string Match { get; set; }
-        [JsonProperty("celestial")]
+        [JsonPropertyName("celestial")]
         public string Celestial { get; set; }
-        [JsonProperty("keyword")]
+        [JsonPropertyName("keyword")]
         public string Keyword { get; set; }
-        [JsonProperty("content")]
+        [JsonPropertyName("content")]
         public string Content { get; set; }
-        [JsonProperty("describe")]
+        [JsonPropertyName("describe")]
         public string Describe { get; set; }
-        [JsonProperty("reverse_describe")]
+        [JsonPropertyName("reverse_describe")]
         public string ReverseDescribe { get; set; }
     }
 }

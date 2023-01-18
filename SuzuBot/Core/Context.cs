@@ -1,89 +1,96 @@
-﻿using System.Reflection;
+﻿using System.Reactive.Subjects;
 using Konata.Core;
 using Konata.Core.Common;
 using Konata.Core.Interfaces;
 using Konata.Core.Interfaces.Api;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using SuzuBot.Core.Auth;
-using SuzuBot.Core.Databases;
-using SuzuBot.Core.Modules;
+using SuzuBot.Core.EventArgs;
+using SuzuBot.Core.EventArgs.Bot;
+using SuzuBot.Core.EventArgs.Message;
+using SuzuBot.Core.Manager;
 using SuzuBot.Utils;
-
-#pragma warning disable CS8600, CS8618
+using LogLevel = Konata.Core.Events.LogLevel;
 
 namespace SuzuBot.Core;
-internal class Context
+public class Context
 {
-    private readonly ILogger _contextLogger = LoggerUtils.LoggerFactory.CreateLogger<Context>();
-    private readonly ILogger _botLogger = LoggerUtils.LoggerFactory.CreateLogger<Bot>();
-    private readonly string _configPath = Path.Combine("configs", "config.json");
-    private readonly string _devicePath = Path.Combine("configs", "device.json");
-    private readonly string _keyStorePath = Path.Combine("configs", "keyStore.json");
-    public readonly string BaseDirPath = AppContext.BaseDirectory;
+    public static string BaseDirectory { get; } = AppContext.BaseDirectory;
+    public static string ConfigDirectory { get; } = Path.Combine(BaseDirectory, "configs");
+    public static string DatabaseDirectory { get; } = Path.Combine(BaseDirectory, "databases");
+    public static string ResourceDirectory { get; } = Path.Combine(BaseDirectory, "resources");
+
+    private Subject<SuzuEventArgs> _subject = new();
+    private ILogger _contextLogger;
+    private ILogger _botLogger;
+    public IObservable<SuzuEventArgs> EventChannel => _subject;
     public Bot Bot { get; private set; }
-
-    public AuthManager AuthManager { get; private set; }
-    public DataBaseManager DataBaseManager { get; private set; }
-    public ModuleManager ModuleManager { get; private set; }
-
-    public Context()
-    {
-        BotConfig _config;
-        BotDevice _device;
-        BotKeyStore _keyStore;
-
-        if (!File.Exists(_keyStorePath))
-            throw new FileNotFoundException();
-        else
-            _keyStore = JsonConvert.DeserializeObject<BotKeyStore>(File.ReadAllText(_keyStorePath));
-
-        if (!File.Exists(_configPath))
-        {
-            _config = BotConfig.Default();
-            File.WriteAllText(_configPath, JsonConvert.SerializeObject(_config, Formatting.Indented));
-        }
-        else
-            _config = JsonConvert.DeserializeObject<BotConfig>(File.ReadAllText(_configPath));
-
-        if (!File.Exists(_devicePath))
-        {
-            _device = BotDevice.Default();
-            File.WriteAllText(_devicePath, JsonConvert.SerializeObject(_device, Formatting.Indented));
-        }
-        else
-            _device = JsonConvert.DeserializeObject<BotDevice>(File.ReadAllText(_devicePath));
-
-        Bot = BotFather.Create(_config, _device, _keyStore);
-        InitManagers();
-        RegisterEvents();
-    }
-    public Context(string uin, string passwd)
-    {
-        Bot = BotFather.Create(uin, passwd, out var config, out var device, out var keyStore);
-
-        File.WriteAllText(_configPath, JsonConvert.SerializeObject(config));
-        File.WriteAllText(_devicePath, JsonConvert.SerializeObject(device));
-        File.WriteAllText(_keyStorePath, JsonConvert.SerializeObject(keyStore));
-        InitManagers();
-        RegisterEvents();
-    }
+    public ModuleManager ModuleManager;
+    public AuthManager AuthManager;
+    public DatabaseManager DatabaseManager;
 
     private void InitManagers()
     {
-        DataBaseManager = new(this);
         ModuleManager = new(this);
         AuthManager = new(this);
+        DatabaseManager = new(this);
     }
     private void RegisterEvents()
     {
-        Bot.OnLog += Bot_OnLog;
-        Bot.OnCaptcha += Bot_OnCaptcha;
-        Bot.OnFriendMessage += ModuleManager.PrivateMessageHandler;
-        Bot.OnGroupMessage += ModuleManager.GroupMessageHandler;
+        Bot.OnFriendMessage += (s, e) =>
+        {
+            var args = new FriendMessageEventArgs()
+            {
+                Bot = s,
+                Message = e.Message,
+            };
+            _subject.OnNext(args);
+            _botLogger.LogInformation($"{args.Friend.Value.Name}({args.Friend.Value.Id}): {e.Chain}");
+        };
+        Bot.OnGroupMessage += (s, e) =>
+        {
+            if (e.MemberUin == Bot.Uin) return;
+            var args = new GroupMessageEventArgs()
+            {
+                Bot = s,
+                Message = e.Message,
+            };
+            _subject.OnNext(args);
+            _botLogger.LogInformation($"{e.Message.Receiver.Name}({e.Message.Receiver.Uin})|{e.Message.Sender.Name}({e.Message.Sender.Uin}): {e.Chain}");
+        };
+        Bot.OnFriendPoke += (s, e) =>
+        {
+            if (e.FriendUin == Bot.Uin) return;
+            var args = new PokeEventArgs()
+            {
+                Bot = s,
+                SenderId = e.FriendUin,
+                SubjectId = e.FriendUin,
+                ReceiverId = e.SelfUin,
+                PokeType = PokeType.Friend
+            };
+            _subject.OnNext(args);
+            _botLogger.LogInformation($"{e.FriendUin} {e.ActionPrefix} {e.SelfUin} {e.ActionSuffix}");
+        };
+        Bot.OnGroupPoke += (s, e) =>
+        {
+            if (e.OperatorUin == Bot.Uin) return;
+            var args = new PokeEventArgs()
+            {
+                Bot = s,
+                SenderId = e.OperatorUin,
+                SubjectId = e.GroupUin,
+                ReceiverId = e.MemberUin,
+                PokeType = PokeType.Group
+            };
+            _subject.OnNext(args);
+            _botLogger.LogInformation($"{e.GroupUin} {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
+        };
     }
-
-    private void Bot_OnCaptcha(Bot sender, Konata.Core.Events.Model.CaptchaEvent args)
+    private void UpdateKeyStore(BotKeyStore keyStore)
+    {
+        File.WriteAllBytes(Path.Combine(ConfigDirectory, "keystore.json"), keyStore.SerializeJsonByteArray());
+    }
+    private void OnCaptcha(Bot sender, Konata.Core.Events.Model.CaptchaEvent args)
     {
         switch (args.Type)
         {
@@ -102,7 +109,7 @@ internal class Context
                     Console.WriteLine($"Phone: {args.Phone}");
                     Console.Write("Auth: ");
                     string auth = Console.ReadLine();
-                    sender.SubmitSliderTicket(auth);
+                    sender.SubmitSmsCode(auth);
                     return;
                 }
             case Konata.Core.Events.Model.CaptchaEvent.CaptchaType.Unknown:
@@ -113,51 +120,66 @@ internal class Context
                 }
         }
     }
-
-    private void Bot_OnLog(Bot sender, Konata.Core.Events.LogEvent args)
+    private void OnLog(Bot sender, Konata.Core.Events.LogEvent args)
     {
-        string message = $"BOT{sender.Uin}|{args.Tag} {args.EventMessage}";
         switch (args.Level)
         {
-            case Konata.Core.Events.LogLevel.Fatal:
-                _botLogger.LogCritical(message);
-                break;
-            case Konata.Core.Events.LogLevel.Exception:
-                _botLogger.LogError(message);
-                break;
-            case Konata.Core.Events.LogLevel.Warning:
-                _botLogger.LogWarning(message);
-                break;
-            case Konata.Core.Events.LogLevel.Information:
-                _botLogger.LogInformation(message);
-                break;
-            case Konata.Core.Events.LogLevel.Verbose:
-                _botLogger.LogTrace(message);
-                break;
-        }
+            case LogLevel.Verbose: _botLogger.LogDebug(args.EventMessage); break;
+            case LogLevel.Information: _botLogger.LogInformation(args.EventMessage); break;
+            case LogLevel.Warning: _botLogger.LogWarning(args.EventMessage); break;
+            case LogLevel.Exception: _botLogger.LogError(args.EventMessage); break;
+            case LogLevel.Fatal: _botLogger.LogCritical(args.EventMessage); break;
+        };
     }
-
-    public async Task StartAsync()
+    public Context()
     {
-        if (Bot == null || Bot.IsOnline())
-            return;
+        _botLogger = LogUtils.CreateLogger("Bot");
+        _contextLogger = LogUtils.CreateLogger<Context>();
 
-        _contextLogger.LogInformation("Register Modules");
-        ModuleManager.RegisterModule(Assembly.GetExecutingAssembly());
+        BotConfig config = File.ReadAllText(Path.Combine(ConfigDirectory, "config.json"))
+            .DeserializeJson<BotConfig>();
+        BotDevice device = File.ReadAllText(Path.Combine(ConfigDirectory, "device.json"))
+            .DeserializeJson<BotDevice>();
+        BotKeyStore keyStore = File.ReadAllText(Path.Combine(ConfigDirectory, "keystore.json"))
+            .DeserializeJson<BotKeyStore>();
 
-        _contextLogger.LogInformation("Login Bot");
+        Bot = BotFather.Create(config, device, keyStore);
+
+        Bot.OnLog += OnLog;
+        Bot.OnCaptcha += OnCaptcha;
+        InitManagers();
+    }
+    public Context(string id, string password)
+    {
+        _botLogger = LogUtils.CreateLogger("Bot");
+        _contextLogger = LogUtils.CreateLogger<Context>();
+        Bot = BotFather.Create(
+            id,
+            password,
+            out var config,
+            out var device,
+            out var keyStore,
+            OicqProtocol.AndroidPad);
+
+        File.WriteAllBytes(Path.Combine(ConfigDirectory, "config.json"), config.SerializeJsonByteArray());
+        File.WriteAllBytes(Path.Combine(ConfigDirectory, "device.json"), device.SerializeJsonByteArray());
+        File.WriteAllBytes(Path.Combine(ConfigDirectory, "keystore.json"), keyStore.SerializeJsonByteArray());
+
+        Bot.OnLog += OnLog;
+        Bot.OnCaptcha += OnCaptcha;
+        InitManagers();
+    }
+    public async Task<bool> StartAsync()
+    {
         if (await Bot.Login())
         {
-            File.WriteAllText(_keyStorePath, JsonConvert.SerializeObject(Bot.KeyStore, Formatting.Indented));
-            _contextLogger.LogInformation("Bot Login Success");
-            foreach (var module in ModuleManager.Modules)
-                module.Value.Enable();
+            RegisterEvents();
+            UpdateKeyStore(Bot.KeyStore);
+            return true;
         }
         else
         {
-            _contextLogger.LogCritical("Bot Login Failed");
+            return false;
         }
-
-        return;
     }
 }

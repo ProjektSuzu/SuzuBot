@@ -1,7 +1,5 @@
 ﻿using System.Reflection;
 
-#pragma warning disable CS8602
-
 namespace SuzuBot.Utils;
 
 public static class SuzuBotBuildStamp

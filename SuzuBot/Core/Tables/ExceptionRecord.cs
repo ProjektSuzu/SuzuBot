@@ -1,8 +1,6 @@
 ﻿using SQLite;
 
-#pragma warning disable CS8618
-
-namespace SuzuBot.Core.Databases.Tables;
+namespace SuzuBot.Core.Tables;
 
 [Table("t_exception_record")]
 internal class ExceptionRecord

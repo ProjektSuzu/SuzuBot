@@ -1,33 +1,40 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using ArcaeaUnlimitedAPI.Lib;
 using ArcaeaUnlimitedAPI.Lib.Models;
 using ArcaeaUnlimitedAPI.Lib.Responses;
 using ArcaeaUnlimitedAPI.Lib.Utils;
 using Konata.Core.Message;
-using Newtonsoft.Json;
-using SuzuBot.Common;
-using SuzuBot.Common.Attributes;
-using SuzuBot.Common.EventArgs.Messages;
-
-#pragma warning disable CS8618
+using SuzuBot.Core.Attributes;
+using SuzuBot.Core.EventArgs.Message;
+using SuzuBot.Core.Modules;
+using SuzuBot.Utils;
 
 namespace SuzuBot.Modules.Arcaea;
-
-[Module("Arcaea")]
-internal class ArcaeaModule : BaseModule
+public class ArcaeaModule : BaseModule
 {
     ArcaeaUtils _utils;
     AuaClient _client;
     Dictionary<int, AuaStatus> _status;
 
-    public override void Init()
+    public ArcaeaModule()
+    {
+        Name = "Arcaea";
+    }
+
+    public override bool Init()
     {
         base.Init();
-        AuaAuth auaAuth = JsonConvert.DeserializeObject<AuaAuth>(File.ReadAllText(Path.Combine(ResourceDirPath, "auth.json")));
+        AuaAuth auaAuth = File.ReadAllText(Path.Combine(ResourceDirPath, "auth.json")).DeserializeJson<AuaAuth>();
         if (auaAuth is null)
             throw new FileNotFoundException(Path.Combine(ResourceDirPath, "auth.json"));
 
-        _status = JsonConvert.DeserializeObject<Dictionary<int, AuaStatus>>(File.ReadAllText(Path.Combine(ResourceDirPath, "status.json")));
+        _status = File.ReadAllText(Path.Combine(ResourceDirPath, "status.json")).DeserializeJson<Dictionary<int, AuaStatus>>();
         if (auaAuth is null)
             throw new FileNotFoundException(Path.Combine(ResourceDirPath, "status.json"));
 
@@ -39,14 +46,145 @@ internal class ArcaeaModule : BaseModule
         };
         _client.Initialize();
         _utils = new(ResourceDirPath, _client);
+        return true;
     }
 
-    [Command("Arcaea", "arc", "arcaea", MatchType = Common.Attributes.MatchType.StartsWith)]
-    [Command("Arcaea", "a", MatchType = Common.Attributes.MatchType.StartsWith, Priority = 128)]
+    #region Errors
+    public Task ApiErrorReply(MessageEventArgs eventArgs, AuaException ex)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)远端服务器返回了一个错误");
+        builder.AppendLine($"{ex.Status}: {_status[ex.Status].Message}");
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    public static Task WrongUserCode(MessageEventArgs eventArgs, string userCode)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)无法识别的好友代码");
+        builder.AppendLine(userCode);
+        builder.AppendLine("请确认格式是否正确");
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    public static Task NotBindReply(MessageEventArgs eventArgs)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)未能找到你的绑定记录");
+        builder.AppendLine("请先使用");
+        builder.AppendLine("/arc bind 好友代码或用户名");
+        builder.AppendLine("进行绑定");
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    public static Task EmptyQueryString(MessageEventArgs eventArgs)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)搜索条件为空");
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    public static Task InvalidChartDifficulty(MessageEventArgs eventArgs, AuaChartInfo[] chartInfos, int difficulty)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)目标歌曲不存在所指定的难度的铺面");
+        builder.Append($"{chartInfos[0].NameEn} - ");
+        switch (difficulty)
+        {
+            case 3: builder.AppendLine("Beyond"); break;
+            // Nearly inpossible, but who knows.
+            case 2: builder.AppendLine("Future"); break;
+            case 1: builder.AppendLine("Present"); break;
+            case 0: builder.AppendLine("Past"); break;
+        }
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    public static Task AmbiguousSongResult(MessageEventArgs eventArgs, string songName, AuaChartInfo[] chartInfos)
+    {
+        var charts = chartInfos
+            .Select(x => x.NameEn)
+            .Distinct().ToArray();
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)搜索条件匹配多个结果");
+        builder.AppendLine($"{songName} 同时满足以下歌曲");
+        foreach (var chart in charts.Take(5))
+            builder.AppendLine(chart);
+        if (charts.Length > 5)
+            builder.AppendLine($"等 {charts.Length} 个歌曲");
+        builder.AppendLine("请缩小搜索范围");
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    public static Task SongNotFound(MessageEventArgs eventArgs, string songName)
+    {
+        StringBuilder builder = new();
+        builder.AppendLine("[Arcaea]Error");
+        builder.AppendLine("∑(O_O；)找不到指定歌曲");
+        builder.AppendLine(songName);
+        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+    }
+    #endregion
+
+    #region Utils
+    public static bool TryParseUserCode(string userCode, out int code)
+    {
+        return int.TryParse(userCode, out code) && userCode.Length == 9;
+    }
+    public static (string SongName, int Difficulty) ParseSongQueryRequest(string queryStr, bool processDifficuly = true)
+    {
+        if (!processDifficuly)
+            return (queryStr, 2);
+
+        var array = queryStr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var songName = string.Join(' ', array.SkipLast(1));
+        switch (array.Last().ToLower())
+        {
+            case "byd":
+            case "beyond":
+            case "3":
+                return (songName, 3);
+
+            case "ftr":
+            case "future":
+            case "2":
+                return (songName, 2);
+
+            case "prs":
+            case "present":
+            case "1":
+                return (songName, 1);
+
+            case "pst":
+            case "past":
+            case "0":
+                return (songName, 0);
+
+            default:
+                return (queryStr, 2);
+        }
+    }
+    public float PotentialCalc(float rating, int score)
+    {
+        if (score >= 10_000_000)
+            return rating + 2;
+        else if (score >= 09_800_000)
+            return rating + 1 + (float)(score - 09_800_000) / 200_000;
+        else
+        {
+            var ptt = rating + (float)(score - 09_500_000) / 300_000;
+            return ptt > 0 ? ptt : 0;
+        }
+    }
+    #endregion
+
+    [Command("Arcaea", @"^a$|^a (.*)$", Priority = 200)]
+    [Command("Arcaea", @"^arc$|^arc (.*)$")]
     public Task Arcaea(MessageEventArgs eventArgs, string[] args, bool neko = false)
     {
         if (!args.Any()) return Recent(eventArgs, neko);
 
+        args = args[0].Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         string funcName = args[0];
         args = args[1..];
         string arguments = string.Join(' ', args.Where(x => !string.IsNullOrWhiteSpace(x))).Trim();
@@ -66,6 +204,14 @@ internal class ArcaeaModule : BaseModule
             case "info":
                 {
                     return Best(eventArgs, arguments, neko);
+                }
+            case "bindinfo":
+                {
+                    return BindInfo(eventArgs);
+                }
+            case "calc":
+                {
+                    return CalcPotential(eventArgs, arguments);
                 }
             case "preview":
             case "chart":
@@ -93,17 +239,16 @@ internal class ArcaeaModule : BaseModule
 
             default:
                 {
-                    //StringBuilder builder = new();
-                    //builder.AppendLine("[Arcaea]Error");
-                    //builder.AppendLine("∑(O_O；)找不到功能");
-                    //builder.AppendLine(funcName);
-                    //return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+                    StringBuilder builder = new();
+                    builder.AppendLine("[Arcaea]Error");
+                    builder.AppendLine("∑(O_O；)找不到功能");
+                    builder.AppendLine(funcName);
+                    return eventArgs.Reply(new MessageBuilder(builder.ToString()));
                     return Task.CompletedTask;
                 }
         }
     }
-
-    [Command("Arcnya", "arcnya", MatchType = Common.Attributes.MatchType.StartsWith, Priority = 126)]
+    [Command("Arcnya", @"^arcnya$|^arcnya$ (.*)$")]
     public Task Arcnya(MessageEventArgs eventArgs, string[] args)
     {
         return Arcaea(eventArgs, args, true);
@@ -111,7 +256,7 @@ internal class ArcaeaModule : BaseModule
 
     public async Task Recent(MessageEventArgs eventArgs, bool neko = false)
     {
-        var info = await _utils.GetUserInfo(eventArgs.SenderId);
+        var info = await _utils.GetUserInfo(eventArgs.Sender.Id);
         if (info is null)
         {
             await NotBindReply(eventArgs);
@@ -121,7 +266,7 @@ internal class ArcaeaModule : BaseModule
         AuaUserInfoContent recent;
         try
         {
-            recent = await _client.User.Info(int.Parse(info.UserCode), 1, AuaReplyWith.Recent);
+            recent = await _client.User.Info(info.UserCode, 1, AuaReplyWith.Recent);
         }
         catch (AuaException ex)
         {
@@ -129,13 +274,14 @@ internal class ArcaeaModule : BaseModule
             return;
         }
 
+        _ = _utils.UpdateUserRecord(recent.AccountInfo);
         using var image = await _utils.GenerateRecord(recent.RecentScore[0], recent.AccountInfo, neko);
         var bytes = image.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 100).ToArray();
         await eventArgs.Reply(new MessageBuilder("[Arcaea]Recent\n").Image(bytes));
     }
     public async Task Best(MessageEventArgs eventArgs, string queryStr, bool neko = false)
     {
-        var info = await _utils.GetUserInfo(eventArgs.SenderId);
+        var info = await _utils.GetUserInfo(eventArgs.Sender.Id);
         if (info is null)
         {
             await NotBindReply(eventArgs);
@@ -177,7 +323,7 @@ internal class ArcaeaModule : BaseModule
         AuaUserBestContent best;
         try
         {
-            best = await _client.User.Best(int.Parse(info.UserCode), SongId, (ArcaeaDifficulty)Difficulty);
+            best = await _client.User.Best(info.UserCode, SongId, (ArcaeaDifficulty)Difficulty);
         }
         catch (AuaException ex)
         {
@@ -185,15 +331,17 @@ internal class ArcaeaModule : BaseModule
             return;
         }
 
+        _ = _utils.UpdateUserRecord(best.AccountInfo);
         using var image = await _utils.GenerateRecord(best.Record, best.AccountInfo, neko);
         var bytes = image.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 100).ToArray();
         await eventArgs.Reply(new MessageBuilder("[Arcaea]Best\n").Image(bytes));
     }
-    public async Task Best30(MessageEventArgs eventArgs, string userCode = "", bool neko = false)
+    public async Task Best30(MessageEventArgs eventArgs, string user = "", bool neko = false)
     {
-        if (string.IsNullOrWhiteSpace(userCode))
+        int userCode = 0;
+        if (string.IsNullOrWhiteSpace(user))
         {
-            var info = await _utils.GetBindInfo(eventArgs.SenderId);
+            var info = await _utils.GetBindInfo(eventArgs.Sender.Id);
             if (info is null)
             {
                 await NotBindReply(eventArgs);
@@ -201,6 +349,13 @@ internal class ArcaeaModule : BaseModule
             }
 
             userCode = info.UserCode;
+        }
+        else
+        {
+            if (!TryParseUserCode(user, out userCode))
+            {
+                await WrongUserCode(eventArgs, user);
+            }
         }
 
         AuaUserBest30Content best30;
@@ -214,9 +369,22 @@ internal class ArcaeaModule : BaseModule
             return;
         }
 
+        _ = _utils.UpdateUserRecord(best30.AccountInfo);
         using var image = await _utils.GenerateBest30(best30, neko);
         var bytes = image.Encode(SkiaSharp.SKEncodedImageFormat.Jpeg, 80).ToArray();
         await eventArgs.Reply(new MessageBuilder("[Arcaea]Best30\n").Image(bytes));
+    }
+    public async Task BindInfo(MessageEventArgs eventArgs)
+    {
+        var info = await _utils.GetUserInfo(eventArgs.Sender.Id);
+        if (info is null)
+        {
+            await NotBindReply(eventArgs);
+            return;
+        }
+
+        var bytes = await _utils.GeneratePttTimeGraph(info);
+        await eventArgs.Reply(new MessageBuilder("[Arcaea]BindInfo\n").Image(bytes));
     }
     public async Task SongInfo(MessageEventArgs eventArgs, string queryStr, bool neko = false)
     {
@@ -409,20 +577,20 @@ internal class ArcaeaModule : BaseModule
         }
 
         StringBuilder builder = new("[Arcaea]Bind\n");
-        var bindInfo = await _utils.GetBindInfo(eventArgs.SenderId);
+        var bindInfo = await _utils.GetBindInfo(eventArgs.Sender.Id);
         if (bindInfo is null)
         {
             bindInfo = new()
             {
-                UserId = eventArgs.SenderId,
-                UserCode = userInfoResult.AccountInfo.Code
+                UserId = eventArgs.Sender.Id,
+                UserCode = int.Parse(userInfoResult.AccountInfo.Code)
             };
             var userInfo = await _utils.GetUserInfo(bindInfo.UserCode);
             if (userInfo is null)
             {
                 userInfo = new()
                 {
-                    UserCode = userInfoResult.AccountInfo.Code,
+                    UserCode = int.Parse(userInfoResult.AccountInfo.Code),
                     UserName = userInfoResult.AccountInfo.Name,
                     QueryRecords = new()
                 };
@@ -435,12 +603,12 @@ internal class ArcaeaModule : BaseModule
         else
         {
             var userInfo = await _utils.GetUserInfo(bindInfo.UserCode);
-            bindInfo.UserCode = userInfoResult.AccountInfo.Code;
+            bindInfo.UserCode = int.Parse(userInfoResult.AccountInfo.Code);
             if (userInfo is null)
             {
                 userInfo = new()
                 {
-                    UserCode = userInfoResult.AccountInfo.Code,
+                    UserCode = int.Parse(userInfoResult.AccountInfo.Code),
                     UserName = userInfoResult.AccountInfo.Name,
                     QueryRecords = new()
                 };
@@ -457,7 +625,7 @@ internal class ArcaeaModule : BaseModule
     }
     public async Task Unbind(MessageEventArgs eventArgs)
     {
-        var result = _utils.DeleteBindInfo(eventArgs.SenderId);
+        var result = _utils.DeleteBindInfo(eventArgs.Sender.Id);
         StringBuilder builder = new("[Arcaea]Unbind\n");
         if (result)
         {
@@ -470,128 +638,54 @@ internal class ArcaeaModule : BaseModule
 
         await eventArgs.Reply(new MessageBuilder(builder.ToString()));
     }
+    public async Task CalcPotential(MessageEventArgs eventArgs, string queryStr)
+    {
+        StringBuilder builder = new("[Arcaea]Bind\n");
 
-    public Task ApiErrorReply(MessageEventArgs eventArgs, AuaException ex)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)远端服务器返回了一个错误");
-        builder.AppendLine($"{ex.Status}: {_status[ex.Status].Message}");
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static Task WrongUserCode(MessageEventArgs eventArgs, string userCode)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)无法识别的好友代码");
-        builder.AppendLine(userCode);
-        builder.AppendLine("请确认格式是否正确");
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static Task NotBindReply(MessageEventArgs eventArgs)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)未能找到你的绑定记录");
-        builder.AppendLine("请先使用");
-        builder.AppendLine("/arc bind 好友代码或用户名");
-        builder.AppendLine("进行绑定");
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static Task EmptyQueryString(MessageEventArgs eventArgs)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)搜索条件为空");
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static Task InvalidChartDifficulty(MessageEventArgs eventArgs, AuaChartInfo[] chartInfos, int difficulty)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)目标歌曲不存在所指定的难度的铺面");
-        builder.Append($"{chartInfos[0].NameEn} - ");
-        switch (difficulty)
+        var args = queryStr.Split();
+        if (args.Length != 2)
         {
-            case 3: builder.AppendLine("Beyond"); break;
-            // Nearly inpossible, but who knows.
-            case 2: builder.AppendLine("Future"); break;
-            case 1: builder.AppendLine("Present"); break;
-            case 0: builder.AppendLine("Past"); break;
+            builder.AppendLine($"无法识别的格式: {queryStr}");
+            await eventArgs.Reply(new MessageBuilder(builder.ToString()));
+            return;
         }
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static Task AmbiguousSongResult(MessageEventArgs eventArgs, string songName, AuaChartInfo[] chartInfos)
-    {
-        var charts = chartInfos
-            .Select(x => x.NameEn)
-            .Distinct().ToArray();
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)搜索条件匹配多个结果");
-        builder.AppendLine($"{songName} 同时满足以下歌曲");
-        foreach (var chart in charts.Take(5))
-            builder.AppendLine(chart);
-        if (charts.Length > 5)
-            builder.AppendLine($"等 {charts.Length} 个歌曲");
-        builder.AppendLine("请缩小搜索范围");
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static Task SongNotFound(MessageEventArgs eventArgs, string songName)
-    {
-        StringBuilder builder = new();
-        builder.AppendLine("[Arcaea]Error");
-        builder.AppendLine("∑(O_O；)找不到指定歌曲");
-        builder.AppendLine(songName);
-        return eventArgs.Reply(new MessageBuilder(builder.ToString()));
-    }
-    public static bool TryParseUserCode(string userCode, out int code)
-    {
-        return int.TryParse(userCode, out code) && userCode.Length == 9;
-    }
-    public static (string SongName, int Difficulty) ParseSongQueryRequest(string queryStr, bool processDifficuly = true)
-    {
-        if (!processDifficuly)
-            return (queryStr, 2);
 
-        var array = queryStr.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        var songName = string.Join(' ', array.SkipLast(1));
-        switch (array.Last().ToLower())
+        float rating;
+        int score;
+        if (!float.TryParse(args[0], out rating))
         {
-            case "byd":
-            case "beyond":
-            case "3":
-                return (songName, 3);
-
-            case "ftr":
-            case "future":
-            case "2":
-                return (songName, 2);
-
-            case "prs":
-            case "present":
-            case "1":
-                return (songName, 1);
-
-            case "pst":
-            case "past":
-            case "0":
-                return (songName, 0);
-
-            default:
-                return (queryStr, 2);
+            builder.AppendLine(handler: $"无法识别的格式: {args[0]} => float");
+            await eventArgs.Reply(new MessageBuilder(builder.ToString()));
+            return;
         }
+
+        if (!int.TryParse(args[1], out score) || score < 0)
+        {
+            builder.AppendLine(handler: $"无法识别的格式: {args[1]} => int");
+            await eventArgs.Reply(new MessageBuilder(builder.ToString()));
+            return;
+        }
+
+        float target = PotentialCalc(rating, score);
+        builder.AppendLine($"定数为 {rating:0.00} 的歌曲\n" +
+            $"在成绩为 {score:00000000} 时\n" +
+            $"潜力值为 {target:0.00}");
+        await eventArgs.Reply(new MessageBuilder(builder.ToString()));
     }
 }
 
 internal class AuaAuth
 {
+    [JsonPropertyName("url")]
     public string Url { get; set; }
+    [JsonPropertyName("token")]
     public string Token { get; set; }
 }
 
 internal class AuaStatus
 {
+    [JsonPropertyName("description")]
     public string Description { get; set; }
+    [JsonPropertyName("message")]
     public string Message { get; set; }
 }

@@ -1,14 +1,13 @@
-﻿using System.Reflection;
-using Konata.Core;
+﻿using System.Reactive.Linq;
 using Konata.Core.Interfaces.Api;
-using SuzuBot.Common;
-using SuzuBot.Common.Attributes;
+using SuzuBot.Core.EventArgs.Bot;
+using SuzuBot.Core.Modules;
 
 namespace SuzuBot.Modules;
-
-[Module("戳一戳")]
-internal class PokeModule : BaseModule
+public class PokeModule : BaseModule
 {
+    IDisposable _listener;
+
     private static string[] _pokeReplys = new string[]
     {
         "别戳了(*>∀＜*)很痒的呀",
@@ -23,49 +22,43 @@ internal class PokeModule : BaseModule
         "Ziel hat beschuss unbeschädigt überstanden."
     };
 
+    public PokeModule()
+    {
+        Name = "戳一戳";
+    }
+
     public override bool Enable()
     {
-        Context.Bot.OnGroupPoke += Bot_OnGroupPoke;
-        Context.Bot.OnFriendPoke += Bot_OnFriendPoke;
+        _listener = Context.EventChannel
+            .Where(x => x is PokeEventArgs)
+            .Select(x => (PokeEventArgs)x)
+            .Subscribe(x => PokeHandler(x));
         return base.Enable();
     }
 
-    public override void Disable()
+    public override bool Disable()
     {
-        Context.Bot.OnGroupPoke -= Bot_OnGroupPoke;
-        Context.Bot.OnFriendPoke -= Bot_OnFriendPoke;
-        base.Disable();
+        _listener.Dispose();
+        return base.Disable();
     }
 
-    private void Bot_OnFriendPoke(Bot sender, Konata.Core.Events.Model.FriendPokeEvent args)
-    {
-        if (args.FriendUin == sender.Uin) return;
-        _ = PokeHandler(sender, args.FriendUin, 0U);
-    }
-
-    private void Bot_OnGroupPoke(Bot sender, Konata.Core.Events.Model.GroupPokeEvent args)
-    {
-        if (args.MemberUin != sender.Uin) return;
-        _ = PokeHandler(sender, args.OperatorUin, args.GroupUin);
-    }
-
-    public async Task PokeHandler(Bot bot, uint senderUin, uint groupUin)
+    public Task PokeHandler(PokeEventArgs eventArgs)
     {
         var random = new Random();
-        if (random.Next(100) < 30)
+        if (random.Next(100) < 25)
         {
-            if (groupUin == 0U)
-                await bot.SendFriendPoke(senderUin);
+            if (eventArgs.PokeType == PokeType.Friend)
+                return eventArgs.Bot.SendFriendPoke(eventArgs.SenderId);
             else
-                await bot.SendGroupPoke(groupUin, senderUin);
+                return eventArgs.Bot.SendGroupPoke(eventArgs.SubjectId, eventArgs.SenderId);
         }
         else
         {
             string reply = _pokeReplys[random.Next(_pokeReplys.Length)];
-            if (groupUin == 0U)
-                await bot.SendFriendMessage(senderUin, reply);
+            if (eventArgs.PokeType == PokeType.Friend)
+                return eventArgs.Bot.SendFriendMessage(eventArgs.SenderId, reply);
             else
-                await bot.SendGroupMessage(groupUin, reply);
+                return eventArgs.Bot.SendGroupMessage(eventArgs.SubjectId, reply);
         }
     }
 }

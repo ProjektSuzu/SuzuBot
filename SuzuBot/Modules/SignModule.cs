@@ -66,6 +66,11 @@ public class SignModule : BaseModule
                 coin += 100;
                 exp += 10;
             }
+            else if (_signList.SignCountToday == 114)
+            {
+                coin = 514;
+                exp = 114;
+            }
 
             var info = Context.DatabaseManager.GetUserInfo(messageEvent.Sender.Id);
             info.Coin += coin;

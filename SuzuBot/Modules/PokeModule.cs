@@ -44,6 +44,9 @@ public class PokeModule : BaseModule
 
     public Task PokeHandler(PokeEventArgs eventArgs)
     {
+        if (eventArgs.PokeType == PokeType.Group && eventArgs.ReceiverId != eventArgs.Bot.Uin)
+            return Task.CompletedTask;
+
         var random = new Random();
         if (random.Next(100) < 25)
         {

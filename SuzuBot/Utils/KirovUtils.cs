@@ -30,12 +30,12 @@ public static class KirovUtils
 
     public static dynamic? DeserializeJson(this string json)
     {
-        return JsonSerializer.Deserialize<dynamic>(json);
+        return JsonSerializer.Deserialize<dynamic>(json, _jsonSerializerOptions);
     }
 
-    public static T? DeserializeJson<T>(this string json, bool writeIndented = true)
+    public static T? DeserializeJson<T>(this string json)
     {
-        return JsonSerializer.Deserialize<T?>(json);
+        return JsonSerializer.Deserialize<T?>(json, _jsonSerializerOptions);
     }
 
     #endregion

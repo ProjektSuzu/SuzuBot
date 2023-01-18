@@ -70,9 +70,9 @@ public class CoreModule : BaseModule
         var info = Context.DatabaseManager.GetUserInfo(eventArgs.Sender.Id);
         var builder = new MessageBuilder("[Info]\n")
             .Text($"{eventArgs.Sender.Name}\n")
-            .Text($"SuzuCoin: {info.Coin}\n")
-            .Text($"等级: {info.Level}\n")
-            .Text($"距离下一级所需经验值: {info.NextLevelExp}\n")
+            .Text($"SuzuCoin: {info.Coin} SC\n")
+            .Text($"等级: {info.Level} Exp\n")
+            .Text($"距离下一级所需经验值: {info.NextLevelExp} Exp\n")
             .Text($"权限组: {info.AuthGroup}\n");
         return eventArgs.Reply(builder);
     }

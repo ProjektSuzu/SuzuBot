@@ -30,7 +30,7 @@ public class SignModule : BaseModule
             SaveList();
         }
 
-        _clearTimer = new Timer(new TimerCallback((obj) => _signList.Flush(true)));
+        _clearTimer = new Timer(new TimerCallback((_) => _signList.Flush(true)));
         _clearTimer.Change(DateTime.Today.AddDays(1) - DateTime.Now, new TimeSpan(24, 0, 0));
         return true;
     }

@@ -3,7 +3,7 @@ using Konata.Core.Interfaces.Api;
 using SuzuBot.Core.EventArgs.Bot;
 using SuzuBot.Core.Modules;
 
-namespace SuzuBot.Modules;
+namespace SuzuBot.Modules.Entertaining;
 public class PokeModule : BaseModule
 {
     IDisposable _listener;

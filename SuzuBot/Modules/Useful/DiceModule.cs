@@ -2,7 +2,7 @@
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
 
-namespace SuzuBot.Modules;
+namespace SuzuBot.Modules.Useful;
 public class DiceModule : BaseModule
 {
     public DiceModule()

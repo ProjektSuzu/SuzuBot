@@ -10,7 +10,7 @@ using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
 using SuzuBot.Utils;
 
-namespace SuzuBot.Modules.Arcaea;
+namespace SuzuBot.Modules.RhythmGame.Arcaea;
 public class ArcaeaModule : BaseModule
 {
     ArcaeaUtils _utils;

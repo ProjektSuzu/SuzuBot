@@ -4,7 +4,7 @@ using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
 using SuzuBot.Utils;
 
-namespace SuzuBot.Modules;
+namespace SuzuBot.Modules.Entertaining;
 public class SignModule : BaseModule
 {
     private string _signListPath;

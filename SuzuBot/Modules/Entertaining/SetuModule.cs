@@ -3,7 +3,7 @@ using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
 
-namespace SuzuBot.Modules;
+namespace SuzuBot.Modules.Entertaining;
 public class SetuModule : BaseModule
 {
     private List<(uint Id, DateTime Time)> _cooldownList = new();

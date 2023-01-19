@@ -14,7 +14,7 @@ using SkiaSharp.HarfBuzz;
 using SQLite;
 using SuzuBot.Utils;
 
-namespace SuzuBot.Modules.Arcaea;
+namespace SuzuBot.Modules.RhythmGame.Arcaea;
 internal static class DifficultyColors
 {
     public static SKColor Past = new(111, 189, 209);

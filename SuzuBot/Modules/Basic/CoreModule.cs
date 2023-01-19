@@ -7,7 +7,7 @@ using SuzuBot.Core.Modules;
 using SuzuBot.Core.Tables;
 using SuzuBot.Utils;
 
-namespace SuzuBot.Modules;
+namespace SuzuBot.Modules.Basic;
 
 public class CoreModule : BaseModule
 {

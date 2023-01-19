@@ -29,7 +29,7 @@ public class ModuleManager : BaseManager
         context.EventChannel
             .Where(x => x is MessageEventArgs)
             .Select(x => (MessageEventArgs)x)
-            .Subscribe(OnMessage);
+            .Subscribe(async (args) => await OnMessage(args));
 
         _prefixs = new()
         {
@@ -41,7 +41,7 @@ public class ModuleManager : BaseManager
         ReloadModules();
     }
 
-    public void OnMessage(MessageEventArgs eventArgs)
+    public async Task OnMessage(MessageEventArgs eventArgs)
     {
         string plainText = eventArgs.Chain.ToString().Trim();
         IEnumerable<Command> cmds = _commands.Where(x => x.IsEnabled);
@@ -110,7 +110,7 @@ public class ModuleManager : BaseManager
             Logger.LogInformation($"{cmd.FullName} Begin Invoke By {eventArgs.Sender.Id}" +
                     $"{(eventArgs is GroupMessageEventArgs ? $"|{eventArgs.Subject.Id}" : "")}");
             stopwatch.Start();
-            cmd.Invoke(eventArgs.Bot, eventArgs, cmdArgs).Wait();
+            await cmd.Invoke(eventArgs.Bot, eventArgs, cmdArgs);
             stopwatch.Stop();
             RecordInvoke(eventArgs, cmd, stopwatch.ElapsedMilliseconds, CommandExecuteResult.Success);
         }
@@ -140,7 +140,7 @@ public class ModuleManager : BaseManager
         }
     }
 
-    public void RecordException(Exception ex)
+    public Task RecordException(Exception ex)
     {
         ExceptionRecord record = new ExceptionRecord()
         {
@@ -148,11 +148,11 @@ public class ModuleManager : BaseManager
             Type = ex.GetType().Name,
             Message = ex.Message
         };
-        Context.DatabaseManager.Connection
-            .InsertAsync(record).Wait();
+        return Context.DatabaseManager.Connection
+            .InsertAsync(record);
     }
 
-    public void RecordInvoke(MessageEventArgs eventArgs, Command command, long milliseconds, CommandExecuteResult result)
+    public Task RecordInvoke(MessageEventArgs eventArgs, Command command, long milliseconds, CommandExecuteResult result)
     {
         ExecutionRecord record = new()
         {
@@ -166,8 +166,8 @@ public class ModuleManager : BaseManager
             Message = eventArgs.Message.Chain.ToString(),
             Result = result
         };
-        Context.DatabaseManager.Connection
-            .InsertAsync(record).Wait();
+        return Context.DatabaseManager.Connection
+            .InsertAsync(record);
     }
 
     public void RegisterModule(Type type)

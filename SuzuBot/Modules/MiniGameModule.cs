@@ -19,7 +19,10 @@ public class MiniGameModule : BaseModule
         var rnd = new Random((int)seed);
 
         var members = eventArgs.Group.Value.Members.OrderBy(x => x.Id).ToList();
+    Roll:
         var member = members[rnd.Next(members.Count - 1)];
+        if (member.Id == eventArgs.Sender.Id)
+            goto Roll;
         MessageBuilder builder = new("今天你的群友老婆是\n");
         builder.Add(ImageChain.CreateFromUrl(member.AvatarUrl));
         builder.Text(member.Name);

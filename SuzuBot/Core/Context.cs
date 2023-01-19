@@ -85,6 +85,10 @@ public class Context
             _subject.OnNext(args);
             _botLogger.LogInformation($"{e.GroupUin} {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
         };
+        Bot.OnGroupInvite += (s, e) =>
+        {
+            s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
+        };
     }
     private void UpdateKeyStore(BotKeyStore keyStore)
     {

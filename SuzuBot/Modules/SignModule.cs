@@ -11,9 +11,9 @@ public class SignModule : BaseModule
     private SignList _signList;
     private Timer _clearTimer;
     public SignModule()
-	{
-		Name = "签到";
-	}
+    {
+        Name = "签到";
+    }
     public override bool Init()
     {
         base.Init();

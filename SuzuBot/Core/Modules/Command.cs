@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
-using Google.Protobuf.WellKnownTypes;
 using Konata.Core;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;

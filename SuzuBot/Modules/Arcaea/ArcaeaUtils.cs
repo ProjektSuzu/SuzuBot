@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using ArcaeaUnlimitedAPI.Lib;
 using ArcaeaUnlimitedAPI.Lib.Models;
 using ArcaeaUnlimitedAPI.Lib.Responses;
+using OxyPlot;
 using OxyPlot.Annotations;
 using OxyPlot.Axes;
 using OxyPlot.Series;
 using OxyPlot.SkiaSharp;
-using OxyPlot;
 using SkiaSharp;
 using SkiaSharp.HarfBuzz;
 using SQLite;
@@ -204,7 +199,7 @@ public class ArcaeaUtils
     }
     public async Task<bool> UpdateUserRecord(AuaAccountInfo accountInfo)
     {
-        if (accountInfo.Rating <= 0) 
+        if (accountInfo.Rating <= 0)
             return false;
 
         var info = await GetUserInfo(int.Parse(accountInfo.Code));

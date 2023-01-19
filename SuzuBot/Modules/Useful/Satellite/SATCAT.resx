@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LAUNCH_SITE_DICT_JSON" xml:space="preserve">
+    <value>{"AFETR":"美国佛罗里达州空军东部试验场","AFWTR":"美国加利福尼亚州空军西部试验场","CAS":"金丝雀领空","DLS":"俄罗斯东巴罗夫斯基发射场","ERAS":"东部空域","FRGUI":"欧洲太空港，库鲁，法属圭亚那","HGSTR":"哈马吉拉太空轨道靶场，阿尔及利亚","JSC":"中国酒泉航天中心","KODAK":"美国阿拉斯加州科迪亚克发射场","KSCUT":"内浦宇宙中心（原鹿儿岛宇宙中心——日本东京大学）","KWAJ":"美国陆军夸贾林环礁（USAKA）","KYMSC":"卡普斯京亚尔导弹和太空综合体，俄罗斯","NSC":"大韩民国那老航天中心","PLMSC":"普列谢茨克导弹和太空综合体，俄罗斯","RLLB":"火箭实验室发射基地，马希亚半岛，新西兰","SEAL":"海上发射平台（移动）","SEMLS":"伊朗塞姆南卫星发射场","SMTS":"沙赫鲁德导弹试验场，伊朗","SNMLP":"圣马可发射平台，印度洋（肯尼亚）","SRILR":"印度 Satish Dhawan 航天中心（原 Sriharikota 发射场）","SUBL":"潜艇发射平台（移动）","SVOBO":"斯沃博德内发射场，俄罗斯","TAISC":"中国太原航天中心","TANSC":"日本种子岛宇宙中心","TYMSC":"哈萨克斯坦秋拉塔姆导弹和航天中心（拜科努尔航天发射场）","UNK":"未知","VOSTO":"东方航天发射场，俄罗斯","WLPIS":"美国弗吉尼亚州瓦洛普斯岛","WOMRA":"澳大利亚伍默拉","WRAS":"西部空域","WSC":"中国文昌卫星发射场","XICLF":"中国西昌发射场","YAVNE":"以色列亚夫内发射场","YUN":"朝鲜民主主义人民共和国云松发射场（西海卫星发射站）"}</value>
+  </data>
+  <data name="SOURCE_CODE_DICT_JSON" xml:space="preserve">
+    <value>{"AB":"阿拉伯卫星通信组织","ABS":"亚洲广播卫星","AC":"亚洲卫星通讯公司 (ASIASAT)","ALG":"阿尔及利亚","ANG":"安哥拉","ARGN":"阿根廷","ASRA":"奥地利","AUS":"澳大利亚","AZER":"阿塞拜疆","BEL":"比利时","BELA":"白俄罗斯","BERM":"百慕大","BGD":"孟加拉人民共和国","BHUT":"不丹王国","BOL":"玻利维亚","BRAZ":"巴西","BUL":"保加利亚","CA":"加拿大","CHBZ":"中国/巴西","CHLE":"智利","CIS":"独立国家联合体（前苏联）","COL":"哥伦比亚","CRI":"哥斯达黎加共和国","CZCH":"捷克共和国（前捷克斯洛伐克）","DEN":"丹麦","ECU":"厄瓜多尔","EGYP":"埃及","ESA":"欧洲航天局","ESRO":"欧洲空间研究组织","EST":"爱沙尼亚","EUME":"欧洲气象卫星应用组织 (EUMETSAT)","EUTE":"欧洲电信卫星组织 (EUTELSAT)","FGER":"法国/德国","FIN":"芬兰","FR":"法国","FRIT":"法国/意大利","GER":"德国","GHA":"加纳共和国","GLOB":"环球之星","GREC":"希腊","GRSA":"希腊/沙特阿拉伯","GUAT":"危地马拉","HUN":"匈牙利","IM":"国际移动卫星组织 (INMARSAT)","IND":"印度","INDO":"印度尼西亚","IRAN":"伊朗","IRAQ":"伊拉克","IRID":"铱","ISRA":"以色列","ISRO":"印度空间研究组织","ISS":"国际空间站","IT":"意大利","ITSO":"国际通信卫星组织（INTELSAT）","JPN":"日本","KAZ":"哈萨克斯坦","KEN":"肯尼亚共和国","LAOS":"老挝","LKA":"斯里兰卡民主社会主义共和国","LTU":"立陶宛","LUXE":"卢森堡","MA":"摩洛哥","MALA":"马来西亚","MDA":"摩尔多瓦共和国","MEX":"墨西哥","MMR":"缅甸联邦共和国","MNG":"蒙古","MUS":"毛里求斯","NATO":"北大西洋公约组织","NETH":"荷兰","NICO":"新ICO","NIG":"尼日利亚","NKOR":"朝鲜民主主义人民共和国","NOR":"挪威","NPL":"尼泊尔联邦民主共和国","NZ":"新西兰","O3B":"O3b网络","ORB":"ORBCOMM","PAKI":"巴基斯坦","PERU":"秘鲁","POL":"波兰","POR":"葡萄牙","PRC":"中华人民共和国","PRY":"巴拉圭共和国","PRES":"中华人民共和国/欧洲航天局","QAT":"卡塔尔国","RASC":"RascomStar-QAF","ROC":"中国台湾","ROM":"罗马尼亚","RP":"菲律宾（菲律宾共和国）","RWA":"卢旺达共和国","SAFR":"南非","SAUD":"沙特阿拉伯","SDN":"苏丹共和国","SEAL":"海上发射","SES":"SES","SGJP":"新加坡/日本","SING":"新加坡","SKOR":"大韩民国","SPN":"西班牙","STCT":"新加坡/台湾","SVN":"斯洛文尼亚","SWED":"瑞典","SWTZ":"瑞士","TBD":"待定","THAI":"泰国","TMMC":"土库曼斯坦/摩纳哥","TUN":"突尼斯共和国","TURK":"火鸡","UAE":"阿拉伯联合酋长国","UK":"英国","UKR":"乌克兰","UNK":"未知","URY":"乌拉圭","US":"美国","USBZ":"美国/巴西","VENZ":"委内瑞拉","VTNM":"越南"}</value>
+  </data>
+</root>

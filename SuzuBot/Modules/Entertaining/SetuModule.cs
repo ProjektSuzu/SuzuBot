@@ -19,7 +19,7 @@ public class SetuModule : BaseModule
         Name = "色图";
         _httpClient = new()
         {
-            Timeout = TimeSpan.FromSeconds(5)
+            Timeout = TimeSpan.FromSeconds(30)
         };
     }
 
@@ -76,6 +76,7 @@ public class SetuModule : BaseModule
         {
             info.Coin += acgCost;
             _ = Context.DatabaseManager.UpdateUserInfo(info);
+            _cooldownList.RemoveAll(x => x.Id == eventArgs.Sender.Id);
             throw;
         }
     }

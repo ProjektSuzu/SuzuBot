@@ -1,12 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
 using Konata.Core.Message;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
 using SuzuBot.Modules.Useful.Satellite;
-using SuzuBot.Utils;
 
 namespace SuzuBot.Modules.Useful;
 public class SatelliteModule : BaseModule
@@ -34,7 +32,7 @@ public class SatelliteModule : BaseModule
         };
         _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0");
         _httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-        
+
     }
     [Command("ISS信息", "^iss$")]
     public Task ISS(MessageEventArgs eventArgs, string[] args)

@@ -2,6 +2,7 @@
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
+using SuzuBot.Utils;
 
 namespace SuzuBot.Modules.Entertaining;
 public class SetuModule : BaseModule
@@ -80,4 +81,36 @@ public class SetuModule : BaseModule
             throw;
         }
     }
+
+    [Command("ACG图片-临时消息", "^acg-temp$")]
+    public async Task ACGImageTemp(MessageEventArgs eventArgs, string[] args)
+    {
+        byte[] bytes;
+        try
+        {
+            bytes = await _httpClient.GetByteArrayAsync(acgUrl);
+            var b64str = Convert.ToBase64String(bytes);
+            TempMsgContent[] tempMsgs = new []
+            {
+                new TempMsgContent(){ Type = MessageType.Image, Content = b64str }
+            };
+
+            var result = await TempMsgUtils.PostTempMsg(tempMsgs);
+            if (result is not null)
+            {
+                await eventArgs.Reply(new MessageBuilder("[ACG]\n" +
+                    result.Url));
+            }
+            else
+            {
+                await eventArgs.Reply(new MessageBuilder("[ACG]\n" +
+                    "上传失败"));
+            }
+        }
+        catch
+        {
+            throw;
+        }
+    }
 }
+

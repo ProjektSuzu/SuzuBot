@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace SuzuBot.Utils;
@@ -36,4 +37,7 @@ public record TempMsgResult
 {
     public string Uuid { get; set; }
     public DateTime Expire { get; set; }
+
+    [JsonIgnore]
+    public string Url => $"https://tmhs.akulak.icu/?uuid={Uuid}";
 }

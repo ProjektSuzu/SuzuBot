@@ -15,7 +15,6 @@ public static class KirovUtils
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         IncludeFields = true,
-        WriteIndented = true,
     };
 
     public static string SerializeJsonString(this object obj)

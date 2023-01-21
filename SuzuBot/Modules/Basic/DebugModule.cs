@@ -4,6 +4,7 @@ using System.Text;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
+using SuzuBot.Core.Tables;
 using SuzuBot.Utils;
 
 namespace SuzuBot.Modules.Basic;
@@ -27,7 +28,8 @@ public class DebugModule : BaseModule
         builder.AppendLine($"运行时间: {DateTime.Now - Process.GetCurrentProcess().StartTime:dd\\d\\ hh\\h\\ mm\\m\\ ss\\s}\n");
 
         builder.AppendLine($"模块/命令: {Context.ModuleManager.Modules.Count}/{Context.ModuleManager.Commands.Count}");
-        builder.AppendLine($"命令执行计数器: {Context.ModuleManager.ExecuteCount}");
+        builder.AppendLine($"当前命令执行计数器: {Context.ModuleManager.ExecuteCount}");
+        builder.AppendLine($"总计命令执行计数器: {Context.DatabaseManager.Connection.Table<ExecutionRecord>().CountAsync().Result}");
         builder.AppendLine($"错误计数器: {Context.ModuleManager.ExceptionCount}");
 
         builder.AppendLine($"上一次命令执行用时: {Context.ModuleManager.LastCommandCostMillisecond} ms\n");

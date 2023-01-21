@@ -1,4 +1,8 @@
-﻿using Konata.Core.Message;
+﻿using System.Reflection;
+using Konata.Core;
+using Konata.Core.Events.Model;
+using Konata.Core.Interfaces.Api;
+using Konata.Core.Message;
 using Konata.Core.Message.Model;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
@@ -20,7 +24,7 @@ public class OTTOModule : BaseModule
     }
 
     [Command("说的道理", "^otto (.*)")]
-    public async Task RollMemberAsWaifu(GroupMessageEventArgs eventArgs, string[] args)
+    public async Task OttoTTS(MessageEventArgs eventArgs, string[] args)
     {
         var builder = new MessageBuilder();
         var audio = await GetTTS(args[0]);
@@ -59,6 +63,7 @@ public class OTTOModule : BaseModule
         {
             return null;
         }
+
     }
 
 }

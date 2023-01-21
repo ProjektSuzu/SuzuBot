@@ -234,11 +234,11 @@ public class ArcaeaModule : BaseModule
 
             default:
                 {
-                    StringBuilder builder = new();
-                    builder.AppendLine("[Arcaea]Error");
-                    builder.AppendLine("∑(O_O；)找不到功能");
-                    builder.AppendLine(funcName);
-                    return eventArgs.Reply(new MessageBuilder(builder.ToString()));
+                    //StringBuilder builder = new();
+                    //builder.AppendLine("[Arcaea]Error");
+                    //builder.AppendLine("∑(O_O；)找不到功能");
+                    //builder.AppendLine(funcName);
+                    //return eventArgs.Reply(new MessageBuilder(builder.ToString()));
                     return Task.CompletedTask;
                 }
         }
@@ -378,6 +378,15 @@ public class ArcaeaModule : BaseModule
             return;
         }
 
+        if (!info.QueryRecords.Any())
+        {
+            StringBuilder builder = new();
+            builder.AppendLine("[Arcaea]Error");
+            builder.AppendLine("∑(O_O；)绑定的账号记录不足");
+            builder.AppendLine("请使用过查询功能后再重试");
+            await eventArgs.Reply(new MessageBuilder(builder.ToString()));
+            return;
+        }
         var bytes = await _utils.GeneratePttTimeGraph(info);
         await eventArgs.Reply(new MessageBuilder("[Arcaea]BindInfo\n").Image(bytes));
     }

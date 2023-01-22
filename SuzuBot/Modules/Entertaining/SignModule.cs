@@ -86,10 +86,6 @@ public class SignModule : BaseModule
 
         // 抽签部分
         var stick = FortuneStick.GetStick(fortuneRandom);
-        if (DateTime.Today == new DateTime(2023, 1, 22))
-        {
-            stick = new(FortuneStick.FortuneStickType.OMGYouAreTheChoosenOne);
-        }
         builder.Text($"\n今日的运势是: {stick.GetFortuneName()}\n" +
             $"{stick.GetComment()}\n\n");
 

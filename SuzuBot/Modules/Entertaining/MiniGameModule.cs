@@ -12,7 +12,7 @@ public class MiniGameModule : BaseModule
         Name = "娱乐小游戏";
     }
 
-    [Command("抽老婆", "^roll_waifu$", "^抽老婆$")]
+    [Command("抽老婆", "^roll_waifu$", "^抽老婆$", "^clp$")]
     public async Task RollMemberAsWaifu(GroupMessageEventArgs eventArgs, string[] args)
     {
         var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + eventArgs.Sender.Id;
@@ -23,9 +23,11 @@ public class MiniGameModule : BaseModule
         var member = members[rnd.Next(members.Count - 1)];
         if (member.Id == eventArgs.Sender.Id)
             goto Roll;
-        MessageBuilder builder = new("今天你的群友老婆是\n");
-        builder.Add(ImageChain.CreateFromUrl(member.AvatarUrl));
-        builder.Text(member.Name);
+        MessageBuilder builder = new("今天你的群友老婆是\n")
+        {
+            ImageChain.CreateFromUrl(member.AvatarUrl),
+            TextChain.Create($"{member.Name}({member.Id})")
+        };
         await eventArgs.Reply(builder);
     }
 }

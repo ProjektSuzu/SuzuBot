@@ -1,4 +1,5 @@
-﻿using Konata.Core.Message;
+﻿using System.Net.Http.Json;
+using Konata.Core.Message;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
@@ -10,6 +11,7 @@ public class SetuModule : BaseModule
     private List<(uint Id, DateTime Time)> _cooldownList = new();
     HttpClient _httpClient;
     private const string acgUrl = @"https://www.loliapi.com/acg/pc/";
+    private const string setuUrl = @"https://api.lolicon.app/setu/v2?r18=2&excludeAI=true";
     private const int acgCost = 20;
     private const int acgCoolDownSeconds = 60;
 
@@ -82,35 +84,123 @@ public class SetuModule : BaseModule
         }
     }
 
-    [Command("ACG图片-临时消息", "^acg-temp$")]
-    public async Task ACGImageTemp(MessageEventArgs eventArgs, string[] args)
+    [Command("色图", "^setu\\s*(-n [0-9]+)?\\s*(.*)")]
+    public async Task Setu(MessageEventArgs eventArgs, string[] args)
     {
-        byte[] bytes;
-        try
+        int num = 1;
+        string tag = string.Empty;
+        if (args.Length > 1)
         {
-            bytes = await _httpClient.GetByteArrayAsync(acgUrl);
-            var b64str = Convert.ToBase64String(bytes);
-            TempMsgContent[] tempMsgs = new []
-            {
-                new TempMsgContent(){ Type = MessageType.Image, Content = b64str }
-            };
-
-            var result = await TempMsgUtils.PostTempMsg(tempMsgs);
-            if (result is not null)
-            {
-                await eventArgs.Reply(new MessageBuilder("[ACG]\n" +
-                    result.Url));
-            }
-            else
-            {
-                await eventArgs.Reply(new MessageBuilder("[ACG]\n" +
-                    "上传失败"));
-            }
+            num = int.Parse(args[0].Skip(3).ToString());
+            tag = args[1];
         }
-        catch
+        else if (args.Length == 1)
         {
-            throw;
+            tag = args[0];
+        }
+
+        if (num <= 0 || num > 20)
+        {
+            await eventArgs.Reply(new MessageBuilder("[Setu]\n请求的数量过多"));
+            return;
+        }
+
+        var url = setuUrl;
+
+        if (tag != string.Empty)
+        {
+            url += $"&tag={tag}";
+        }
+
+        if (num > 1)
+        {
+            url += $"&num={num}";
+        }
+
+        var json = await _httpClient.GetFromJsonAsync<SetuResult>(url);
+
+        if (json is null)
+        {
+            await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败"));
+            return;
+        }
+
+        if (json.error != string.Empty)
+        {
+            await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败" +
+                json.error));
+            return;
+        }
+
+        if (json.data.Length <= 0)
+        {
+            await eventArgs.Reply(new MessageBuilder("[Setu]\n找不到包含指定标签的色图" +
+                json.error));
+            return;
+        }
+
+        List<TempMsgContent> tempMsgs = new();
+
+        foreach (var setu in json.data)
+        {
+            byte[] bytes;
+            try
+            {
+                bytes = await _httpClient.GetByteArrayAsync(setu.urls.original);
+            }
+            catch
+            {
+                continue;
+            }
+
+            var b64Str = Convert.ToBase64String(bytes);
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标题:\t{setu.title}" });
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"作者:\t{setu.author}" });
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"pid:\t{setu.pid}" });
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{setu.tags}" });
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{setu.tags}" });
+            tempMsgs.Add(new() { Type = MessageType.Image, Content = b64Str });
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = "" });
+        }
+
+        var result = await TempMsgUtils.PostTempMsg(tempMsgs);
+        if (result is not null)
+        {
+            await eventArgs.Reply(new MessageBuilder("[Setu]\n" +
+                result.Url));
+        }
+        else
+        {
+            await eventArgs.Reply(new MessageBuilder("[Setu]\n上传失败"));
         }
     }
 }
 
+
+public class SetuResult
+{
+    public string error { get; set; }
+    public SetuData[] data { get; set; }
+}
+
+public class SetuData
+{
+    public int pid { get; set; }
+    public int p { get; set; }
+    public int uid { get; set; }
+    public string title { get; set; }
+    public string author { get; set; }
+    public bool r18 { get; set; }
+    public int width { get; set; }
+    public int height { get; set; }
+    public string[] tags { get; set; }
+    public string ext { get; set; }
+    public int aiType { get; set; }
+    public long uploadDate { get; set; }
+    public Urls urls { get; set; }
+}
+
+public class Urls
+{
+    public string original { get; set; }
+}

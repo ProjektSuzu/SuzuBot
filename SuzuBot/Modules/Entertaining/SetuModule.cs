@@ -12,9 +12,11 @@ public class SetuModule : BaseModule
     private List<(uint Id, DateTime Time)> _cooldownList = new();
     HttpClient _httpClient;
     private const string acgUrl = @"https://www.loliapi.com/acg/pc/";
-    private const string setuUrl = @"https://api.lolicon.app/setu/v2?r18=2&excludeAI=true&proxy=i.pixiv.cat";
+    private const string setuUrl = @"https://api.lolicon.app/setu/v2?r18=2&excludeAI=true&proxy=i.pixiv.cat&size=regular";
     private const int acgCost = 20;
     private const int acgCoolDownSeconds = 60;
+    private const int setuCost = 20;
+    private const int setuCoolDownSeconds = 60;
 
     private Timer _timer;
 
@@ -107,6 +109,28 @@ public class SetuModule : BaseModule
             return;
         }
 
+        if (_cooldownList.Any(x => x.Id == eventArgs.Sender.Id))
+        {
+            var (_, Time) = _cooldownList.First(x => x.Id == eventArgs.Sender.Id);
+            var seconds = (Time - DateTime.Now).TotalSeconds;
+            await eventArgs.Reply($"∑(O_O；) 功能冷却中\n" +
+                $"还需等待 {seconds:0.000} s");
+            return;
+        }
+
+        var info = Context.DatabaseManager.GetUserInfo(eventArgs.Sender.Id);
+        if (info.Coin <= setuCost * num)
+        {
+            await eventArgs.Reply($"∑(O_O；) SuzuCoin 不足\n" +
+                $"该命令需要 {setuCost * num} SC\n" +
+                $"你只有 {info.Coin} SC");
+            return;
+        }
+
+        _cooldownList.Add((eventArgs.Sender.Id, DateTime.Now.AddSeconds(setuCoolDownSeconds * num)));
+        info.Coin -= setuCost * num;
+        _ = Context.DatabaseManager.UpdateUserInfo(info);
+
         var url = setuUrl;
 
         if (tag != string.Empty)
@@ -122,60 +146,71 @@ public class SetuModule : BaseModule
             url += $"&num={num}";
         }
 
-        var json = await _httpClient.GetFromJsonAsync<SetuResult>(url);
-
-        if (json is null)
+        try
         {
-            await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败"));
-            return;
-        }
 
-        if (json.error != string.Empty)
-        {
-            await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败" +
-                json.error));
-            return;
-        }
+            var json = await _httpClient.GetFromJsonAsync<SetuResult>(url);
 
-        if (json.data.Length <= 0)
-        {
-            await eventArgs.Reply(new MessageBuilder("[Setu]\n找不到包含指定标签的色图" +
-                json.error));
-            return;
-        }
-
-        List<TempMsgContent> tempMsgs = new();
-
-        foreach (var setu in json.data)
-        {
-            byte[] bytes;
-            try
+            if (json is null)
             {
-                bytes = await _httpClient.GetByteArrayAsync(setu.urls.original);
-            }
-            catch
-            {
-                continue;
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败"));
+                return;
             }
 
-            var b64Str = Convert.ToBase64String(bytes);
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标题:\t{setu.title}" });
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"作者:\t{setu.author}" });
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"pid:\t{setu.pid}" });
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{string.Join(" #", setu.tags)}" });
-            tempMsgs.Add(new() { Type = MessageType.Image, Content = b64Str });
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = "" });
-        }
+            if (json.error != string.Empty)
+            {
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败" +
+                    json.error));
+                return;
+            }
 
-        var result = await TempMsgUtils.PostTempMsg(tempMsgs);
-        if (result is not null)
-        {
-            await eventArgs.Reply(new MessageBuilder("[Setu]\n" +
-                result.Url));
+            if (json.data.Length <= 0)
+            {
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n找不到包含指定标签的色图" +
+                    json.error));
+                return;
+            }
+
+            List<TempMsgContent> tempMsgs = new();
+
+            foreach (var setu in json.data)
+            {
+                byte[] bytes;
+                try
+                {
+                    bytes = await _httpClient.GetByteArrayAsync(setu.urls.regular);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                var b64Str = Convert.ToBase64String(bytes);
+                tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标题:\t{setu.title}" });
+                tempMsgs.Add(new() { Type = MessageType.Text, Content = $"作者:\t{setu.author}" });
+                tempMsgs.Add(new() { Type = MessageType.Text, Content = $"pid:\t{setu.pid}" });
+                tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{string.Join(" #", setu.tags)}" });
+                tempMsgs.Add(new() { Type = MessageType.Image, Content = b64Str });
+                tempMsgs.Add(new() { Type = MessageType.Text, Content = "\n" });
+            }
+
+            var result = await TempMsgUtils.PostTempMsg(tempMsgs);
+            if (result is not null)
+            {
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n" +
+                    result.Url));
+            }
+            else
+            {
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n上传失败"));
+            }
         }
-        else
+        catch
         {
-            await eventArgs.Reply(new MessageBuilder("[Setu]\n上传失败"));
+            info.Coin += setuCost * num;
+            _ = Context.DatabaseManager.UpdateUserInfo(info);
+            _cooldownList.RemoveAll(x => x.Id == eventArgs.Sender.Id);
+            throw;
         }
     }
 }
@@ -206,5 +241,5 @@ public class SetuData
 
 public class Urls
 {
-    public string original { get; set; }
+    public string regular { get; set; }
 }

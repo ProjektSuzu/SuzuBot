@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Json;
+﻿using System.Linq;
+using System.Net.Http.Json;
 using Konata.Core.Message;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
@@ -11,7 +12,7 @@ public class SetuModule : BaseModule
     private List<(uint Id, DateTime Time)> _cooldownList = new();
     HttpClient _httpClient;
     private const string acgUrl = @"https://www.loliapi.com/acg/pc/";
-    private const string setuUrl = @"https://api.lolicon.app/setu/v2?r18=2&excludeAI=true";
+    private const string setuUrl = @"https://api.lolicon.app/setu/v2?r18=2&excludeAI=true&proxy=i.pixiv.cat";
     private const int acgCost = 20;
     private const int acgCoolDownSeconds = 60;
 
@@ -91,7 +92,8 @@ public class SetuModule : BaseModule
         string tag = string.Empty;
         if (args.Length > 1)
         {
-            num = int.Parse(args[0].Skip(3).ToString());
+            var numStr = args[0][3..];
+            num = int.Parse(numStr);
             tag = args[1];
         }
         else if (args.Length == 1)
@@ -109,7 +111,10 @@ public class SetuModule : BaseModule
 
         if (tag != string.Empty)
         {
-            url += $"&tag={tag}";
+            foreach (var t in tag.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                url += $"&tag={t}";
+            }
         }
 
         if (num > 1)
@@ -157,8 +162,7 @@ public class SetuModule : BaseModule
             tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标题:\t{setu.title}" });
             tempMsgs.Add(new() { Type = MessageType.Text, Content = $"作者:\t{setu.author}" });
             tempMsgs.Add(new() { Type = MessageType.Text, Content = $"pid:\t{setu.pid}" });
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{setu.tags}" });
-            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{setu.tags}" });
+            tempMsgs.Add(new() { Type = MessageType.Text, Content = $"标签:\t{string.Join(" #", setu.tags)}" });
             tempMsgs.Add(new() { Type = MessageType.Image, Content = b64Str });
             tempMsgs.Add(new() { Type = MessageType.Text, Content = "" });
         }

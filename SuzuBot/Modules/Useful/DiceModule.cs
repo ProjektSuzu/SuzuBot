@@ -10,7 +10,7 @@ public class DiceModule : BaseModule
         Name = "骰子";
     }
 
-    [Command("骰子", "^.r$", IgnorePrefix = true)]
+    [Command("骰子", "^\\.r$", IgnorePrefix = true)]
     public Task DiceSimple(MessageEventArgs eventArgs, string[] args)
     {
         long result = RollDice();
@@ -19,7 +19,7 @@ public class DiceModule : BaseModule
             $"1 D 100 = {result}");
     }
 
-    [Command("骰子", "^.r ([0-9]+)\\s*d\\s*([0-9]+)$", IgnorePrefix = true)]
+    [Command("骰子", "^\\.r ([0-9]+)\\s*d\\s*([0-9]+)$", IgnorePrefix = true)]
     public Task Dice(MessageEventArgs eventArgs, string[] args)
     {
         int num = int.Parse(args[0]);
@@ -30,7 +30,7 @@ public class DiceModule : BaseModule
             $"{num} D {faces} = {result}");
     }
 
-    [Command("骰子", "^.r ([0-9]+)\\s*d\\s*([0-9]+) (.*)$", IgnorePrefix = true)]
+    [Command("骰子", "^\\.r ([0-9]+)\\s*d\\s*([0-9]+) (.*)$", IgnorePrefix = true)]
     public Task DiceWithReason(MessageEventArgs eventArgs, string[] args)
     {
         int num = int.Parse(args[0]);

@@ -87,21 +87,13 @@ public class SetuModule : BaseModule
         }
     }
 
-    [Command("色图", "^setu\\s*(-n [0-9]+)?\\s*(.*)")]
+    [Command("色图", "^setu\\s*(.*)?")]
     public async Task Setu(MessageEventArgs eventArgs, string[] args)
     {
         int num = 1;
         string tag = string.Empty;
-        if (args.Length > 1)
-        {
-            var numStr = args[0][3..];
-            num = int.Parse(numStr);
-            tag = args[1];
-        }
-        else if (args.Length == 1)
-        {
+        if (args.Length > 0)
             tag = args[0];
-        }
 
         if (num <= 0 || num > 20)
         {
@@ -159,15 +151,15 @@ public class SetuModule : BaseModule
 
             if (json.error != string.Empty)
             {
-                await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败" +
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n获取失败\n" +
                     json.error));
                 return;
             }
 
             if (json.data.Length <= 0)
             {
-                await eventArgs.Reply(new MessageBuilder("[Setu]\n找不到包含指定标签的色图" +
-                    json.error));
+                await eventArgs.Reply(new MessageBuilder("[Setu]\n找不到包含指定标签的色图\n" +
+                    tag));
                 return;
             }
 

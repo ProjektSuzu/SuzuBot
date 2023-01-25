@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using NLog.Extensions.Logging;
 using SuzuBot.Core;
@@ -9,6 +10,11 @@ public class Program
 {
     public static async Task Main()
     {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            Environment.SetEnvironmentVariable("DOTNET_GCHeapHardLimit", "0x1E848000");
+        }
+
         LogUtils.SetLoggerProvider<NLogLoggerProvider>();
         ILogger _logger = LogUtils.CreateLogger("Boot");
         string title =

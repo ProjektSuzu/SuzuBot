@@ -135,6 +135,10 @@ public class Context
             case LogLevel.Fatal: _botLogger.LogCritical(args.EventMessage); break;
         };
     }
+    private void OnBotOnline(Bot sender, Konata.Core.Events.Model.BotOnlineEvent args)
+    {
+        UpdateKeyStore(sender.KeyStore);
+    }
     public Context()
     {
         _botLogger = LogUtils.CreateLogger("Bot");
@@ -151,6 +155,7 @@ public class Context
 
         Bot.OnLog += OnLog;
         Bot.OnCaptcha += OnCaptcha;
+        Bot.OnBotOnline += OnBotOnline;
         InitManagers();
     }
     public Context(string id, string password)
@@ -163,7 +168,7 @@ public class Context
             out var config,
             out var device,
             out var keyStore,
-            OicqProtocol.AndroidPad);
+            OicqProtocol.AndroidPhone);
 
         File.WriteAllBytes(Path.Combine(ConfigDirectory, "config.json"), config.SerializeJsonByteArray());
         File.WriteAllBytes(Path.Combine(ConfigDirectory, "device.json"), device.SerializeJsonByteArray());
@@ -171,14 +176,15 @@ public class Context
 
         Bot.OnLog += OnLog;
         Bot.OnCaptcha += OnCaptcha;
+        Bot.OnBotOnline += OnBotOnline;
         InitManagers();
     }
+
     public async Task<bool> StartAsync()
     {
         if (await Bot.Login())
         {
             RegisterEvents();
-            UpdateKeyStore(Bot.KeyStore);
             return true;
         }
         else

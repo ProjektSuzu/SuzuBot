@@ -12,18 +12,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        token: ${{ secrets.token }}
+        token: ${{ secrets.TOKEN }}
         submodules: 'true'
     - name: Setup .NET 7
       uses: actions/setup-dotnet@v2.1.0
       with:
         # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x
         dotnet-version: '7.0.x' # optional
-    - name: Setup .NET 6
-      uses: actions/setup-dotnet@v2.1.0
-      with:
-        # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x
-        dotnet-version: '6.0.x' # optional
     - name: Publish
       run: dotnet publish SuzuBot -c Release --no-self-contained -o publish --os linux --arch x64
         
@@ -32,10 +27,10 @@ jobs:
       with:
         local: publish
         remote: /home/SuzuBot
-        host: ${{ secrets.host }}
-        port: ${{ secrets.port }}
-        username: ${{ secrets.username }}
-        password: ${{ secrets.password }}
+        host: ${{ secrets.HOST }}
+        port: ${{ secrets.PORT }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
         
     - name: Restart systemd
       uses: garygrossgarten/github-action-ssh@v0.6.3
@@ -43,9 +38,9 @@ jobs:
         command: |
           sudo chmod 755 /home/SuzuBot/SuzuBot.dll &&
           sudo systemctl restart suzubot.service
-        host: ${{ secrets.host }}
-        port: ${{ secrets.port }}
-        username: ${{ secrets.username }}
-        password: ${{ secrets.password }}
+        host: ${{ secrets.HOST }}
+        port: ${{ secrets.PORT }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
     
   

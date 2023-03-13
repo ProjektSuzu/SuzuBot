@@ -23,7 +23,8 @@ public class Context
     private ILogger _contextLogger;
     private ILogger _botLogger;
     public IObservable<SuzuEventArgs> EventChannel => _subject;
-    public Bot Bot { get; private set; }
+    public List<Bot> Bots { get; private set; } = new();
+    public List<uint> BotUins { get; private set; } = new();
     public ModuleManager ModuleManager;
     public AuthManager AuthManager;
     public DatabaseManager DatabaseManager;
@@ -36,63 +37,66 @@ public class Context
     }
     private void RegisterEvents()
     {
-        Bot.OnFriendMessage += (s, e) =>
+        foreach (var bot in Bots)
         {
-            var args = new FriendMessageEventArgs()
+            bot.OnFriendMessage += (s, e) =>
             {
-                Bot = s,
-                Message = e.Message,
+                var args = new FriendMessageEventArgs()
+                {
+                    Bot = s,
+                    Message = e.Message,
+                };
+                _subject.OnNext(args);
+                _botLogger.LogInformation($"BOT{s.Uin} {args.Friend.Value.Name}({args.Friend.Value.Id}): {e.Chain}");
             };
-            _subject.OnNext(args);
-            _botLogger.LogInformation($"{args.Friend.Value.Name}({args.Friend.Value.Id}): {e.Chain}");
-        };
-        Bot.OnGroupMessage += (s, e) =>
-        {
-            if (e.MemberUin == Bot.Uin) return;
-            var args = new GroupMessageEventArgs()
+
+            bot.OnGroupMessage += (s, e) =>
             {
-                Bot = s,
-                Message = e.Message,
+                if (BotUins.Contains(e.MemberUin)) return;
+                var args = new GroupMessageEventArgs()
+                {
+                    Bot = s,
+                    Message = e.Message,
+                };
+                _subject.OnNext(args);
+                _botLogger.LogInformation($"BOT{s.Uin} {e.Message.Receiver.Name}({e.Message.Receiver.Uin})|{e.Message.Sender.Name}({e.Message.Sender.Uin}): {e.Chain}");
             };
-            _subject.OnNext(args);
-            _botLogger.LogInformation($"{e.Message.Receiver.Name}({e.Message.Receiver.Uin})|{e.Message.Sender.Name}({e.Message.Sender.Uin}): {e.Chain}");
-        };
-        Bot.OnFriendPoke += (s, e) =>
-        {
-            if (e.FriendUin == Bot.Uin) return;
-            var args = new PokeEventArgs()
+
+            bot.OnFriendPoke += (s, e) =>
             {
-                Bot = s,
-                SenderId = e.FriendUin,
-                SubjectId = e.FriendUin,
-                ReceiverId = e.SelfUin,
-                PokeType = PokeType.Friend
+                if (e.FriendUin == bot.Uin) return;
+                var args = new PokeEventArgs()
+                {
+                    Bot = s,
+                    SenderId = e.FriendUin,
+                    SubjectId = e.FriendUin,
+                    ReceiverId = e.SelfUin,
+                    PokeType = PokeType.Friend
+                };
+                _subject.OnNext(args);
+                _botLogger.LogInformation($"BOT{s.Uin} {e.FriendUin} {e.ActionPrefix} {e.SelfUin} {e.ActionSuffix}");
             };
-            _subject.OnNext(args);
-            _botLogger.LogInformation($"{e.FriendUin} {e.ActionPrefix} {e.SelfUin} {e.ActionSuffix}");
-        };
-        Bot.OnGroupPoke += (s, e) =>
-        {
-            if (e.OperatorUin == Bot.Uin) return;
-            var args = new PokeEventArgs()
+
+            bot.OnGroupPoke += (s, e) =>
             {
-                Bot = s,
-                SenderId = e.OperatorUin,
-                SubjectId = e.GroupUin,
-                ReceiverId = e.MemberUin,
-                PokeType = PokeType.Group
+                if (e.OperatorUin == bot.Uin) return;
+                var args = new PokeEventArgs()
+                {
+                    Bot = s,
+                    SenderId = e.OperatorUin,
+                    SubjectId = e.GroupUin,
+                    ReceiverId = e.MemberUin,
+                    PokeType = PokeType.Group
+                };
+                _subject.OnNext(args);
+                _botLogger.LogInformation($"BOT{s.Uin} {e.GroupUin} {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
             };
-            _subject.OnNext(args);
-            _botLogger.LogInformation($"{e.GroupUin} {e.OperatorUin} {e.ActionPrefix} {e.MemberUin} {e.ActionSuffix}");
-        };
-        Bot.OnGroupInvite += (s, e) =>
-        {
-            s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
-        };
-    }
-    private void UpdateKeyStore(BotKeyStore keyStore)
-    {
-        File.WriteAllBytes(Path.Combine(ConfigDirectory, "keystore.json"), keyStore.SerializeJsonByteArray());
+
+            bot.OnGroupInvite += (s, e) =>
+            {
+                s.ApproveGroupInvitation(e.GroupUin, e.InviterUin, e.Token);
+            };
+        }
     }
     private void OnCaptcha(Bot sender, Konata.Core.Events.Model.CaptchaEvent args)
     {
@@ -137,52 +141,40 @@ public class Context
     }
     private void OnBotOnline(Bot sender, Konata.Core.Events.Model.BotOnlineEvent args)
     {
-        UpdateKeyStore(sender.KeyStore);
+        File.WriteAllText(sender.KeyStore.SerializeJsonString(), Path.Combine(ConfigDirectory, sender.Uin.ToString(), "keystore.json"));
     }
     public Context()
     {
         _botLogger = LogUtils.CreateLogger("Bot");
         _contextLogger = LogUtils.CreateLogger<Context>();
 
-        BotConfig config = File.ReadAllText(Path.Combine(ConfigDirectory, "config.json"))
-            .DeserializeJson<BotConfig>();
-        BotDevice device = File.ReadAllText(Path.Combine(ConfigDirectory, "device.json"))
-            .DeserializeJson<BotDevice>();
-        BotKeyStore keyStore = File.ReadAllText(Path.Combine(ConfigDirectory, "keystore.json"))
-            .DeserializeJson<BotKeyStore>();
+        var dirs = Directory.GetDirectories(ConfigDirectory);
 
-        Bot = BotFather.Create(config, device, keyStore);
+        foreach (var dir in dirs)
+        {
+            BotConfig config = File.ReadAllText(Path.Combine(dir, "config.json"))
+            .DeserializeJson<BotConfig>()!;
+            BotDevice device = File.ReadAllText(Path.Combine(dir, "device.json"))
+            .DeserializeJson<BotDevice>()!;
+            BotKeyStore keyStore = File.ReadAllText(Path.Combine(dir, "keystore.json"))
+            .DeserializeJson<BotKeyStore>()!;
 
-        Bot.OnLog += OnLog;
-        Bot.OnCaptcha += OnCaptcha;
-        Bot.OnBotOnline += OnBotOnline;
-        InitManagers();
-    }
-    public Context(string id, string password)
-    {
-        _botLogger = LogUtils.CreateLogger("Bot");
-        _contextLogger = LogUtils.CreateLogger<Context>();
-        Bot = BotFather.Create(
-            id,
-            password,
-            out var config,
-            out var device,
-            out var keyStore,
-            OicqProtocol.AndroidPhone);
+            var bot = BotFather.Create(config, device, keyStore);
 
-        File.WriteAllBytes(Path.Combine(ConfigDirectory, "config.json"), config.SerializeJsonByteArray());
-        File.WriteAllBytes(Path.Combine(ConfigDirectory, "device.json"), device.SerializeJsonByteArray());
-        File.WriteAllBytes(Path.Combine(ConfigDirectory, "keystore.json"), keyStore.SerializeJsonByteArray());
+            bot.OnLog += OnLog;
+            bot.OnCaptcha += OnCaptcha;
+            bot.OnBotOnline += OnBotOnline;
 
-        Bot.OnLog += OnLog;
-        Bot.OnCaptcha += OnCaptcha;
-        Bot.OnBotOnline += OnBotOnline;
+            Bots.Add(bot);
+            BotUins.Add(bot.Uin);
+        }
+
         InitManagers();
     }
 
     public async Task<bool> StartAsync()
     {
-        if (await Bot.Login())
+        if (Bots.Any(x => x.IsOnline()))
         {
             RegisterEvents();
             return true;

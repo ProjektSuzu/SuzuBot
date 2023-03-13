@@ -18,6 +18,7 @@ public class PokeModule : BaseModule
         "正在启动自毁程序",
         "我得重新集结部队",
         "为时已晚，有机体",
+        "━Σ(ﾟДﾟ|||)━\n*错愕*\n*惊慌失措 15s*",
         "Ja, Treffer!",
         "Ziel hat beschuss unbeschädigt überstanden."
     };

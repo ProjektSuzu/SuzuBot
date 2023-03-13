@@ -48,7 +48,7 @@ public class DiceModule : BaseModule
         long result = 0L;
         for (int i = 0; i < num; i++)
         {
-            result += rnd.Next(faces);
+            result += rnd.Next(faces) + 1;
         }
 
         return result;

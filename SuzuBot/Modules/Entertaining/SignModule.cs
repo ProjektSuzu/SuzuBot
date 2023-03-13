@@ -1,4 +1,5 @@
-﻿using Konata.Core.Message;
+﻿using System.Collections.Concurrent;
+using Konata.Core.Message;
 using SuzuBot.Core.Attributes;
 using SuzuBot.Core.EventArgs.Message;
 using SuzuBot.Core.Modules;
@@ -43,7 +44,7 @@ public class SignModule : BaseModule
         var seed = int.Parse(DateTime.Today.ToString("yyyyMMdd")) + messageEvent.Sender.Id;
         var fortuneRandom = new Random((int)seed);
 
-        if (_signList.List.TryGetValue(messageEvent.Sender.Id, out var sign) && DateTime.Today == sign.LastSign.Date)
+        if (_signList.Dict.TryGetValue(messageEvent.Sender.Id, out var sign) && DateTime.Today == sign.LastSign.Date)
         {
             builder.Text("你今天已经签到过了");
             await messageEvent.Reply(builder);
@@ -100,35 +101,35 @@ public class SignModule : BaseModule
 
 internal class SignList
 {
-    public Dictionary<uint, SignInfo> List { get; set; } = new();
+    public ConcurrentDictionary<uint, SignInfo> Dict { get; set; } = new();
     public DateTime DateTime { get; set; } = DateTime.Now;
     public uint SignCountToday { get; set; } = 0u;
     public void Flush(bool clearCounter = false)
     {
-        List<SignInfo> temp = List.Values.ToList();
+        List<SignInfo> temp = Dict.Values.ToList();
         temp.RemoveAll(x => DateTime.Today - x.LastSign > new TimeSpan(24, 0, 0));
         if (clearCounter || DateTime.Today - DateTime > new TimeSpan(24, 0, 0))
             SignCountToday = 0;
-        List.Clear();
+        Dict.Clear();
         foreach (var sign in temp)
         {
-            List.Add(sign.Uin, sign);
+            _ = Dict.GetOrAdd(sign.Uin, sign);
         }
     }
     public SignInfo Sign(uint Uin)
     {
         SignCountToday++;
         DateTime = DateTime.Now;
-        if (List.TryGetValue(Uin, out var sign))
+        if (Dict.TryGetValue(Uin, out var sign))
         {
             sign.LastSign = DateTime;
             sign.ContinuousSign++;
         }
         else
         {
-            List.Add(Uin, new SignInfo() { Uin = Uin });
+            _ = Dict.GetOrAdd(Uin, new SignInfo() { Uin = Uin });
         }
-        return List[Uin];
+        return Dict[Uin];
     }
 }
 

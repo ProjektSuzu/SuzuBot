@@ -34,9 +34,13 @@ public class ModuleManager : BaseManager
         _prefixs = new()
         {
             "/",
-            "铃酱",
-            AtChain.Create(Context.Bot.Uin).ToString()
+            "铃酱"
         };
+
+        foreach (var uin in context.BotUins)
+        {
+            _prefixs.Add(AtChain.Create(uin).ToString());
+        }
 
         ReloadModules();
     }

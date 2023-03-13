@@ -141,7 +141,7 @@ public class Context
     }
     private void OnBotOnline(Bot sender, Konata.Core.Events.Model.BotOnlineEvent args)
     {
-        File.WriteAllText(sender.KeyStore.SerializeJsonString(), Path.Combine(ConfigDirectory, sender.Uin.ToString(), "keystore.json"));
+        File.WriteAllText(Path.Combine(ConfigDirectory, sender.Uin.ToString(), "keystore.json"), sender.KeyStore.SerializeJsonString());
     }
     public Context()
     {
@@ -174,6 +174,7 @@ public class Context
 
     public async Task<bool> StartAsync()
     {
+        await Task.WhenAll(Bots.Select(x => x.Login()));
         if (Bots.Any(x => x.IsOnline()))
         {
             RegisterEvents();

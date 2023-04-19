@@ -15,7 +15,7 @@ public class ArcaeaModule : BaseModule
 {
     ArcaeaUtils _utils;
     AuaClient _client;
-    Dictionary<int, AuaStatus> _status;
+    Dictionary<string, AuaStatus> _status;
 
     public ArcaeaModule()
     {
@@ -29,7 +29,7 @@ public class ArcaeaModule : BaseModule
         if (auaAuth is null)
             throw new FileNotFoundException(Path.Combine(ResourceDirPath, "auth.json"));
 
-        _status = File.ReadAllText(Path.Combine(ResourceDirPath, "status.json")).DeserializeJson<Dictionary<int, AuaStatus>>();
+        _status = File.ReadAllText(Path.Combine(ResourceDirPath, "status.json")).DeserializeJson<Dictionary<string, AuaStatus>>();
         if (auaAuth is null)
             throw new FileNotFoundException(Path.Combine(ResourceDirPath, "status.json"));
 
@@ -50,7 +50,7 @@ public class ArcaeaModule : BaseModule
         StringBuilder builder = new();
         builder.AppendLine("[Arcaea]Error");
         builder.AppendLine("∑(O_O；)远端服务器返回了一个错误");
-        builder.AppendLine($"{ex.Status}: {_status[ex.Status].Message}");
+        builder.AppendLine($"{ex.Status}: {_status[ex.Status.ToString()].Message}");
         return eventArgs.Reply(new MessageBuilder(builder.ToString()));
     }
     public static Task WrongUserCode(MessageEventArgs eventArgs, string userCode)
@@ -352,6 +352,8 @@ public class ArcaeaModule : BaseModule
                 await WrongUserCode(eventArgs, user);
             }
         }
+
+        _ = eventArgs.Reply(new MessageBuilder("[Arcaea]Best30\n正在获取Best30数据，请稍等"));
 
         AuaUserBest30Content best30;
         try

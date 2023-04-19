@@ -42,7 +42,7 @@ public class CoreModule : BaseModule
         var builder = new MessageBuilder("[Help]\n")
             .Text($"SuzuBot-{SuzuBotBuildStamp.Version}\n")
             .Text("AkulaKirov 2018 GPL-3.0\n")
-            .Text(@"帮助文档请查阅: https://suzubot.akulak.icu/");
+            .Text(@"帮助文档请查阅: https://docs.suzubot.top/");
         return eventArgs.Reply(builder);
     }
 

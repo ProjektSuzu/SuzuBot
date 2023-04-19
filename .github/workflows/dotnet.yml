@@ -30,7 +30,7 @@ jobs:
         host: ${{ secrets.HOST }}
         port: ${{ secrets.PORT }}
         username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        privateKey: ${{ secrets.PASSWORD }}
         
     - name: Restart systemd
       uses: garygrossgarten/github-action-ssh@v0.6.3

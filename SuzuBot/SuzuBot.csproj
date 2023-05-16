@@ -13,16 +13,18 @@
     <RepositoryUrl>https://github.com/ProjektSuzu/SuzuBot.git</RepositoryUrl>
     <PackageProjectUrl>https://github.com/ProjektSuzu/SuzuBot</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>5.1.1</Version>
+    <Version>6.0.0</Version>
     <UserSecretsId>63b2a825-48f2-4470-8889-0f59a10fbdbb</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <NoWarn>1701;1702;8618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <NoWarn>1701;1702;8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,49 +41,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Core\Attributes\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ArcaeaUnlimitedAPI.Lib" Version="2.2.0" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="2.8.2.3" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.5.0-2.final" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
-    <PackageReference Include="NLog" Version="5.1.1" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="5.2.1" />
-    <PackageReference Include="OxyPlot.SkiaSharp" Version="2.1.2" />
-    <PackageReference Include="SkiaSharp" Version="2.88.3" />
-    <PackageReference Include="SkiaSharp.HarfBuzz" Version="2.88.3" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.3" />
-    <PackageReference Include="sqlite-net-pcl" Version="1.9.141-beta" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Modules\Useful\Satellite\SATCAT.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SATCAT.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="Modules\Useful\Satellite\SATCAT.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>SATCAT.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="App.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
   </ItemGroup>
 
 	  <!-- Get Build Stamp -->

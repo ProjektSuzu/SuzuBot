@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34825.169
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuzuBot", "SuzuBot\SuzuBot.csproj", "{142130A1-12BE-4655-B3A5-045A6A0D4BC0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lagrange.Core", "Lagrange.Core\Lagrange.Core\Lagrange.Core.csproj", "{ABCF22D6-46E4-47DE-865A-265DAAA2B859}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{142130A1-12BE-4655-B3A5-045A6A0D4BC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{142130A1-12BE-4655-B3A5-045A6A0D4BC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{142130A1-12BE-4655-B3A5-045A6A0D4BC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{142130A1-12BE-4655-B3A5-045A6A0D4BC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABCF22D6-46E4-47DE-865A-265DAAA2B859}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABCF22D6-46E4-47DE-865A-265DAAA2B859}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABCF22D6-46E4-47DE-865A-265DAAA2B859}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABCF22D6-46E4-47DE-865A-265DAAA2B859}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1A3F57BA-D03B-4B8D-A75C-47FF16071D59}
+	EndGlobalSection
+EndGlobal

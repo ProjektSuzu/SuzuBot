@@ -42,6 +42,13 @@ internal class LoliconApiSetu
                 );
                 return;
             }
+            else if (result.data.Length == 0)
+            {
+                await context.Bot.SendMessage(
+                    MessageBuilder.Group(context.Group.GroupUin).Text($"未找到图片").Build()
+                );
+                return;
+            }
         }
         catch (Exception ex)
         {

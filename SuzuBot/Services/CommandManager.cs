@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.Reflection;
+using Lagrange.Core.Utility.Binary;
 using Microsoft.Extensions.Logging;
 using SuzuBot.Commands;
 using SuzuBot.Commands.Attributes;
@@ -60,17 +61,17 @@ internal class CommandManager
                 .Single(command =>
                     context.ParseResult.CommandResult.Command == command.InnerCommand
                 );
-            context.Prefix &= context.Command.RouteRule.Prefix;
+            context.CommandPrefix = context.Command.RouteRule.Prefix;
+            context.MessagePrefix &= context.CommandPrefix;
             return true;
         }
 
-        var shortcut = Commands
-            .AsParallel()
-            .FirstOrDefault(command => command.MatchShortcut(context));
+        var shortcut = Commands.FirstOrDefault(command => command.MatchShortcut(context));
         if (shortcut is not null)
         {
             context.Command = shortcut;
             context.ParseResult = shortcut.InnerCommand.Parse(context.Input);
+            context.MessagePrefix &= context.CommandPrefix;
             context.UseShortcut = true;
             return true;
         }

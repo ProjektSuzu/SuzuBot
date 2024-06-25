@@ -136,7 +136,7 @@ internal class SuzuCommand
             if (regex.IsMatch(context.Input))
             {
                 context.Input = $"{Id} {regex.Replace(context.Input, format)}";
-                context.Prefix &= prefix;
+                context.CommandPrefix = prefix;
                 return true;
             }
         }

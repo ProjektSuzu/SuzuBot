@@ -59,8 +59,8 @@ internal class CoreUtils
 
     [Command("开关命令", "toggle")]
     [RouteRule(Permission = Permission.Admin)]
-    [Shortcut("^(打开|启用)命令(.*)", "allow $2")]
-    [Shortcut("^(关闭|禁用)命令(.*)", "deny $2")]
+    [Shortcut("^(开启|启用)命令(.*)", "allow $2", Prefix = Prefix.None)]
+    [Shortcut("^(关闭|禁用)命令(.*)", "deny $2", Prefix = Prefix.None)]
     public Task ToggleCommand(RequestContext context, string rule, string cmdName)
     {
         if (rule is not "allow" and not "deny")

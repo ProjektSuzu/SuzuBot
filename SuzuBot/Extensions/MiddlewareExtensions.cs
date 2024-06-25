@@ -43,10 +43,10 @@ internal static class MiddlewareExtensions
                 if (ctx.Input.StartsWith("/"))
                 {
                     ctx.Input = ctx.Input[1..];
-                    ctx.Prefix |= Prefix.Prefix;
+                    ctx.MessagePrefix |= Prefix.Prefix;
                 }
                 if (ctx.Chain.OfType<MentionEntity>().FirstOrDefault()?.Uin == ctx.Bot.BotUin)
-                    ctx.Prefix |= Prefix.Mention;
+                    ctx.MessagePrefix |= Prefix.Mention;
 
                 return next(ctx);
             }
@@ -72,7 +72,7 @@ internal static class MiddlewareExtensions
         return app.Use(
             (ctx, next) =>
             {
-                if (ctx.Prefix == 0)
+                if (ctx.MessagePrefix == 0 && ctx.CommandPrefix != 0)
                     return Task.CompletedTask;
 
                 var dbCtx = ctx.Services.GetRequiredService<SuzuDbContext>();

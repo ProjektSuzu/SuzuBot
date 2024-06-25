@@ -1,6 +1,6 @@
 ﻿namespace SuzuBot.Commands.Attributes;
 
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 internal class ShortcutAttribute : Attribute
 {
     public string Pattern { get; }

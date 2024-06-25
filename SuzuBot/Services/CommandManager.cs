@@ -9,13 +9,13 @@ namespace SuzuBot.Services;
 
 internal class CommandManager
 {
-    private readonly RootCommand _rootCommand;
-    private readonly SuzuCommand[] _commands;
+    public RootCommand RootCommand { get; }
+    public SuzuCommand[] Commands { get; }
 
     public CommandManager(Type[] moduleTypes, ILogger<CommandManager> logger)
     {
-        _rootCommand = [];
-        _rootCommand.Name = "suzubot";
+        RootCommand = [];
+        RootCommand.Name = "suzubot";
 
         List<SuzuCommand> commands = [];
         foreach (var moduleType in moduleTypes)
@@ -36,7 +36,7 @@ internal class CommandManager
                 logger.LogInformation("Registering command {}", commandAttribute.Name);
                 var command = new SuzuCommand(moduleType, method, commandAttribute);
                 commands.Add(command);
-                _rootCommand.Add(command.InnerCommand);
+                RootCommand.Add(command.InnerCommand);
             }
         }
 
@@ -47,15 +47,15 @@ internal class CommandManager
                 return priority == 0 ? a.Id.CompareTo(b.Id) : priority;
             }
         );
-        _commands = [.. commands];
+        Commands = [.. commands];
     }
 
     public bool Match(RequestContext context)
     {
-        context.ParseResult = _rootCommand.Parse(context.Input);
+        context.ParseResult = RootCommand.Parse(context.Input);
         if (context.ParseResult.Errors.Count == 0)
         {
-            context.Command = _commands
+            context.Command = Commands
                 .AsParallel()
                 .Single(command =>
                     context.ParseResult.CommandResult.Command == command.InnerCommand
@@ -64,7 +64,7 @@ internal class CommandManager
             return true;
         }
 
-        var shortcut = _commands
+        var shortcut = Commands
             .AsParallel()
             .FirstOrDefault(command => command.MatchShortcut(context));
         if (shortcut is not null)

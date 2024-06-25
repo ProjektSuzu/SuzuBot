@@ -4,6 +4,7 @@ using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
 using Microsoft.Extensions.DependencyInjection;
 using SuzuBot.Commands.Attributes;
+using SuzuBot.Database;
 using SuzuBot.Hosting;
 using SuzuBot.Services;
 
@@ -54,5 +55,106 @@ internal class CoreUtils
         return context.Bot.SendMessage(
             MessageBuilder.Group(context.Group.GroupUin).Text(sb.ToString()).Build()
         );
+    }
+
+    [Command("开关命令", "toggle")]
+    [RouteRule(Permission = Permission.Admin)]
+    [Shortcut("^(打开|启用)命令(.*)", "allow $2")]
+    [Shortcut("^(关闭|禁用)命令(.*)", "deny $2")]
+    public Task ToggleCommand(RequestContext context, string rule, string cmdName)
+    {
+        if (rule is not "allow" and not "deny")
+        {
+            return context.Bot.SendMessage(
+                MessageBuilder.Group(context.Group.GroupUin).Text($"规则只能为 allow 或 deny").Build()
+            );
+        }
+        var cmdManager = context.Services.GetRequiredService<CommandManager>();
+        var cmd = cmdManager.Commands.FirstOrDefault(c =>
+            c.Id == cmdName || c.Name == cmdName || c.InnerCommand.Aliases.Contains(cmdName)
+        );
+        if (cmd is null)
+        {
+            return context.Bot.SendMessage(
+                MessageBuilder
+                    .Group(context.Group.GroupUin)
+                    .Forward(context.Chain)
+                    .Text($"未找到命令: {cmdName}")
+                    .Build()
+            );
+        }
+        else if (cmd.ModuleType == typeof(CoreUtils))
+        {
+            return context.Bot.SendMessage(
+                MessageBuilder
+                    .Group(context.Group.GroupUin)
+                    .Forward(context.Chain)
+                    .Text($"无法调整核心命令: {cmdName}")
+                    .Build()
+            );
+        }
+
+        var dbCtx = context.Services.GetRequiredService<SuzuDbContext>();
+        var groupRule = dbCtx.GroupRules.FirstOrDefault(x =>
+            x.GroupUin == context.Group.GroupUin && x.CommandId == cmd.Id
+        );
+        if (groupRule is null)
+        {
+            dbCtx.GroupRules.Add(
+                new()
+                {
+                    GroupUin = context.Group.GroupUin,
+                    CommandId = cmd.Id,
+                    Rule = rule
+                }
+            );
+        }
+        else
+        {
+            groupRule.Rule = rule;
+            dbCtx.Update(groupRule);
+        }
+
+        dbCtx.SaveChanges();
+        return context.Bot.SendMessage(
+            MessageBuilder
+                .Group(context.Group.GroupUin)
+                .Forward(context.Chain)
+                .Text($"命令 {cmdName} 已被设置为 {rule}")
+                .Build()
+        );
+    }
+
+    [Command("查看规则集", "rules")]
+    public Task ShowRules(RequestContext context, uint groupUin = 0)
+    {
+        if (groupUin == 0)
+            groupUin = context.Group.GroupUin;
+        var dbCtx = context.Services.GetRequiredService<SuzuDbContext>();
+        var rules = dbCtx.GroupRules.Where(x => x.GroupUin == groupUin).ToList();
+        if (rules.Count == 0)
+        {
+            return context.Bot.SendMessage(
+                MessageBuilder
+                    .Group(context.Group.GroupUin)
+                    .Forward(context.Chain)
+                    .Text("当前群组没有设置规则")
+                    .Build()
+            );
+        }
+        else
+        {
+            var sb = new StringBuilder();
+            foreach (var rule in rules)
+                sb.AppendLine($"{rule.CommandId}={rule.Rule}");
+
+            return context.Bot.SendMessage(
+                MessageBuilder
+                    .Group(context.Group.GroupUin)
+                    .Forward(context.Chain)
+                    .Text(sb.ToString())
+                    .Build()
+            );
+        }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.CommandLine;
 using System.Reflection;
-using Lagrange.Core.Utility.Binary;
 using Microsoft.Extensions.Logging;
 using SuzuBot.Commands;
 using SuzuBot.Commands.Attributes;

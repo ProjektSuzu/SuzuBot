@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SuzuBot.Commands.Attributes;
 using SuzuBot.Hosting;

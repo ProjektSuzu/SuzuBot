@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using SkiaSharp;
 using SuzuBot.Commands.Attributes;
 using SuzuBot.Hosting;
-using SuzuBot.Services;
 
 namespace SuzuBot.Modules;
 

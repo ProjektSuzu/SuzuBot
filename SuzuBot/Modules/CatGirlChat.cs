@@ -1,11 +1,16 @@
+using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Timers;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
+using Lagrange.Core.Message.Entity;
 using Microsoft.Extensions.DependencyInjection;
 using SuzuBot.Commands.Attributes;
 using SuzuBot.Hosting;
+using Timer = System.Timers.Timer;
 
 namespace SuzuBot.Modules;
 
@@ -21,18 +26,64 @@ internal class CatGirlChat
     private static readonly string _modelName = File.ReadAllText(
         Path.Combine("resources", nameof(CatGirlChat), "model.txt")
     );
+    private static readonly ConcurrentDictionary<
+        string,
+        (Message[] History, DateTime Time)
+    > _chatHistories = [];
+    private static readonly Timer _timer;
+
+    static CatGirlChat()
+    {
+        _timer = new()
+        {
+            AutoReset = true,
+            Enabled = true,
+            Interval = TimeSpan.FromMinutes(1).TotalMilliseconds
+        };
+        _timer.Elapsed += (_, _) =>
+        {
+            _chatHistories
+                .AsParallel()
+                .Where(x => (DateTime.Now - x.Value.Time).TotalMinutes > 5)
+                .Select(x => x.Key)
+                .ForAll(key => _chatHistories.TryRemove(key, out _));
+            ;
+        };
+    }
 
     [Command("猫娘聊天")]
     [RouteRule(Priority = 255)]
     [Shortcut(@"^(.*)", "$1", Prefix = Prefix.Mention)]
     public async Task Chat(RequestContext context, string text)
     {
+        OpenAiRequest request = new OpenAiRequest() { model = _modelName };
+        if (context.Chain.FirstOrDefault() is ForwardEntity forward)
+        {
+            if (
+                !_chatHistories.TryGetValue(
+                    $"{forward.Sequence}@{context.Group.GroupUin}",
+                    out var history
+                )
+            )
+            {
+                await context.Bot.SendMessage(
+                    MessageBuilder
+                        .Group(context.Group.GroupUin)
+                        .Forward(context.Chain)
+                        .Text("无法找到历史消息")
+                        .Build()
+                );
+                return;
+            }
+
+            request.messages = [.. history.History];
+        }
+
+        request.messages.Add(new() { role = "user", content = text });
         var httpClient = context.Services.GetRequiredService<HttpClient>();
         httpClient.Timeout = TimeSpan.FromSeconds(15);
         httpClient.DefaultRequestHeaders.Authorization = new("Bearer", _apiKey);
 
-        var request = new OpenAiRequest() { model = _modelName };
-        request.messages.Add(new() { role = "user", content = text });
         var content = new StringContent(
             JsonSerializer.Serialize(request),
             Encoding.UTF8,
@@ -48,12 +99,20 @@ internal class CatGirlChat
         }
 
         var result = await response.Content.ReadFromJsonAsync<OpenAiResponse>();
-        await context.Bot.SendMessage(
+        var msgResult = await context.Bot.SendMessage(
             MessageBuilder
                 .Group(context.Group.GroupUin)
                 .Forward(context.Chain)
-                .Text(result!.choices[0].message.content)
+                .Text(
+                    $"{result!.choices[0].message.content}\n\n本次对话消耗 {result.usage.completion_tokens} tokens，共消耗 {result.usage.total_tokens} tokens"
+                )
                 .Build()
+        );
+        Message[] messages = [.. request.messages, result.choices[0].message];
+        _chatHistories.AddOrUpdate(
+            $"{msgResult.Sequence}@{context.Group.GroupUin}",
+            (messages, DateTime.Now),
+            (_, _) => (messages, DateTime.Now)
         );
         return;
     }

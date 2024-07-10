@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Data;
+using System.Diagnostics;
 using System.Text;
 using Lagrange.Core.Common.Interface.Api;
 using Lagrange.Core.Message;
@@ -122,6 +123,21 @@ internal class CoreUtils
                 .Forward(context.Chain)
                 .Text($"命令 {cmdName} 已被设置为 {rule}")
                 .Build()
+        );
+    }
+
+    [Command("查看命令", "commands")]
+    public Task ShowCommands(RequestContext context)
+    {
+        var cmdManager = context.Services.GetRequiredService<CommandManager>();
+        var sb = new StringBuilder("[Commands]\n");
+        foreach (var cmd in cmdManager.Commands)
+        {
+            sb.AppendLine($"{cmd.Name} ({cmd.Id})");
+        }
+
+        return context.Bot.SendMessage(
+            MessageBuilder.Group(context.Group.GroupUin).Text(sb.ToString()).Build()
         );
     }
 

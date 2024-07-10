@@ -17,6 +17,7 @@ namespace SuzuBot.Modules;
 [Module("Ã¨ÄïÁÄÌì")]
 internal class CatGirlChat
 {
+    private const int _maxChatHistory = 5;
     private static readonly string _apiKey = File.ReadAllText(
         Path.Combine("resources", nameof(CatGirlChat), "apiKey.txt")
     );
@@ -31,9 +32,15 @@ internal class CatGirlChat
     [Command("Ã¨ÄïÁÄÌì", "Ã¨Äï")]
     public async Task Chat(RequestContext context, string text)
     {
-        OpenAiRequest request = new OpenAiRequest() { model = _modelName };
+        List<Message> historyMessages = [];
+        if (_chatHistories.TryGetValue(context.Group.GroupUin, out var messages))
+        {
+            historyMessages.AddRange(messages);
+        }
 
-        request.messages.Add(new() { role = "user", content = text });
+        historyMessages.Add(new() { role = "user", content = text });
+        OpenAiRequest request = new OpenAiRequest() { model = _modelName };
+        request.messages.AddRange(historyMessages);
         var httpClient = context.Services.GetRequiredService<HttpClient>();
         httpClient.Timeout = TimeSpan.FromSeconds(15);
         httpClient.DefaultRequestHeaders.Authorization = new("Bearer", _apiKey);
@@ -62,11 +69,18 @@ internal class CatGirlChat
                 )
                 .Build()
         );
-        Message[] messages = [.. request.messages, result.choices[0].message];
+        historyMessages.Add(
+            new() { role = "assistant", content = result.choices[0].message.content }
+        );
+        if (historyMessages.Count > _maxChatHistory)
+        {
+            historyMessages.RemoveRange(0, 2);
+        }
+
         _chatHistories.AddOrUpdate(
-            $"{msgResult.Sequence}@{context.Group.GroupUin}",
-            (messages, DateTime.Now),
-            (_, _) => (messages, DateTime.Now)
+            context.Group.GroupUin,
+            historyMessages,
+            (_, _) => historyMessages
         );
         return;
     }

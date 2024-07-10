@@ -92,276 +92,262 @@ internal class HikariSearch
 
         List<MessageBuilder> builders = [];
         // SauceNAO
-        var sauceNAOTask = Task.Run(async () =>
+        var sauceNAOForm = new MultipartFormDataContent
         {
-            var sauceNAOForm = new MultipartFormDataContent
-            {
-                { new ByteArrayContent(imageData), "image", "image.jpg" },
-                { new StringContent("true"), "hide" }
-            };
-            try
-            {
-                var response = await httpClient.PostAsync(_url + "SauceNAO", sauceNAOForm);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var innerBuilder = MessageBuilder
-                        .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                        .Text("SauceNAO 请求失败");
-                    builders.Add(innerBuilder);
-                    return;
-                }
-                else
-                {
-                    SauceNAOResult[] sauceNAOResults;
-                    try
-                    {
-                        sauceNAOResults = (
-                            await response.Content.ReadFromJsonAsync<SauceNAOResult[]>()
-                        )!;
-                        if (sauceNAOResults.Length == 0)
-                        {
-                            var innerBuilder = MessageBuilder
-                                .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                                .Text("SauceNAO 未找到相关结果");
-                            builders.Add(innerBuilder);
-                            return;
-                        }
-
-                        foreach (var result in sauceNAOResults.Where(x => !x.hidden).Take(2))
-                        {
-                            var innerBuilder = MessageBuilder.FakeGroup(
-                                context.Group.GroupUin,
-                                context.Bot.BotUin
-                            );
-                            var sb = new StringBuilder("[SauceNAO]\n");
-                            sb.AppendLine($"标题: {result.title}");
-                            sb.AppendLine($"相似度: {result.similarity}%");
-                            foreach (var content in result.content)
-                                sb.AppendLine($"{content.text} {content.link}");
-                            foreach (var misc in result.misc)
-                                sb.AppendLine(misc);
-
-                            byte[] targetImageData;
-                            try
-                            {
-                                targetImageData = await httpClient.GetByteArrayAsync(result.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                sb.AppendLine($"图片下载失败: {ex.Message}");
-                                innerBuilder.Text(sb.ToString());
-                                builders.Add(innerBuilder);
-                                continue;
-                            }
-
-                            using (var compress = SKImage.FromEncodedData(targetImageData))
-                            {
-                                targetImageData = compress
-                                    .Encode(SKEncodedImageFormat.Webp, 20)
-                                    .ToArray();
-                            }
-                            innerBuilder.Text(sb.ToString()).Image(targetImageData);
-                            builders.Add(innerBuilder);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var innerBuilder = MessageBuilder
-                            .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                            .Text($"SauceNAO 请求失败: {ex.Message}");
-                        builders.Add(innerBuilder);
-                    }
-                }
-            }
-            catch (Exception ex)
+            { new ByteArrayContent(imageData), "image", "image.jpg" },
+            { new StringContent("true"), "hide" }
+        };
+        try
+        {
+            var response = await httpClient.PostAsync(_url + "SauceNAO", sauceNAOForm);
+            if (!response.IsSuccessStatusCode)
             {
                 var innerBuilder = MessageBuilder
                     .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                    .Text($"SauceNAO 请求失败: {ex.Message}");
+                    .Text("SauceNAO 请求失败");
                 builders.Add(innerBuilder);
                 return;
             }
-        });
+            else
+            {
+                SauceNAOResult[] sauceNAOResults;
+                try
+                {
+                    sauceNAOResults = (
+                        await response.Content.ReadFromJsonAsync<SauceNAOResult[]>()
+                    )!;
+                    if (sauceNAOResults.Length == 0)
+                    {
+                        var innerBuilder = MessageBuilder
+                            .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                            .Text("SauceNAO 未找到相关结果");
+                        builders.Add(innerBuilder);
+                        return;
+                    }
+
+                    foreach (var result in sauceNAOResults.Where(x => !x.hidden).Take(2))
+                    {
+                        var innerBuilder = MessageBuilder.FakeGroup(
+                            context.Group.GroupUin,
+                            context.Bot.BotUin
+                        );
+                        var sb = new StringBuilder("[SauceNAO]\n");
+                        sb.AppendLine($"标题: {result.title}");
+                        sb.AppendLine($"相似度: {result.similarity}%");
+                        foreach (var content in result.content)
+                            sb.AppendLine($"{content.text} {content.link}");
+                        foreach (var misc in result.misc)
+                            sb.AppendLine(misc);
+
+                        byte[] targetImageData;
+                        try
+                        {
+                            targetImageData = await httpClient.GetByteArrayAsync(result.image);
+                        }
+                        catch (Exception ex)
+                        {
+                            sb.AppendLine($"图片下载失败: {ex.Message}");
+                            innerBuilder.Text(sb.ToString());
+                            builders.Add(innerBuilder);
+                            continue;
+                        }
+
+                        using (var compress = SKImage.FromEncodedData(targetImageData))
+                        {
+                            targetImageData = compress
+                                .Encode(SKEncodedImageFormat.Webp, 20)
+                                .ToArray();
+                        }
+                        innerBuilder.Text(sb.ToString()).Image(targetImageData);
+                        builders.Add(innerBuilder);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var innerBuilder = MessageBuilder
+                        .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                        .Text($"SauceNAO 请求失败: {ex.Message}");
+                    builders.Add(innerBuilder);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var innerBuilder = MessageBuilder
+                .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                .Text($"SauceNAO 请求失败: {ex.Message}");
+            builders.Add(innerBuilder);
+            return;
+        }
 
         // Ascii2d color
-        var ascii2dColorTask = Task.Run(async () =>
+        var ascii2dColorForm = new MultipartFormDataContent
         {
-            var ascii2dColorForm = new MultipartFormDataContent
-            {
-                { new ByteArrayContent(imageData), "image", "image.jpg" },
-                { new StringContent("color"), "type" }
-            };
-            try
-            {
-                var response = await httpClient.PostAsync(_url + "ascii2d", ascii2dColorForm);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var innerBuilder = MessageBuilder
-                        .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                        .Text("Ascii2d 色彩 请求失败");
-                    builders.Add(innerBuilder);
-                    return;
-                }
-                else
-                {
-                    Ascii2dResult[] ascii2DResults;
-                    try
-                    {
-                        ascii2DResults = (
-                            await response.Content.ReadFromJsonAsync<Ascii2dResult[]>()
-                        )!;
-                        if (ascii2DResults.Length == 0)
-                        {
-                            var innerBuilder = MessageBuilder
-                                .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                                .Text("Ascii2d 色彩 未找到相关结果");
-                            builders.Add(innerBuilder);
-                            return;
-                        }
-
-                        foreach (var result in ascii2DResults.Take(2))
-                        {
-                            var innerBuilder = MessageBuilder.FakeGroup(
-                                context.Group.GroupUin,
-                                context.Bot.BotUin
-                            );
-                            var sb = new StringBuilder("[Ascii2d 色彩]\n");
-                            sb.AppendLine($"Hash: {result.hash}");
-                            sb.AppendLine($"{result.source.text} {result.source.link}");
-                            sb.AppendLine($"{result.author.text} {result.author.link}");
-
-                            byte[] targetImageData;
-                            try
-                            {
-                                targetImageData = await httpClient.GetByteArrayAsync(result.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                sb.AppendLine($"图片下载失败: {ex.Message}");
-                                innerBuilder.Text(sb.ToString());
-                                builders.Add(innerBuilder);
-                                continue;
-                            }
-
-                            using (var compress = SKImage.FromEncodedData(targetImageData))
-                            {
-                                targetImageData = compress
-                                    .Encode(SKEncodedImageFormat.Webp, 20)
-                                    .ToArray();
-                            }
-                            innerBuilder.Text(sb.ToString()).Image(targetImageData);
-                            builders.Add(innerBuilder);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var innerBuilder = MessageBuilder
-                            .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                            .Text($"Ascii2d 色彩 请求失败: {ex.Message}");
-                        builders.Add(innerBuilder);
-                    }
-                }
-            }
-            catch (Exception ex)
+            { new ByteArrayContent(imageData), "image", "image.jpg" },
+            { new StringContent("color"), "type" }
+        };
+        try
+        {
+            var response = await httpClient.PostAsync(_url + "ascii2d", ascii2dColorForm);
+            if (!response.IsSuccessStatusCode)
             {
                 var innerBuilder = MessageBuilder
                     .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                    .Text($"Ascii2d 色彩 请求失败: {ex.Message}");
+                    .Text("Ascii2d 色彩 请求失败");
                 builders.Add(innerBuilder);
                 return;
             }
-        });
+            else
+            {
+                Ascii2dResult[] ascii2DResults;
+                try
+                {
+                    ascii2DResults = (await response.Content.ReadFromJsonAsync<Ascii2dResult[]>())!;
+                    if (ascii2DResults.Length == 0)
+                    {
+                        var innerBuilder = MessageBuilder
+                            .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                            .Text("Ascii2d 色彩 未找到相关结果");
+                        builders.Add(innerBuilder);
+                        return;
+                    }
+
+                    foreach (var result in ascii2DResults.Take(2))
+                    {
+                        var innerBuilder = MessageBuilder.FakeGroup(
+                            context.Group.GroupUin,
+                            context.Bot.BotUin
+                        );
+                        var sb = new StringBuilder("[Ascii2d 色彩]\n");
+                        sb.AppendLine($"Hash: {result.hash}");
+                        sb.AppendLine($"{result.source.text} {result.source.link}");
+                        sb.AppendLine($"{result.author.text} {result.author.link}");
+
+                        byte[] targetImageData;
+                        try
+                        {
+                            targetImageData = await httpClient.GetByteArrayAsync(result.image);
+                        }
+                        catch (Exception ex)
+                        {
+                            sb.AppendLine($"图片下载失败: {ex.Message}");
+                            innerBuilder.Text(sb.ToString());
+                            builders.Add(innerBuilder);
+                            continue;
+                        }
+
+                        using (var compress = SKImage.FromEncodedData(targetImageData))
+                        {
+                            targetImageData = compress
+                                .Encode(SKEncodedImageFormat.Webp, 20)
+                                .ToArray();
+                        }
+                        innerBuilder.Text(sb.ToString()).Image(targetImageData);
+                        builders.Add(innerBuilder);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var innerBuilder = MessageBuilder
+                        .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                        .Text($"Ascii2d 色彩 请求失败: {ex.Message}");
+                    builders.Add(innerBuilder);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var innerBuilder = MessageBuilder
+                .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                .Text($"Ascii2d 色彩 请求失败: {ex.Message}");
+            builders.Add(innerBuilder);
+            return;
+        }
 
         // Ascii2d Bovw
-        var ascii2dBovwTask = Task.Run(async () =>
+        var ascii2dFeatureForm = new MultipartFormDataContent
         {
-            var ascii2dFeatureForm = new MultipartFormDataContent
-            {
-                { new ByteArrayContent(imageData), "image", "image.jpg" },
-                { new StringContent("color"), "bovw" }
-            };
-            try
-            {
-                var response = await httpClient.PostAsync(_url + "ascii2d", ascii2dFeatureForm);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var innerBuilder = MessageBuilder
-                        .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                        .Text("Ascii2d 特征 请求失败");
-                    builders.Add(innerBuilder);
-                    return;
-                }
-                else
-                {
-                    Ascii2dResult[] ascii2DResults;
-                    try
-                    {
-                        ascii2DResults = (
-                            await response.Content.ReadFromJsonAsync<Ascii2dResult[]>()
-                        )!;
-                        if (ascii2DResults.Length == 0)
-                        {
-                            var innerBuilder = MessageBuilder
-                                .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                                .Text("Ascii2d 特征 未找到相关结果");
-                            builders.Add(innerBuilder);
-                            return;
-                        }
-
-                        foreach (var result in ascii2DResults.Take(2))
-                        {
-                            var innerBuilder = MessageBuilder.FakeGroup(
-                                context.Group.GroupUin,
-                                context.Bot.BotUin
-                            );
-                            var sb = new StringBuilder("[Ascii2d 特征]\n");
-                            sb.AppendLine($"Hash: {result.hash}");
-                            sb.AppendLine($"{result.source.text} {result.source.link}");
-                            sb.AppendLine($"{result.author.text} {result.author.link}");
-
-                            byte[] targetImageData;
-                            try
-                            {
-                                targetImageData = await httpClient.GetByteArrayAsync(result.image);
-                            }
-                            catch (Exception ex)
-                            {
-                                sb.AppendLine($"图片下载失败: {ex.Message}");
-                                innerBuilder.Text(sb.ToString());
-                                builders.Add(innerBuilder);
-                                continue;
-                            }
-
-                            using (var compress = SKImage.FromEncodedData(targetImageData))
-                            {
-                                targetImageData = compress
-                                    .Encode(SKEncodedImageFormat.Webp, 20)
-                                    .ToArray();
-                            }
-                            innerBuilder.Text(sb.ToString()).Image(targetImageData);
-                            builders.Add(innerBuilder);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        var innerBuilder = MessageBuilder
-                            .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                            .Text($"Ascii2d 特征 请求失败: {ex.Message}");
-                        builders.Add(innerBuilder);
-                    }
-                }
-            }
-            catch (Exception ex)
+            { new ByteArrayContent(imageData), "image", "image.jpg" },
+            { new StringContent("color"), "bovw" }
+        };
+        try
+        {
+            var response = await httpClient.PostAsync(_url + "ascii2d", ascii2dFeatureForm);
+            if (!response.IsSuccessStatusCode)
             {
                 var innerBuilder = MessageBuilder
                     .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
-                    .Text($"Ascii2d 特征 请求失败: {ex.Message}");
+                    .Text("Ascii2d 特征 请求失败");
                 builders.Add(innerBuilder);
                 return;
             }
-        });
+            else
+            {
+                Ascii2dResult[] ascii2DResults;
+                try
+                {
+                    ascii2DResults = (await response.Content.ReadFromJsonAsync<Ascii2dResult[]>())!;
+                    if (ascii2DResults.Length == 0)
+                    {
+                        var innerBuilder = MessageBuilder
+                            .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                            .Text("Ascii2d 特征 未找到相关结果");
+                        builders.Add(innerBuilder);
+                        return;
+                    }
 
-        await Task.WhenAll(sauceNAOTask, ascii2dColorTask, ascii2dBovwTask);
+                    foreach (var result in ascii2DResults.Take(2))
+                    {
+                        var innerBuilder = MessageBuilder.FakeGroup(
+                            context.Group.GroupUin,
+                            context.Bot.BotUin
+                        );
+                        var sb = new StringBuilder("[Ascii2d 特征]\n");
+                        sb.AppendLine($"Hash: {result.hash}");
+                        sb.AppendLine($"{result.source.text} {result.source.link}");
+                        sb.AppendLine($"{result.author.text} {result.author.link}");
+
+                        byte[] targetImageData;
+                        try
+                        {
+                            targetImageData = await httpClient.GetByteArrayAsync(result.image);
+                        }
+                        catch (Exception ex)
+                        {
+                            sb.AppendLine($"图片下载失败: {ex.Message}");
+                            innerBuilder.Text(sb.ToString());
+                            builders.Add(innerBuilder);
+                            continue;
+                        }
+
+                        using (var compress = SKImage.FromEncodedData(targetImageData))
+                        {
+                            targetImageData = compress
+                                .Encode(SKEncodedImageFormat.Webp, 20)
+                                .ToArray();
+                        }
+                        innerBuilder.Text(sb.ToString()).Image(targetImageData);
+                        builders.Add(innerBuilder);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var innerBuilder = MessageBuilder
+                        .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                        .Text($"Ascii2d 特征 请求失败: {ex.Message}");
+                    builders.Add(innerBuilder);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            var innerBuilder = MessageBuilder
+                .FakeGroup(context.Group.GroupUin, context.Bot.BotUin)
+                .Text($"Ascii2d 特征 请求失败: {ex.Message}");
+            builders.Add(innerBuilder);
+            return;
+        }
+
         await context.Bot.SendMessage(
             MessageBuilder
                 .Group(context.Group.GroupUin)

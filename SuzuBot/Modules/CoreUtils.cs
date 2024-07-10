@@ -38,6 +38,17 @@ internal class CoreUtils
         );
     }
 
+    [Command("帮助")]
+    public Task Help(RequestContext context)
+    {
+        return context.Bot.SendMessage(
+            MessageBuilder
+                .Group(context.Group.GroupUin)
+                .Text("帮助文档\nhttps://suzubot.akula.moe\n2024 AkulaKirov GNU GPL-3.0")
+                .Build()
+        );
+    }
+
     [Command("运行状态", "stats")]
     public Task Status(RequestContext context)
     {

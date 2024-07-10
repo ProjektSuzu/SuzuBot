@@ -42,9 +42,6 @@ internal class MessageCache
             .AsParallel()
             .Where(x => (DateTime.Now - x.Value.CachedTime) >= TimeSpan.FromMinutes(5))
             .Select(x => x.Key);
-        lock (_chains)
-        {
-            needRemoveKeys.AsParallel().ForAll(key => _chains.Remove(key, out _));
-        }
+        needRemoveKeys.AsParallel().ForAll(key => _chains.Remove(key, out _));
     }
 }

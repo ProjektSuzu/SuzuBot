@@ -26,6 +26,8 @@ internal class SuzuAppHostBuilder(string[]? args = default)
 
     public SuzuAppHost Build()
     {
+        Logging.AddFile(o => o.RootPath = Environment.ContentRootPath);
+
         Services.AddSystemd();
         Services.AddHttpClient();
 

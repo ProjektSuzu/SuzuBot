@@ -1,47 +1,24 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Runtime.Caching;
 using Lagrange.Core.Message;
-using Timer = System.Timers.Timer;
 
 namespace SuzuBot.Services;
 
 internal class MessageCache
 {
-    private readonly ConcurrentDictionary<
-        string,
-        (DateTime CachedTime, MessageChain Chain)
-    > _chains;
-    private readonly Timer _timer;
+    private readonly ObjectCache _memoryCache = MemoryCache.Default;
 
-    public MessageCache()
-    {
-        _chains = [];
-        _timer = new()
-        {
-            AutoReset = true,
-            Enabled = true,
-            Interval = TimeSpan.FromMinutes(1).TotalMilliseconds
-        };
-        _timer.Elapsed += (_, _) => FlushCache();
-    }
+    public MessageCache() { }
 
     public void Add(MessageChain chain)
     {
         string key = $"{chain.Sequence}@{chain.GroupUin}";
-        _chains.AddOrUpdate(key, (DateTime.Now, chain), (key, old) => (DateTime.Now, chain));
+        CacheItemPolicy policy = new() { AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(5) };
+        _memoryCache.Add(key, chain, policy);
     }
 
     public MessageChain? GetOrDefault(uint sequence, uint groupUin)
     {
         string key = $"{sequence}@{groupUin}";
-        return _chains.TryGetValue(key, out var value) ? value.Chain : null;
-    }
-
-    private void FlushCache()
-    {
-        var needRemoveKeys = _chains
-            .AsParallel()
-            .Where(x => (DateTime.Now - x.Value.CachedTime) >= TimeSpan.FromMinutes(5))
-            .Select(x => x.Key);
-        needRemoveKeys.AsParallel().ForAll(key => _chains.Remove(key, out _));
+        return _memoryCache.Get(key) as MessageChain;
     }
 }

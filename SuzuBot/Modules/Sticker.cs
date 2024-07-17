@@ -35,4 +35,18 @@ internal class Sticker
                 .Build()
         );
     }
+
+    [Command("龙图", "龙图", "longtu")]
+    public Task Dragon(RequestContext context)
+    {
+        var imgs = Directory.GetFiles(
+            Path.Combine(AppContext.BaseDirectory, "resources", nameof(Sticker), nameof(Dragon))
+        );
+        return context.Bot.SendMessage(
+            MessageBuilder
+                .Group(context.Group.GroupUin)
+                .Image(File.ReadAllBytes(imgs[Random.Shared.Next(imgs.Length)]))
+                .Build()
+        );
+    }
 }
